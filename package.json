@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "description": "Drupal Single Directory Components as stories",
   "keywords": [
-    "SDC", "storybook", "Drupal", "storybook-addons"
+    "SDC",
+    "storybook",
+    "Drupal",
+    "storybook-addons"
   ],
   "repository": {
     "type": "git",
@@ -40,7 +43,6 @@
     "start": "run-p build:watch \"storybook --quiet\"",
     "prerelease": "zx scripts/prepublish-checks.js",
     "release": "npm run build && auto shipit",
-    "eject-ts": "zx scripts/eject-typescript.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -48,13 +50,13 @@
     "@storybook/icons": "^1.2.10"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "0.0.0-pr-26654-sha-49d01553",
-    "@storybook/addon-interactions": "0.0.0-pr-26654-sha-49d01553",
-    "@storybook/addon-links": "0.0.0-pr-26654-sha-49d01553",
-    "@storybook/blocks": "0.0.0-pr-26654-sha-49d01553",
-    "@storybook/react": "0.0.0-pr-26654-sha-49d01553",
-    "@storybook/react-vite": "0.0.0-pr-26654-sha-49d01553",
-    "@storybook/test": "0.0.0-pr-26654-sha-49d01553",
+    "@storybook/addon-essentials": "^8.3.5",
+    "@storybook/addon-interactions": "^8.3.5",
+    "@storybook/addon-links": "^8.3.5",
+    "@storybook/blocks": "^8.3.5",
+    "@storybook/react": "^8.3.5",
+    "@storybook/react-vite": "^8.3.5",
+    "@storybook/test": "^8.3.5",
     "@types/node": "^18.15.0",
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.2.21",
@@ -66,17 +68,11 @@
     "prompts": "^2.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "storybook": "0.0.0-pr-26654-sha-49d01553",
+    "storybook": "^8.3.5",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
     "vite": "^5.3.5",
     "zx": "^7.2.3"
-  },
-  "peerDependencies": {
-    "storybook": "^8.3.0 || 0.0.0-pr-26654-sha-49d01553"
-  },
-  "overrides": {
-    "storybook": "0.0.0-pr-26654-sha-49d01553"
   },
   "publishConfig": {
     "access": "public"
