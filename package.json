@@ -16,8 +16,7 @@
   "license": "MIT",
   "author": "Ivan Berdinsky <iberdinsky@skilld.cloud>",
   "exports": {
-    "./preset": "./dist/preset.cjs",
-    "./package.json": "./package.json"
+    "./preset": "./dist/preset.cjs"
   },
   "files": [
     "dist/**/*",
