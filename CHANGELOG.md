@@ -1,3 +1,15 @@
+# v0.0.3 (Sun Oct 13 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Fix release ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.0.2 (Sun Oct 13 2024)
 
 #### ⚠️ Pushed to `main`
