@@ -1,3 +1,15 @@
+# v0.0.11 (Sun Oct 13 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Externalize vite (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.0.10 (Sun Oct 13 2024)
 
 #### ⚠️ Pushed to `main`
