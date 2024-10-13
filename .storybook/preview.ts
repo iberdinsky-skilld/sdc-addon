@@ -1,4 +1,4 @@
-import type { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/html";
 
 const preview: Preview = {
   parameters: {
@@ -8,9 +8,6 @@ const preview: Preview = {
         date: /Date$/,
       },
     },
-  },
-  initialGlobals: {
-    background: { value: "light" },
   },
 };
 

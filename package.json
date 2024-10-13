@@ -16,18 +16,11 @@
   "license": "MIT",
   "author": "Ivan Berdinsky <iberdinsky@skilld.cloud>",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
     "./preview": {
-      "types": "./dist/index.d.ts",
       "import": "./dist/preview.js",
       "require": "./dist/preview.cjs"
     },
     "./preset": "./dist/preset.cjs",
-    "./manager": "./dist/manager.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -47,20 +40,19 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@storybook/icons": "^1.2.10"
+    "@storybook/icons": "^1.2.10",
+    "json-schema-faker": "^0.5.6",
+    "lightningcss": "^1.27.0",
+    "vite-plugin-twig-drupal": "^1.4.2"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.3.5",
     "@storybook/addon-interactions": "^8.3.5",
     "@storybook/addon-links": "^8.3.5",
-    "@storybook/blocks": "^8.3.5",
-    "@storybook/react": "^8.3.5",
-    "@storybook/react-vite": "^8.3.5",
+    "@storybook/html-vite": "^8.3.5",
     "@storybook/test": "^8.3.5",
+    "@storybook/types": "^8.3.5",
     "@types/node": "^18.15.0",
-    "@types/react": "^18.2.65",
-    "@types/react-dom": "^18.2.21",
-    "@vitejs/plugin-react": "^4.2.1",
     "auto": "^11.1.1",
     "boxen": "^7.1.1",
     "dedent": "^1.5.1",
@@ -78,12 +70,6 @@
     "access": "public"
   },
   "bundler": {
-    "exportEntries": [
-      "src/index.ts"
-    ],
-    "managerEntries": [
-      "src/manager.tsx"
-    ],
     "previewEntries": [
       "src/preview.ts"
     ],
