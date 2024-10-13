@@ -70,9 +70,6 @@
     "access": "public"
   },
   "bundler": {
-    "previewEntries": [
-      "src/preview.ts"
-    ],
     "nodeEntries": [
       "src/preset.ts"
     ]
