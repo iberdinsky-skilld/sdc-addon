@@ -108,7 +108,7 @@ export default defineConfig(async (options) => {
     configs.push({
       ...commonConfig,
       entry: nodeEntries,
-      format: ["cjs"],
+      format: ["esm"],
       target: NODE_TARGET,
       platform: "node",
     });
