@@ -55,10 +55,10 @@ export default (stories: Record<string, any>) => {
       `export const ${storyKey} = {
         args: {
           ${slotEntries},
-          play: async ({ canvasElement }) => {
-            Drupal.attachBehaviors(canvasElement, window.drupalSettings);
-          },
-        }
+        },
+        play: async ({ canvasElement }) => {
+          Drupal.attachBehaviors(canvasElement, window.drupalSettings);
+        },
       };`
     )
   })
