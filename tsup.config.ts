@@ -9,6 +9,14 @@ export default defineConfig(async (options) => {
     // treeshake: true,
     // sourcemap: true,
     // clean: options.watch ? false : true,
+    entry: ["src/preset.ts"],
+    format: ["esm"],
+    target: "node22",
+    platform: "node",
+    outDir: "dist",
+    clean: true,
+    shims: true,
+    external: ["vite", "fs"]
   };
 
   const configs: Options[] = [];
