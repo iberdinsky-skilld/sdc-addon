@@ -163,4 +163,8 @@ The community will have to decide what format the yaml stories should be.
 
 - UI Patterns stories format not yet [supported](https://www.drupal.org/project/ui_patterns/issues/3480464).
 - Same problem will be with `$ref: json-schema-definitions://` for SDC from Experience Builder.
+- Plugin uses [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers)
+- json-schema-faker not always generate good data. Better to use `default` or `examples` for SDC schema
+https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml
+https://json-schema.org/understanding-json-schema/reference/annotations
 
