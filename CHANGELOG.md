@@ -1,3 +1,15 @@
+# v0.0.17 (Mon Oct 21 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Added picture (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.0.16 (Mon Oct 21 2024)
 
 #### ⚠️ Pushed to `main`
