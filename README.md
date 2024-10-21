@@ -1,5 +1,7 @@
 # Storybook SDC Addon Documentation
-Drupal Single Directory Components as stories
+Drupal Single Directory Components schema as stories.
+
+[![Image from Gyazo](https://i.gyazo.com/408dbe8cd2b02688e2ebaaee82d6b282.png)](https://gyazo.com/408dbe8cd2b02688e2ebaaee82d6b282)
 
 ## Overview:
 

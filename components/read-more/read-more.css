@@ -12,6 +12,7 @@
   text-transform: uppercase;
   border-bottom: 1px solid transparent;
   background-color: inherit;
+  color: green;
 }
 [dir="rtl"] .read-more {
   padding-right: unset;
