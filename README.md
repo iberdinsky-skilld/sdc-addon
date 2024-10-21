@@ -36,6 +36,12 @@ Here’s why:
 - With __SDC Storybook__, you can embed __Drupal behaviors__ like `Drupal.attachBehaviors()` directly into the component preview. This ensures the component behaves the same way as it would on the actual site.
 - Support for `drupalSettings` and `once.js` within Storybook ensures components behave identically during testing as they will on the Drupal site.
 
+#### 7. Twig.js vs Drupal Twig
+While using __Drupal to render components__ offers tighter integration, there are strong reasons to continue using Twig.js in many scenarios:
+
+- Many Components __Don’t Need Full Drupal Logic__. Basic components (buttons, cards, lists) rely on simple HTML and CSS, not on complex template logic. For such components, Twig.js provides sufficient rendering without the need for full Drupal preprocessing.
+- Twig.js Works Well for Frontend-Focused Use Cases.
+- Styling and Behavior Mismatches Can Be Managed Separately in Drupal implelentation phase.
 
 ## The addon includes:
 
