@@ -1,3 +1,15 @@
+# v0.0.15 (Mon Oct 21 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Updated demo (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.0.14 (Sat Oct 19 2024)
 
 
