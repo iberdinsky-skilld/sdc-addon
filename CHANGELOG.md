@@ -1,3 +1,16 @@
+# v0.0.20 (Thu Oct 24 2024)
+
+#### ⚠️ Pushed to `main`
+
+- update package (iberdinsky@skilld.cloud)
+- Story schema + update (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.0.19 (Thu Oct 24 2024)
 
 #### ⚠️ Pushed to `main`
