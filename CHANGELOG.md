@@ -1,3 +1,15 @@
+# v0.0.19 (Thu Oct 24 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Updated readme (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.0.18 (Mon Oct 21 2024)
 
 #### ⚠️ Pushed to `main`
