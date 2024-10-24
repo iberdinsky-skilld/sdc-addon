@@ -12,10 +12,6 @@ status: experimental
 props:
   type: object
   properties:
-    attributes:
-      type: Drupal\Core\Template\Attribute
-      title: Attributes
-      description: Wrapper attributes.
     html_tag:
       type: string
       title: HTML tag for wrapper
@@ -43,7 +39,6 @@ thirdPartySettings:
   sdcStorybook:
     stories:
       preview:
-        title: Preview
         props:
           html_tag: "div"
         slots:
@@ -51,18 +46,13 @@ thirdPartySettings:
             - type: component
               component: "umami:title"
               props:
+                extra_classes:
+                  - umami-card__title
                 label: test
             - type: component
               component: "umami:read-more"
+              props:
+                extra_classes:
+                  - umami-card__read-more
               slots:
                 text: test
-      preview2:
-        title: Preview2
-        props:
-          html_tag: "div"
-        slots:
-          content:
-            - type: component
-              component: "umami:title"
-              props:
-                label: test2

@@ -12,10 +12,12 @@ status: experimental
 props:
   type: object
   properties:
-    attributes:
-      type: Drupal\Core\Template\Attribute
-      title: Attributes
-      description: Wrapper attributes.
+    extra_classes:
+      type: array
+      items:
+        type: string
+        examples:
+          - card__title
     label:
       type: string
     html_tag:

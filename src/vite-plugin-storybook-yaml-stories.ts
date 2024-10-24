@@ -38,7 +38,7 @@ const generateImports = (directory: string) => {
     const assetPath = `./${asset}`
     const extension = extname(asset)
 
-    if (['.css', '.js'].includes(extension)) {
+    if (['.css', '.js', '.mjs'].includes(extension)) {
       return `${imports} import '${assetPath}';\n`
     }
     if (extension === '.twig') {

@@ -5,9 +5,6 @@
         {{ source(componentMetadata.path ~ '/icons/' ~ icon|default('knife') ~ '.svg') }}
       </div>
     {% endif %}
-    {% if block('label') is defined and block('label')|trim %}
-      <div class="umami-badge__label">{% block label %}{{ label }}{% endblock %}</div>
-    {% endif %}
     {% block text %}{{ text }}{% endblock %}
   </div>
 </div>

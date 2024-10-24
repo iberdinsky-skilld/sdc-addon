@@ -18,10 +18,6 @@ props:
   type: object
 
   properties:
-    attributes:
-      type: Drupal\Core\Template\Attribute
-      title: Attributes
-      description: Wrapper attributes.
     site_logo:
       type: string
       format: iri-reference

@@ -1,0 +1,35 @@
+.o-slider {
+  max-width: 100%;
+  position: relative;
+  display: grid;
+}
+
+.o-slider__swiper {
+  max-width: 100%;
+  width: 100%;
+}
+
+[class*="o-slider__nav"] {
+  position: absolute;
+  top: 50%;
+  margin-top: -1.25rem;
+  z-index: 10;
+  cursor: pointer;
+  fill: white;
+
+  &[disabled] {
+    display: none;
+  }
+}
+
+.o-slider__nav--prev {
+  left: -1.25rem;
+}
+
+.o-slider__nav--next {
+  right: -1.25rem;
+}
+
+.o-slider__wrapper {
+  margin-bottom: 1rem;
+}

@@ -1,7 +1,7 @@
 .umami-card {
   width: 100%;
   padding: 1rem;
-  border: 1px solid #fcece7;
+  border: 1px solid green;
   background-color: #fff;
 }
 
@@ -47,19 +47,8 @@
 .umami-card__wrapper {
   display: grid;
   gap: 1rem;
-  grid-template-rows: 1fr auto auto;
-  height: 100%;
 }
 
 .umami-card--alt .umami-card__wrapper {
   grid-template-rows: auto 1fr auto;
-}
-
-.umami-card .field--name-field-media-image {
-  line-height: 0;
-}
-
-.umami-card .field--name-field-media-image img {
-  display: block;
-  width: 100%;
 }

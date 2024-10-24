@@ -1,10 +1,14 @@
-<a{{ attributes.addClass('read-more').setAttribute('href', url) }}>
-  {% block text %}{{ text }}{% endblock %}
+<a{{attributes.addClass('read-more').setAttribute('href',url).addClass(extra_classes|default([])) }}>
+  {% block text %}
+    {{ text }}
+  {% endblock %}
   <span class="visually-hidden">
-    - {% block a11y %}{{ a11y }}{% endblock %}
+    -
+    {% block a11y %}
+      {{ a11y }}
+    {% endblock %}
   </span>
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" class="read-more__icon">
-    <path fill="none" d="M159.19 117.37v365.26L341.82 300 159.19 117.37z"/>
-    <path fill="#008068" d="M341.82 300L159.19 482.63v98.99L440.81 300 159.19 18.38v98.99L341.82 300z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 256 256" class="read-more__icon">
+    <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
   </svg>
 </a>

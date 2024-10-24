@@ -6,10 +6,12 @@ props:
   required:
     - url
   properties:
-    attributes:
-      type: Drupal\Core\Template\Attribute
-      title: Attributes
-      description: Link attributes.
+    extra_classes:
+      type: array
+      items:
+        type: string
+        examples:
+          - card__title
     url:
       type: string
       title: Read More url

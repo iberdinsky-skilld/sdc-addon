@@ -2,30 +2,24 @@
 $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
 
 # The human readable name.
-name: Badge
+name: Accordion
 
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
-status: experimental
+status: stable
 
 # Schema for the props. We support www.json-schema.org. Learn more about the
 # syntax there.
 props:
-  # Props are always an object with keys. Each key is a variable in your
-  # component template.
   type: object
-
   properties:
-    icon:
+    title:
       type: string
-      description: Icon Name
-      enum:
-        - knife
-        - timer
-        - serves
-        - difficulty
+      title: Title
+      examples:
+        - Accordion title
 slots:
-  text:
-    type: string
-    description: Text
+  content:
+    title: Content
     examples:
-      - Text
+      - Accordion content
+

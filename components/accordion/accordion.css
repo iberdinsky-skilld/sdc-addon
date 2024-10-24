@@ -1,0 +1,32 @@
+.a-accordion__content {
+  padding: 0.5rem 0.75rem;
+}
+
+.a-accordion__title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.25rem;
+  user-select: none;
+}
+
+.a-accordion__title:after {
+  content: "";
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  mask-repeat: no-repeat;
+  mask-position: center center;
+  mask-size: 100% auto;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='%23000000' viewBox='0 0 256 256'%3E%3Cpath d='M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.a-accordion[open] .a-accordion__title:after {
+  transform: rotate(180deg);
+}

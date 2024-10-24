@@ -1,0 +1,13 @@
+{%
+  set classes = [
+    'a-accordion',
+    modifier,
+  ]
+%}
+
+<details{{attributes.addClass(classes)}}>
+  <summary class="a-accordion__title">{{ title }}</summary>
+  <div class="a-accordion__content">
+    {{ content }}
+  </div>
+</details>

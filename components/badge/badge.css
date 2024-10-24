@@ -4,9 +4,7 @@
   gap: 0.5rem;
 }
 
-/* Large */
 @media screen and (min-width: 60rem) {
-  /* 960px */
   .umami-badge__container {
     flex-direction: column;
     gap: 0;
@@ -23,20 +21,10 @@
   height: 40px;
 }
 
-/* Large */
 @media screen and (min-width: 60rem) {
-  /* 960px */
   .umami-badge__icon {
     align-items: start;
-    width: 56px;
+    width: 64px;
     height: 64px;
   }
-}
-
-.umami-badge__label {
-  font-weight: bold;
-}
-
-.umami-badge__label::after {
-  content: ":";
 }

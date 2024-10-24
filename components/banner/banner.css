@@ -8,19 +8,17 @@
   font-size: 1.188em;
 }
 
-.banner__title {
-  margin: 0 0 0.5em 0;
-  font-family: "Scope One", Georgia, serif;
-  font-size: 1.777em;
-  font-weight: 400;
-  line-height: 1.2em;
+.banner__link {
+  justify-self: start;
 }
 
-/* Medium */
+.banner__title {
+  margin-block: 0;
+}
+
 @media screen and (min-width: 48rem) {
-  /* 768px */
   .banner {
-    position: relative; /* Anchor absolutely positioned background image. */
+    position: relative;
     background-color: #464646;
   }
 
@@ -33,7 +31,9 @@
   }
 
   .banner__content {
-    position: relative; /* Establish stacking context to appear above absolutely positioned background image. */
+    display: grid;
+    gap: 1rem;
+    position: relative;
     max-width: 50%;
     margin: 0;
     padding: 1.777em;
@@ -51,9 +51,8 @@
     object-fit: cover;
   }
 }
-/* Large */
+
 @media screen and (min-width: 60rem) {
-  /* 960px */
   .banner__content {
     max-width: 41%;
   }
@@ -61,9 +60,7 @@
     min-height: 43vw;
   }
 }
-/* Extra large + side margins */
 @media screen and (min-width: 80rem) {
-  /* 1200px (large) + 80px (side margins) = 1280px */
   .banner__inner {
     padding: 0;
   }
