@@ -1,7 +1,7 @@
 # Storybook SDC Addon Documentation
-Drupal Single Directory Components schema as stories.
+This Storybook addon streamlines the integration of Drupal Single Directory Components(SDC) defined in YAML files (specifically *.component.yml) as stories.
 
-[![Image from Gyazo](https://i.gyazo.com/408dbe8cd2b02688e2ebaaee82d6b282.png)](https://gyazo.com/408dbe8cd2b02688e2ebaaee82d6b282)
+[![Image from Gyazo](https://i.gyazo.com/2dcfa650c961679430d45eef24a82ab8.gif)](https://gyazo.com/2dcfa650c961679430d45eef24a82ab8)
 
 ## Overview:
 
@@ -37,7 +37,7 @@ Here’s why:
 - Support for `drupalSettings` and `once.js` within Storybook ensures components behave identically during testing as they will on the Drupal site.
 
 #### 7. Twig.js vs Drupal Twig
-While using __Drupal to render components__ offers tighter integration, there are strong reasons to continue using Twig.js in many scenarios:
+While using Drupal to render components offers tighter integration, there are strong reasons to continue using Twig.js in many scenarios:
 
 - Many Components __Don’t Need Full Drupal Logic__. Basic components (buttons, cards, lists) rely on simple HTML and CSS, not on complex template logic. For such components, Twig.js provides sufficient rendering without the need for full Drupal preprocessing.
 - Twig.js Works Well for Frontend-Focused Use Cases.
@@ -52,24 +52,23 @@ While using __Drupal to render components__ offers tighter integration, there ar
 
 ## This addon uses:
 
-- https://github.com/larowlan/vite-plugin-twig-drupal for load Twig with Drupal functions.
+- https://github.com/larowlan/vite-plugin-twig-drupal for loads Twig with Drupal functions.
 - https://github.com/json-schema-faker/json-schema-faker for generation missed props and slots.
 
 ## Installation:
+
+In `@storybook/html-vite`:
+https://storybook.js.org/docs/builders/vite
 
 ```
 npm i storybook-addon-sdc
 ```
 
-## Configuration:
+### Configuration:
 
-In vite-html storybook https://storybook.js.org/docs/builders/vite
-
-main.ts
+.storybook/main.js
 ```
-import type { StorybookConfig } from "@storybook/html-vite";
-
-const config: StorybookConfig = {
+const config = {
   stories: ["../components/**/*.component.yml"], // Your components directory.
   addons: [
     {
@@ -91,6 +90,31 @@ const config: StorybookConfig = {
 };
 export default config;
 ```
+
+### Default values
+
+json-schema-faker not always generate good data. For optimal results, use `default` or `examples` for SDC schema:
+```
+props:
+  type: object
+  properties:
+    html_tag:
+      type: string
+      enum:
+        - article
+        - div
+      default: article
+slots:
+  content:
+    title: Content
+    examples:
+      - Hello! I'm card content
+```
+
+- https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml
+- https://json-schema.org/understanding-json-schema/reference/annotations
+
+
 
 ## Experimental stories:
 
@@ -164,7 +188,7 @@ Or you can import yaml in regular storybook *.stories.js
 
 ### Why stories experimental?
 
-The community will have to decide what format the yaml stories should be.
+The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1lrV2gYlqmqD2pybTql6_H1dByWIKB5xQFcQ/edit?tab=t.0#heading=h.3949vjfiqczr) what format the YAML stories should be.
 
 
 ## Known issues:
@@ -172,7 +196,4 @@ The community will have to decide what format the yaml stories should be.
 - UI Patterns stories format not yet [supported](https://www.drupal.org/project/ui_patterns/issues/3480464).
 - Same problem will be with `$ref: json-schema-definitions://` for SDC from Experience Builder.
 - Plugin uses [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers)
-- json-schema-faker not always generate good data. Better to use `default` or `examples` for SDC schema
-https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml
-https://json-schema.org/understanding-json-schema/reference/annotations
 
