@@ -1,5 +1,5 @@
-import { JSONSchemaFaker } from "json-schema-faker"
-import { Args } from "@storybook/types"
+import { JSONSchemaFaker } from 'json-schema-faker'
+import { Args } from '@storybook/types'
 
 const generateArgs = (schema: Record<string, any>): Args => {
   const generated = JSON.parse(JSON.stringify(JSONSchemaFaker.generate(schema)))
@@ -8,7 +8,7 @@ const generateArgs = (schema: Record<string, any>): Args => {
 
 const slotsToMarkup = (slots: Record<string, any>) =>
   Object.entries(slots).reduce((acc, [key, value]) => {
-    acc[key] = { type: "string", ...value }
+    acc[key] = { type: 'string', ...value }
     return acc
   }, {})
 
@@ -17,17 +17,17 @@ export default (
   jsonSchemaFakerOptions: Record<string, any>
 ): Args => {
   JSONSchemaFaker.option({
-    ignoreProperties: ["attributes"],
-    pruneProperties: ["attributes"],
+    ignoreProperties: ['attributes'],
+    pruneProperties: ['attributes'],
     failOnInvalidTypes: false,
     useExamplesValue: true,
     useDefaultValue: true,
-    ...jsonSchemaFakerOptions
+    ...jsonSchemaFakerOptions,
   })
 
   const generatedArgs = {
     ...(content?.props?.properties && generateArgs(content.props.properties)),
-    ...(content?.slots && generateArgs(slotsToMarkup(content.slots)))
+    ...(content?.slots && generateArgs(slotsToMarkup(content.slots))),
   }
 
   return generatedArgs

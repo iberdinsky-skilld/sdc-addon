@@ -1,11 +1,11 @@
-import { ArgTypes } from "@storybook/types"
+import { ArgTypes } from '@storybook/types'
 
 const schemaToArgtypes = (prop: Record<string, any>) => ({
   ...prop,
   ...(prop.enum && {
-    control: "radio",
-    options: prop.enum
-  })
+    control: 'radio',
+    options: prop.enum,
+  }),
 })
 
 export default (content: {

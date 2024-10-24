@@ -44,23 +44,25 @@ thirdPartySettings:
     stories:
       preview:
         title: Preview
-        args:
+        props:
           html_tag: "div"
+        slots:
           content:
             - type: component
               component: "umami:title"
-              args:
+              props:
                 label: test
             - type: component
               component: "umami:read-more"
-              args:
+              slots:
                 text: test
       preview2:
         title: Preview2
-        args:
+        props:
           html_tag: "div"
+        slots:
           content:
             - type: component
               component: "umami:title"
-              args:
+              props:
                 label: test2

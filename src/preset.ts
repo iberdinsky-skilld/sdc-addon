@@ -1,11 +1,11 @@
 import YamlStoriesPlugin, {
-  yamlStoriesIndexer
-} from "./vite-plugin-storybook-yaml-stories"
-import twig from "vite-plugin-twig-drupal"
-import { UserConfig, mergeConfig } from "vite"
-import { Indexer } from "@storybook/types"
-import { resolve, join } from "path"
-import fs from "fs"
+  yamlStoriesIndexer,
+} from './vite-plugin-storybook-yaml-stories'
+import twig from 'vite-plugin-twig-drupal'
+import { UserConfig, mergeConfig } from 'vite'
+import { Indexer } from '@storybook/types'
+import { resolve, join } from 'path'
+import fs from 'fs'
 
 // Function to dynamically get all subdirectories of a given directory
 const getSubdirectories = (baseDir: string): string[] => {
@@ -17,7 +17,7 @@ const getSubdirectories = (baseDir: string): string[] => {
 
 // Function to dynamically generate the list of component directories
 const getComponentDirectories = (): string[] => {
-  const baseComponentDir = resolve("./components") // Base directory for components
+  const baseComponentDir = resolve('./components') // Base directory for components
   const subdirectories = getSubdirectories(baseComponentDir)
 
   // Return the base directory and all its subdirectories (recursively, if needed)
@@ -51,7 +51,7 @@ export function viteFinal(
   return mergeConfig(config, {
     plugins: [
       twig(options.vitePluginTwigDrupalOptions),
-      YamlStoriesPlugin({ ...options })
+      YamlStoriesPlugin({ ...options }),
     ],
     resolve: {
       alias: [
@@ -63,10 +63,10 @@ export function viteFinal(
               throw new Error(`Component ${component} could not be resolved.`)
             }
             return resolvedPath
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    },
   })
 }
 

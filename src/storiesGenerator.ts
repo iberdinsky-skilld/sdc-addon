@@ -1,67 +1,68 @@
 export default (stories: Record<string, any>) => {
   const generatedStories: string[] = []
 
-  const extractComponentArgsAndSlots = (args: any) => {
-    const slots: Record<string, string> = {}
+  const extractArgsAndSlots = (input: any) => {
+    const args: Record<string, any> = {}
+    const slots: Record<string, any> = {}
 
-    for (const key in args) {
-      if (Array.isArray(args[key])) {
-        args[key].forEach((item: any) => {
-          if (item.type === "component") {
-            const componentName = item.component.split(":").pop()
-            const kebabCaseName = componentName.replace(/([-])/g, "")
-            const componentContent = `\${${kebabCaseName}.component(${JSON.stringify(
-              item.args
-            )})}`
+    for (const key in input) {
+      const value = input[key]
 
-            if (!slots[key]) {
-              slots[key] = componentContent
-            } else {
-              slots[key] += componentContent
+      if (Array.isArray(value)) {
+        value.forEach((item: any) => {
+          if (item.type === 'component') {
+            const componentName = item.component.split(':').pop()
+            const kebabCaseName = componentName.replace(/-/g, '')
+            const componentProps = {
+              ...(item.props || {}),
+              ...(item.slots || {}),
             }
+
+            const componentContent = `\${${kebabCaseName}.component(${JSON.stringify(componentProps)})}`
+
+            slots[key] = (slots[key] || '') + componentContent
           } else {
-            const slotContent = item
-            if (!slots[key]) {
-              slots[key] = `${slotContent}`
-            } else {
-              slots[key] += `${slotContent}`
-            }
+            slots[key] = (slots[key] || '') + `${item}`
           }
         })
-      } else if (typeof args[key] === "object") {
-        const nestedResult = extractComponentArgsAndSlots(args[key])
-        Object.entries(nestedResult).forEach(([nestedSlot, nestedContent]) => {
-          if (!slots[nestedSlot]) {
-            slots[nestedSlot] = nestedContent
-          } else {
-            slots[nestedSlot] += nestedContent
-          }
+      } else if (typeof value === 'object' && value !== null) {
+        const nested = extractArgsAndSlots(value)
+        Object.assign(args, nested.args)
+        Object.entries(nested.slots).forEach(([nestedKey, nestedContent]) => {
+          slots[nestedKey] = (slots[nestedKey] || '') + nestedContent
         })
       } else {
-        slots[key] = `${args[key]}`
+        args[key] = value
       }
     }
 
-    return slots
+    return { args, slots }
   }
 
   Object.entries(stories).forEach(([storyKey, story]) => {
-    const slots = extractComponentArgsAndSlots(story.args)
-    const slotEntries = Object.entries(slots)
-      .map(([slotName, content]) => `"${slotName}": \`${content}\``)
-      .join(", ")
+    const { args, slots } = extractArgsAndSlots(story)
 
-    generatedStories.push(
-      `export const ${storyKey} = {
+    Object.entries(slots).forEach(([slotName, content]) => {
+      args[slotName] = `${content}`
+    })
+
+    generatedStories.push(`
+      export const ${storyKey} = {
         args: {
-          ${slotEntries},
+          ${Object.entries(args)
+            .map(([key, value]) =>
+              key === 'content'
+                ? `"${key}": \`${value}\``
+                : `"${key}": ${JSON.stringify(value)}`
+            )
+            .join(',\n')}
         },
         play: async ({ canvasElement }) => {
           Drupal.attachBehaviors(canvasElement, window.drupalSettings);
         },
-      };`
-    )
+      };
+    `)
   })
 
-  return generatedStories.join("\n")
+  return generatedStories.join('\n')
 }

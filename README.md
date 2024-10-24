@@ -151,36 +151,28 @@ thirdPartySettings:
     stories:
       preview:
         title: Preview
-        args:
+        props:
           html_tag: "div"
+        slots:
           content:
             - type: component
               component: "umami:title"
-              args:
+              props:
                 label: test
             - type: component
               component: "umami:read-more"
-              args:
+              slots:
                 text: test
-                url: '#'
       preview2:
-        title: Preview 2
-        args:
+        title: Preview2
+        props:
           html_tag: "div"
+        slots:
           content:
             - type: component
               component: "umami:title"
-              args:
-                label: test 2
-                extra_classes:
-                  - 'card__title'
-            - type: component
-              component: "umami:read-more"
-              args:
-                text: test
-                url: '#'
-                extra_classes:
-                  - 'card__read-more'
+              props:
+                label: test2
 ```
 
 
