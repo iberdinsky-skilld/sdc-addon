@@ -81,7 +81,7 @@ const dynamicImports = (stories: Record<string, any>) => {
   return Array.from(imports).join('\n')
 }
 
-export default async ({ jsonSchemaFakerOptions }) => {
+export default async ({ jsonSchemaFakerOptions = {} }) => {
   return {
     name: 'vite-plugin-storybook-yaml-stories',
     async load(id: string) {

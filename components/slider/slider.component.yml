@@ -16,11 +16,11 @@ props:
       type: array
       items:
         type: string
-    items:
+    slides:
       title: Slider Items
       type: array
-      items:
-        type: string
+      examples:
+        - ['slide 1', 'slide 2', 'slide 3']
 libraryOverrides:
   dependencies:
    - core/drupal
@@ -32,3 +32,14 @@ libraryOverrides:
       'https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css': { type: external, minified: true }
       'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/scrollbar.css': { type: external, minified: true }
       'slider.css': {}
+
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      cards:
+        props:
+          slides:
+            - type: component
+              component: "umami:card"
+            - type: component
+              component: "umami:card"

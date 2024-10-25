@@ -9,8 +9,8 @@
 >
   <div class="swiper o-slider__swiper">
     <div class="swiper-wrapper o-slider__wrapper">
-      {% for item in items %}
-        <div class="swiper-slide o-slider__slide">test{{ item }}</div>
+      {% for slide in slides %}
+        <div class="swiper-slide o-slider__slide">{{ slide }}</div>
       {% endfor %}
     </div>
   </div>
