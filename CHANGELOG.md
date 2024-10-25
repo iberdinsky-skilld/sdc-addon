@@ -1,3 +1,15 @@
+# v0.1.4 (Fri Oct 25 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Slides (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.1.3 (Thu Oct 24 2024)
 
 #### ⚠️ Pushed to `main`
