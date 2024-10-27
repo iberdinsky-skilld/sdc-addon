@@ -12,15 +12,11 @@ status: stable
 props:
   type: object
   properties:
-    extra_classes:
-      type: array
-      items:
-        type: string
     slides:
       title: Slider Items
       type: array
       examples:
-        - ['slide 1', 'slide 2', 'slide 3']
+        - ['slide 1', 'slide 2', 'slide 3', 'slide 4']
 libraryOverrides:
   dependencies:
    - core/drupal
@@ -41,5 +37,13 @@ thirdPartySettings:
           slides:
             - type: component
               component: "umami:card"
+              slots:
+                content: 'Hello from slider card!'
             - type: component
               component: "umami:card"
+              slots:
+                content: 'Hello from second slider card!'
+            - type: component
+              component: "umami:card"
+              slots:
+                content: 'Hello from third slider card!'

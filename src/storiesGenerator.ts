@@ -1,75 +1,58 @@
 interface Story {
-  props?: {}
-  slots?: {}
+  props?: Record<string, any>;
+  slots?: Record<string, any>;
 }
 
-const extractArgsAndSlots = (
-  input: any
-): { args: Record<string, any>; slots: Record<string, any> } => {
-  const args: Record<string, any> = {}
-  const slots: Record<string, any> = {}
-
-  for (const key in input) {
-    const value = input[key]
-
-    if (Array.isArray(value)) {
-      value.forEach((item: any) => {
-        if (item.type === 'component') {
-          const componentName = item.component.split(':').pop()
-          const kebabCaseName = componentName.replace(/-/g, '')
-          const componentProps = {
-            ...(item.props || {}),
-            ...(item.slots || {}),
-          }
-
-          const componentContent = `\${${kebabCaseName}.component(${JSON.stringify(componentProps)})}`
-
-          slots[key] = (slots[key] || '') + componentContent
-        } else {
-          slots[key] = (slots[key] || '') + `${item}`
-        }
-      })
-    } else if (typeof value === 'object' && value !== null) {
-      const nested = extractArgsAndSlots(value)
-      Object.assign(args, nested.args)
-      Object.entries(nested.slots).forEach(([nestedKey, nestedContent]) => {
-        slots[nestedKey] = (slots[nestedKey] || '') + nestedContent
-      })
-    } else {
-      args[key] = value
-    }
-  }
-
-  return { args, slots }
-}
-
-export default (stories: Story[]) => {
-  const generatedStories: string[] = []
-
-  Object.entries(stories).forEach(([storyKey, story]) => {
-    const { args, slots } = extractArgsAndSlots(story)
-
-    Object.entries(slots).forEach(([slotName, content]) => {
-      args[slotName] = `${content}`
-    })
-
-    generatedStories.push(`
+export default (stories: Record<string, Story>): string => {
+  return Object.entries(stories)
+    .map(([storyKey, { props = {}, slots = {} }]) => `
       export const ${storyKey} = {
         args: {
-          ${Object.entries(args)
-            .map(([key, value]) =>
-              key === 'content'
-                ? `"${key}": \`${value}\``
-                : `"${key}": ${JSON.stringify(value)}`
-            )
-            .join(',\n')}
+          ${generateArgs(props)}
+          ${generateArgs(slots, true)}
         },
         play: async ({ canvasElement }) => {
           Drupal.attachBehaviors(canvasElement, window.drupalSettings);
         },
       };
     `)
-  })
+    .join('\n');
+};
 
-  return generatedStories.join('\n')
-}
+// Helper function to generate arguments (props or slots)
+const generateArgs = (
+  args: Record<string, any>,
+  isSlot = false
+): string => {
+  return Object.entries(args)
+    .map(([key, value]) => {
+      let argString = `${key}: `;
+
+      if (Array.isArray(value)) {
+        const arrayContent = value
+          .map((item) =>
+            item?.type === 'component'
+              ? generateComponent(item)
+              : JSON.stringify(item)
+          )
+          .join(isSlot ? ' + ' : ', ');
+        argString += `[${arrayContent}]`;
+      } else {
+        argString += JSON.stringify(value);
+      }
+
+      return `${argString},`; // Ensure commas are included
+    })
+    .join('\n');
+};
+
+// Helper function to handle component logic
+const generateComponent = (item: any): string => {
+  const componentName = item.component.split(':').pop();
+  const kebabCaseName = componentName.replace(/-/g, '');
+  const componentProps = {
+    ...item.props,
+    ...item.slots,
+  };
+  return `${kebabCaseName}.component(${JSON.stringify(componentProps)})`;
+};

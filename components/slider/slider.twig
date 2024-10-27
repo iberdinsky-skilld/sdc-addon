@@ -5,7 +5,7 @@
 %}
 
 <div
-  {{ attributes.addClass(classes).setAttribute('data-slider', true) }}
+  {{ attributes.addClass(classes).setAttribute('data-slider', true).setAttribute('data-items-per-view', itemsPerView|default(2)) }}
 >
   <div class="swiper o-slider__swiper">
     <div class="swiper-wrapper o-slider__wrapper">

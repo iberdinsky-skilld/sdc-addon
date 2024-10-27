@@ -6,64 +6,69 @@ import argsGenerator from './argsGenerator'
 import argTypesGenerator from './argTypesGenerator'
 import storiesGenerator from './storiesGenerator'
 
-// Helper function to read YAML files
-const readCDC = (id: string) => parse(readFileSync(id, 'utf8'))
-
-// Function to dynamically find all subdirectories
-const getSubdirectories = (baseDir: string): string[] => {
-  return readdirSync(baseDir, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => join(baseDir, dirent.name))
+interface ComponentContent {
+  thirdPartySettings?: {
+    sdcStorybook?: { stories?: Record<string, any> }
+  }
+  status?: string
+  name: string
+  group?: string
 }
 
-// Dynamically resolve component path based on namespace
-const resolveComponentPath = (namespace: string, component: string) => {
-  const baseComponentDir = resolve('./components')
-  const componentDirectories = [
-    baseComponentDir,
-    ...getSubdirectories(baseComponentDir),
-  ]
+// Helper function to read YAML files
+const readCDC = (id: string): ComponentContent =>
+  parse(readFileSync(id, 'utf8'))
 
-  const possiblePaths = componentDirectories.map((dir) =>
+// Get all subdirectories in the given directory
+const getSubdirectories = (baseDir: string): string[] =>
+  readdirSync(baseDir, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => join(baseDir, dirent.name))
+
+// Resolve component paths dynamically
+const resolveComponentPath = (
+  namespace: string,
+  component: string
+): string | undefined => {
+  const baseComponentDir = resolve('./components')
+  const directories = [baseComponentDir, ...getSubdirectories(baseComponentDir)]
+
+  const possiblePaths = directories.map((dir) =>
     join(dir, component, `${component}.component.yml`)
   )
 
-  return possiblePaths.find((path) => existsSync(path))
+  return possiblePaths.find(existsSync)
 }
 
-// Generate imports for JS and CSS files
-const generateImports = (directory: string) => {
-  const assets = readdirSync(directory)
-  return assets.reduce((imports, asset) => {
-    const assetPath = `./${asset}`
+// Generate imports for CSS, JS, and Twig files
+const generateImports = (directory: string): string =>
+  readdirSync(directory).reduce((imports, asset) => {
     const extension = extname(asset)
+    const assetPath = `./${asset}`
 
     if (['.css', '.js', '.mjs'].includes(extension)) {
-      return `${imports} import '${assetPath}';\n`
-    }
-    if (extension === '.twig') {
-      return `${imports} import COMPONENT from '${assetPath}';\n`
+      return `${imports}import '${assetPath}';\n`
+    } else if (extension === '.twig') {
+      return `${imports}import COMPONENT from '${assetPath}';\n`
     }
     return imports
   }, '')
-}
 
-// Dynamically import components based on component paths
-const dynamicImports = (stories: Record<string, any>) => {
-  const imports: Set<string> = new Set()
+// Generate dynamic imports for components
+const dynamicImports = (stories: Record<string, any>): string => {
+  const imports = new Set<string>()
 
-  const findComponentArgs = (args: any) => {
+  const findComponentArgs = (args: Record<string, any>) => {
     for (const key in args) {
       const value = args[key]
-
       if (Array.isArray(value)) {
-        value.forEach((item: any) => {
+        value.forEach((item) => {
           if (item.type === 'component') {
             const [namespace, componentName] = item.component.split(':')
             const resolvedPath = resolveComponentPath(namespace, componentName)
 
             if (resolvedPath) {
-              const kebabCaseName = componentName.replace(/[-]/g, '')
+              const kebabCaseName = componentName.replace(/-/g, '')
               imports.add(`import ${kebabCaseName} from '${resolvedPath}';`)
             }
           }
@@ -74,46 +79,46 @@ const dynamicImports = (stories: Record<string, any>) => {
     }
   }
 
-  Object.entries(stories).forEach(([_, story]) => {
-    findComponentArgs(story.slots || {})
+  Object.values(stories).forEach(({ slots = {}, props = {} }) => {
+    findComponentArgs({ ...slots, ...props })
   })
 
   return Array.from(imports).join('\n')
 }
 
-export default async ({ jsonSchemaFakerOptions = {} }) => {
-  return {
-    name: 'vite-plugin-storybook-yaml-stories',
-    async load(id: string) {
-      if (!id.endsWith('component.yml')) return
+// Vite plugin to handle Storybook YAML stories
+export default ({ jsonSchemaFakerOptions = {} }) => ({
+  name: 'vite-plugin-storybook-yaml-stories',
+  async load(id: string) {
+    if (!id.endsWith('component.yml')) return
 
-      const content = readCDC(id)
-      const imports = generateImports(dirname(id))
-      const storiesImports = dynamicImports(
-        content.thirdPartySettings?.sdcStorybook?.stories || {}
-      )
+    const content = readCDC(id)
+    const imports = generateImports(dirname(id))
+    const storiesImports = dynamicImports(
+      content.thirdPartySettings?.sdcStorybook?.stories || {}
+    )
 
-      const argTypes: ArgTypes = {
-        componentMetadata: { table: { disable: true } },
-        ...argTypesGenerator(content),
-      }
+    const argTypes: ArgTypes = {
+      componentMetadata: { table: { disable: true } },
+      ...argTypesGenerator(content),
+    }
 
-      const args: Args = {
-        componentMetadata: {
-          path: relative(process.cwd(), dirname(id)),
-          machineName: id,
-          status: content.status || 'stable',
-          name: content.name,
-          group: content.group || 'All Components',
-        },
-        ...argsGenerator(content, jsonSchemaFakerOptions),
-      }
+    const args: Args = {
+      componentMetadata: {
+        path: relative(process.cwd(), dirname(id)),
+        machineName: id,
+        status: content.status || 'stable',
+        name: content.name,
+        group: content.group || 'All Components',
+      },
+      ...argsGenerator(content, jsonSchemaFakerOptions),
+    }
 
-      const stories = content.thirdPartySettings?.sdcStorybook?.stories
-        ? storiesGenerator(content.thirdPartySettings.sdcStorybook.stories)
-        : ''
+    const stories = content.thirdPartySettings?.sdcStorybook?.stories
+      ? storiesGenerator(content.thirdPartySettings.sdcStorybook.stories)
+      : ''
 
-      return `
+    return `
 ${imports}
 ${storiesImports}
 
@@ -130,11 +135,11 @@ export const Basic = {
 };
 
 ${stories}
-`
-    },
-  }
-}
+    `
+  },
+})
 
+// Storybook indexer for YAML stories
 export const yamlStoriesIndexer: Indexer = {
   test: /component\.yml$/,
   createIndex: async (fileName, { makeTitle }) => {
@@ -152,7 +157,7 @@ export const yamlStoriesIndexer: Indexer = {
 
     const stories = content.thirdPartySettings?.sdcStorybook?.stories
     if (stories) {
-      Object.entries(stories).forEach(([storyKey, _]) => {
+      Object.keys(stories).forEach((storyKey) => {
         storiesIndex.push({
           type: 'story',
           importPath: fileName,
