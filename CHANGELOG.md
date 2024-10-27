@@ -1,3 +1,15 @@
+# v0.1.5 (Sun Oct 27 2024)
+
+#### ⚠️ Pushed to `main`
+
+- slider + items ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.4 (Fri Oct 25 2024)
 
 #### ⚠️ Pushed to `main`
