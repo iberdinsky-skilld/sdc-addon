@@ -1,5 +1,6 @@
 import { JSONSchemaFaker } from 'json-schema-faker'
 import { Args } from '@storybook/types'
+import { MetadataSchema } from './sdc'
 
 const generateArgs = (schema: Record<string, any>): Args => {
   const generated = JSON.parse(JSON.stringify(JSONSchemaFaker.generate(schema)))
@@ -13,7 +14,7 @@ const slotsToMarkup = (slots: Record<string, any>) =>
   }, {})
 
 export default (
-  content: { props?: { properties?: {} }; slots?: {} },
+  content: MetadataSchema,
   jsonSchemaFakerOptions: Record<string, any>
 ): Args => {
   JSONSchemaFaker.option({

@@ -1,8 +1,9 @@
 import { parse } from 'yaml'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { ComponentContent } from './vite-plugin-storybook-yaml-stories'
+import { MetadataSchema } from './sdc'
 
+// TODO: Research https://github.com/APIDevTools/json-schema-ref-parser
 interface CustomRefSchema {
   [key: string]: any
 }
@@ -48,6 +49,6 @@ function processObject(obj: any): any {
   return obj
 }
 
-export default (schema: ComponentContent): ComponentContent => {
+export default (schema: MetadataSchema): MetadataSchema => {
   return processObject(schema)
 }

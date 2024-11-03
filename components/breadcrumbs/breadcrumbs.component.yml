@@ -1,0 +1,16 @@
+name: Breadcrumbs
+description: "Breadcrumbs helps users to navigate through the website."
+group: Navigation
+links:
+  - "https://daisyui.com/components/breadcrumbs/"
+props:
+  type: object
+  properties:
+    items:
+      title: Items
+      description: "Each item can contain: title, url."
+      $ref: "ui-patterns://links"
+    max_width:
+      title: Max-width
+      description: "Do you want to set max-width so that the list gets larger than the container and will scroll?"
+      type: boolean

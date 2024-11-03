@@ -6,18 +6,10 @@ import argsGenerator from './argsGenerator'
 import argTypesGenerator from './argTypesGenerator'
 import storiesGenerator from './storiesGenerator'
 import customRefsTransform from './customRefsTransform'
-
-export interface ComponentContent {
-  thirdPartySettings?: {
-    sdcStorybook?: { stories?: Record<string, any> }
-  }
-  status?: string
-  name: string
-  group?: string
-}
+import { MetadataSchema } from './sdc'
 
 // Helper function to read YAML files
-const readCDC = (id: string): ComponentContent =>
+const readCDC = (id: string): MetadataSchema =>
   customRefsTransform(parse(readFileSync(id, 'utf8')))
 
 // Get all subdirectories in the given directory
