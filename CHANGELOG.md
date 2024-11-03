@@ -1,3 +1,15 @@
+# v0.1.9 (Sun Nov 03 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Fixed schema import (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.1.8 (Sun Nov 03 2024)
 
 #### ⚠️ Pushed to `main`
