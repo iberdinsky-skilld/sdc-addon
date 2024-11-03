@@ -1,3 +1,15 @@
+# v0.1.10 (Sun Nov 03 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Dixed schema + breadcrumbs for UI patterns ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.9 (Sun Nov 03 2024)
 
 #### ⚠️ Pushed to `main`
