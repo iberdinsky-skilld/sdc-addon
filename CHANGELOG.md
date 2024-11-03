@@ -1,3 +1,15 @@
+# v0.1.11 (Sun Nov 03 2024)
+
+#### ⚠️ Pushed to `main`
+
+- UI Pattrens better support (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.1.10 (Sun Nov 03 2024)
 
 #### ⚠️ Pushed to `main`
