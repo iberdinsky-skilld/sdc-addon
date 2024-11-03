@@ -34,6 +34,18 @@
 
 ---
 
+# v0.1.6 (Sun Nov 03 2024)
+
+#### ⚠️ Pushed to `main`
+
+- UI Patterns $ref failures fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.5 (Sun Oct 27 2024)
 
 #### ⚠️ Pushed to `main`
