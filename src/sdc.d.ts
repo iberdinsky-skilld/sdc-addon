@@ -1,57 +1,62 @@
+import { JSONSchema4 } from 'json-schema'
 export interface MetadataSchema {
-  $schema?: string;
-  name: string;
-  description?: string;
-  status?: "experimental" | "stable" | "deprecated" | "obsolete";
-  props?: any; // This can be further refined based on usage details
-  slots?: SlotDefinition;
-  libraryOverrides?: LibraryDefinition;
-  thirdPartySettings?: ThirdPartySettings;
+  $schema?: string
+  name: string
+  description?: string
+  status?: 'experimental' | 'stable' | 'deprecated' | 'obsolete'
+  props?: JSONSchema4
+  slots?: SlotDefinition
+  libraryOverrides?: LibraryDefinition
+  thirdPartySettings?: ThirdPartySettings
 }
 
 interface SlotDefinition {
   [key: string]: {
-    title?: string;
-    description?: string;
-    examples?: string[];
-  };
+    title?: string
+    description?: string
+    examples?: string[]
+  }
 }
 
 interface CssAttributes {
-  [key: string]: {
-    attributes?: Record<string, any>;
-    group?: string;
-    media?: string;
-    minified?: boolean;
-    preprocess?: boolean;
-    type?: string;
-    weight?: number;
-  } | CssAttributes[];
+  [key: string]:
+    | {
+        attributes?: Record<string, any>
+        group?: string
+        media?: string
+        minified?: boolean
+        preprocess?: boolean
+        type?: string
+        weight?: number
+      }
+    | CssAttributes[]
 }
 
 interface CssDefinition {
-  base?: CssAttributes;
-  layout?: CssAttributes;
-  component?: CssAttributes;
-  state?: CssAttributes;
-  theme?: CssAttributes;
+  base?: CssAttributes
+  layout?: CssAttributes
+  component?: CssAttributes
+  state?: CssAttributes
+  theme?: CssAttributes
 }
 
 interface JsAttributes {
-  [key: string]: {
-    attributes?: Record<string, any>;
-    preprocess?: boolean;
-    type?: string;
-    weight?: number;
-  } | JsAttributes[];
+  [key: string]:
+    | {
+        attributes?: Record<string, any>
+        preprocess?: boolean
+        type?: string
+        weight?: number
+      }
+    | JsAttributes[]
 }
 
 interface LibraryDefinition {
-  dependencies?: string[];
-  css?: CssDefinition | CssAttributes[];
-  js?: JsAttributes;
+  dependencies?: string[]
+  css?: CssDefinition | CssAttributes[]
+  js?: JsAttributes
 }
 
 interface ThirdPartySettings {
-  [key: string]: Record<string, any>;
+  [key: string]: Record<string, any>
 }
