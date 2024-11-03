@@ -5,8 +5,9 @@ import { Args, ArgTypes, Indexer, IndexInput } from '@storybook/types'
 import argsGenerator from './argsGenerator'
 import argTypesGenerator from './argTypesGenerator'
 import storiesGenerator from './storiesGenerator'
+import customRefsTransform from './customRefsTransform'
 
-interface ComponentContent {
+export interface ComponentContent {
   thirdPartySettings?: {
     sdcStorybook?: { stories?: Record<string, any> }
   }
@@ -17,7 +18,7 @@ interface ComponentContent {
 
 // Helper function to read YAML files
 const readCDC = (id: string): ComponentContent =>
-  parse(readFileSync(id, 'utf8'))
+  customRefsTransform(parse(readFileSync(id, 'utf8')))
 
 // Get all subdirectories in the given directory
 const getSubdirectories = (baseDir: string): string[] =>

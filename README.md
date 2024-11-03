@@ -185,7 +185,7 @@ The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1
 
 ## Known issues:
 
-- UI Patterns stories format not yet [supported](https://www.drupal.org/project/ui_patterns/issues/3480464).
+- UI Patterns stories format not fully yet [supported](https://www.drupal.org/project/ui_patterns/issues/3480464).
 - Same problem will be with `$ref: json-schema-definitions://` for SDC from Experience Builder.
 - Plugin uses [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers)
 
