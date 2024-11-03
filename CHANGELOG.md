@@ -1,3 +1,15 @@
+# v0.1.8 (Sun Nov 03 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Fixed deps ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.6 (Sun Nov 03 2024)
 
 #### ⚠️ Pushed to `main`
