@@ -1,3 +1,15 @@
+# v0.1.12 (Wed Nov 06 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Update readme and packages ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.11 (Sun Nov 03 2024)
 
 #### ⚠️ Pushed to `main`
