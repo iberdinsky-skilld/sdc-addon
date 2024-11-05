@@ -1,3 +1,5 @@
+@import url("https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css");
+
 .o-slider {
   max-width: 100%;
   position: relative;
