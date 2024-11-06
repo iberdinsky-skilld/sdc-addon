@@ -1,23 +1,23 @@
 {% if items %}
-{% set attributes = attributes.addClass('text-sm', 'breadcrumbs', 'not-prose') %}
+  {% set attributes = attributes.addClass('breadcrumbs') %}
 
-{% if max_width %}
+  {% if max_width %}
     {% set attributes = attributes.addClass('max-w-xs') %}
-{% endif %}
+  {% endif %}
 
-    <div{{ attributes }}>
-    <ul>
-    {% for item in items %}
+  <div{{attributes}}>
+    <ul class="breadcrumbs__list">
+      {% for item in items %}
         {% if item.url %}
-            <li>
-                <a href="{{ item.url }}">{{ item.title }}</a>
-            </li>
+          <li>
+            <a href="{{ item.url }}">{{ item.title }}</a>
+          </li>
         {% else %}
-            <li>
-                {{ item.title }}
-            </li>
+          <li>
+            {{ item.title }}
+          </li>
         {% endif %}
-    {% endfor %}
+      {% endfor %}
     </ul>
-    </div>
+  </div>
 {% endif %}

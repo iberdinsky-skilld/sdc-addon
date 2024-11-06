@@ -1,28 +1,48 @@
-/**
- * @file
- * This file is used to style the branding block.
- */
+.branding__site-logo {
+  grid-row: span 3;
+  line-height: 1;
+}
 
-@media screen and (min-width: 48em) {
-  .branding {
-    text-align: left;
+.branding__site-name {
+  display: none;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.5rem;
+}
+
+@media screen and (min-width: 64rem) {
+  .branding__site-name {
+    display: block;
   }
 }
 
-.branding__site-logo {
-  display: inline-block;
-  width: 100%;
-  max-width: 205px;
-  background-color: inherit;
+.branding__site-name a {
+  color: black;
+  text-decoration: none;
 }
 
-.branding__site-logo:hover,
-.branding__site-logo:focus {
-  background-color: inherit;
+.branding__site-slogan {
+  display: none;
+  text-transform: lowercase;
+  font-size: 0.75rem;
+  font-family: monospace;
 }
 
-.branding__site-logo svg {
-  width: 100%;
-  max-width: 205px;
-  height: auto;
+@media screen and (min-width: 64rem) {
+  .branding__site-slogan {
+    display: block;
+  }
+}
+
+.branding__wrapper {
+  display: grid;
+  grid-template-columns: 3rem 0;
+  gap: 0.25rem 1rem;
+  align-items: start;
+}
+
+@media screen and (min-width: 64rem) {
+  .branding__wrapper {
+    grid-template-columns: 4rem 1fr;
+  }
 }

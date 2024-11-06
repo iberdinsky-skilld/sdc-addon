@@ -1,0 +1,14 @@
+.menu__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+
+@media screen and (min-width: 64rem) {
+  .menu__list {
+    display: flex;
+    gap: 2rem;
+  }
+}

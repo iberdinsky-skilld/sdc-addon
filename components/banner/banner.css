@@ -16,7 +16,7 @@
   margin-block: 0;
 }
 
-@media screen and (min-width: 48rem) {
+@media screen and (min-width: 64rem) {
   .banner {
     position: relative;
     background-color: #464646;
@@ -52,16 +52,11 @@
   }
 }
 
-@media screen and (min-width: 60rem) {
+@media screen and (min-width: 64rem) {
   .banner__content {
     max-width: 41%;
   }
   .banner__inner {
     min-height: 43vw;
-  }
-}
-@media screen and (min-width: 80rem) {
-  .banner__inner {
-    padding: 0;
   }
 }

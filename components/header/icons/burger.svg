@@ -1,1 +1,5 @@
-<svg width="23" height="23" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#a" fill="#5F635D"/><use xlink:href="#a" transform="translate(0 18)" fill="#5F635D"/><use xlink:href="#a" transform="translate(0 9)" fill="#5F635D"/><defs><path id="a" fill-rule="evenodd" d="M0 0h23v5H0V0z"/></defs></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256">
+  <path
+    d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z">
+  </path>
+</svg>

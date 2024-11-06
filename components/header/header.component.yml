@@ -26,7 +26,7 @@ slots:
   logo:
     title: Logo
     examples:
-      - <img src="https://placehold.co/80x40"/>
+      - <img src="https://placehold.co/64x64"/>
   dropdown:
     title: Dropdown
     examples:
@@ -42,3 +42,29 @@ libraryOverrides:
   dependencies:
     - core/drupal
     - core/once
+
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      preview:
+        slots:
+          dropdown:
+            - type: component
+              component: "umami:menu"
+              props:
+                items:
+                  - title: Home
+                    url: https://example.com
+                  - title: Articles
+                    url: https://example.com
+                  - title: Recipes
+                    url: https://example.com
+          logo:
+            - type: component
+              component: "umami:branding"
+              props:
+                site_logo: https://placehold.co/64x64
+                url: https://example.com
+              slots:
+                site_name: Storybook SDC
+                site_slogan: '*.component.yml to stories'

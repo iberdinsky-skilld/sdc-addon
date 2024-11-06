@@ -1,0 +1,16 @@
+{% import _self as menus %}
+
+{% macro menu_links(items, attributes) %}
+  {% import _self as menus %}
+  {% if items %}
+    <ul{{ attributes.addClass('menu__list') }}>
+      {% for item in items %}
+        <li{{ item.attributes }}>
+          {{ link(item.title, item.url, { class: ['menu__link']}) }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+{{ menus.menu_links(items, attributes) }}

@@ -22,20 +22,20 @@ props:
       type: string
       format: iri-reference
       examples:
-        - https://placehold.co/50x50
+        - https://placehold.co/64x64
     url:
       type: string
       title: Branding url
       format: iri-reference
       examples:
-        - https://placehold.co/50x50
+        - https://example.com
 
 slots:
   site_name:
     type: string
     examples:
-      - Site name
+      - SDC Storybook
   site_slogan:
     type: string
     examples:
-      - Site slogan
+      - '*.component.yml to stories'

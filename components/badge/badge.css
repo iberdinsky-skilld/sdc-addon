@@ -4,7 +4,7 @@
   gap: 0.5rem;
 }
 
-@media screen and (min-width: 60rem) {
+@media screen and (min-width: 64rem) {
   .umami-badge__container {
     flex-direction: column;
     gap: 0;
@@ -21,7 +21,7 @@
   height: 40px;
 }
 
-@media screen and (min-width: 60rem) {
+@media screen and (min-width: 64rem) {
   .umami-badge__icon {
     align-items: start;
     width: 64px;

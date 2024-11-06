@@ -190,6 +190,10 @@ thirdPartySettings:
 
 Alternatively, you can import the YAML file in a `.stories.js` file within Storybook.
 
+### Why stories experimental?
+
+The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1lrV2gYlqmqD2pybTql6_H1dByWIKB5xQFcQ/edit?tab=t.0#heading=h.3949vjfiqczr) what format the YAML stories should be.
+
 ## Known Issues
 - `$ref: json-schema-definitions://` for SDC from Experience Builder is unsupported.
 - The addon relies on [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers).
