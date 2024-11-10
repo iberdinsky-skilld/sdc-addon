@@ -1,3 +1,15 @@
+# v0.1.16 (Sun Nov 10 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Fixed patterns ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.15 (Sun Nov 10 2024)
 
 #### ⚠️ Pushed to `main`
