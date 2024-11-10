@@ -1,3 +1,15 @@
+# v0.1.21 (Sun Nov 10 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Serve components as static dir for build task ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.19 (Sun Nov 10 2024)
 
 #### ⚠️ Pushed to `main`
