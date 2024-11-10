@@ -3,7 +3,7 @@
   flex-direction: column;
   flex-wrap: wrap;
   gap: 2rem;
-  list-style-type: disclosure-closed;
+  list-style-type: disc;
   padding: 0;
   margin: 0;
 }
@@ -12,4 +12,8 @@
   .breadcrumbs__list {
     flex-direction: row;
   }
+}
+
+:where(.breadcrumbs__list a) {
+  color: inherit;
 }

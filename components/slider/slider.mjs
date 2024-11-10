@@ -14,9 +14,6 @@ import { Navigation } from 'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/i
             },
             slidesPerView: 2,
             spaceBetween: 20,
-            scrollbar: {
-              el: slider.querySelector('.swiper-scrollbar'),
-            },
           }
 
           const swiper = new Swiper(slider.querySelector('.swiper'), options)

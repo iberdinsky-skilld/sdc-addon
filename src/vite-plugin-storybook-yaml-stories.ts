@@ -6,6 +6,7 @@ import argsGenerator from './argsGenerator'
 import argTypesGenerator from './argTypesGenerator'
 import storiesGenerator from './storiesGenerator'
 import customRefsTransform from './customRefsTransform'
+import componentMetadata from './componentMetadata'
 import { MetadataSchema } from './sdc'
 
 // Helper function to read YAML files
@@ -96,14 +97,10 @@ export default ({ jsonSchemaFakerOptions = {} }) => ({
       ...argTypesGenerator(content),
     }
 
+    const metadata = componentMetadata(id, content);
+
     const args: Args = {
-      componentMetadata: {
-        path: relative(process.cwd(), dirname(id)),
-        machineName: id,
-        status: content.status || 'stable',
-        name: content.name,
-        group: content.group || 'All Components',
-      },
+      componentMetadata: metadata,
       ...argsGenerator(content, jsonSchemaFakerOptions),
     }
 

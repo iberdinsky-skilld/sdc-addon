@@ -35,7 +35,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "json-schema-faker": "^0.5.7",
+    "json-schema-faker": "^0.5.8",
     "vite-plugin-twig-drupal": "^1.4.2"
   },
   "devDependencies": {

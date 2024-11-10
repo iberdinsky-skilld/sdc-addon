@@ -1,3 +1,7 @@
+.a-accordion {
+  border: 1px solid #5f635d;
+}
+
 .a-accordion__content {
   padding: 0.75rem 1rem;
 }
@@ -19,7 +23,7 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  background-color: #000;
+  background-color: #5f635d;
   inline-size: 1.25rem;
   block-size: 1.25rem;
   mask-repeat: no-repeat;

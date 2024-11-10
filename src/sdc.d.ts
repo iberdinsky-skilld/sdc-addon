@@ -1,6 +1,8 @@
 import { JSONSchema4 } from 'json-schema'
 export interface MetadataSchema {
+  group: string
   $schema?: string
+  $defs: JSONSchema4,
   name: string
   description?: string
   status?: 'experimental' | 'stable' | 'deprecated' | 'obsolete'

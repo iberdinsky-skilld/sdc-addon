@@ -1,4 +1,5 @@
 import accordion from '../components/accordion/accordion.component.yml'
+import breadcrumbs from '../components/breadcrumbs/breadcrumbs.component.yml'
 import header, {
   preview as HeaderPreview,
 } from '../components/header/header.component.yml'
@@ -12,11 +13,30 @@ import card, {
 } from '../components/card/card.component.yml'
 
 export default {
-  title: 'Regular Storybook Page',
+  title: 'Page with imported SDC',
   render: () => {
     return `
       ${header.component({ ...HeaderPreview.args })}
       ${banner.component({ ...BannerPreview.args })}
+      ${paragraph.component({
+        content: () => `
+          ${breadcrumbs.component({
+            items: [
+              {
+                title: 'Home',
+                url: '#',
+              },
+              {
+                title: 'Sweet',
+                url: '#',
+              },
+              {
+                title: 'Home',
+              },
+            ],
+          })}
+        `,
+      })}
       ${paragraph.component({ ...paragraph.args })}
       ${paragraph.component({
         label: 'Paragraph with Slider',
