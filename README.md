@@ -1,6 +1,6 @@
 # Storybook SDC Addon Documentation
 
-This addon streamlines the integration of Drupal Single Directory Components (SDC) into Storybook, allowing YAML-configured components (e.g., `*.component.yml`) to be loaded dynamically as stories in Storybook.
+This addon streamlines the integration of Drupal Single Directory Components (SDC) into Storybook, allowing YAML-configured components (e.g., `*.component.yml`) to be dynamically loaded as stories in Storybook.
 
 [![Demo GIF](https://i.gyazo.com/2dcfa650c961679430d45eef24a82ab8.gif)](https://gyazo.com/2dcfa650c961679430d45eef24a82ab8)
 
@@ -14,6 +14,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Setting Default Values](#setting-default-values)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Regular Storybook](#regular-storybook)
+- [Storybook Example Live](#storybook-example-live)
 - [Known Issues](#known-issues)
 - [UI Patterns](#ui-patterns)
 
@@ -223,13 +224,15 @@ export default {
 export const Basic = {}
 ```
 
+## Storybook Example Live
+You can view a [live example of the SDC Addon in Storybook](https://iberdinsky-skilld.github.io/sdc-addon), hosted on GitHub Pages, showcasing components in the `/components` directory of that repository.
+
 
 ## Known Issues
 - `$ref: json-schema-definitions://` for SDC from Experience Builder is unsupported.
 - The addon relies on [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers).
 
 ## UI Patterns
-- Partial support for UI Patterns SDC format ([Issue 3480464](https://www.drupal.org/project/ui_patterns/issues/3480464)).
 - Variants are not yet supported ([Issue 3390712](https://www.drupal.org/project/drupal/issues/3390712)).
 - Custom Twig filters and functions are not supported ([UI Patterns TwigExtension](https://git.drupalcode.org/project/ui_patterns/-/blob/8.x-1.x/src/Template/TwigExtension.php)).
 
