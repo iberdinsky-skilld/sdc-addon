@@ -1,3 +1,17 @@
+# v0.1.19 (Sun Nov 10 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Added example (iberdinsky@skilld.cloud)
+- Create static-storybook.yml ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.1.18 (Sun Nov 10 2024)
 
 #### ⚠️ Pushed to `main`
