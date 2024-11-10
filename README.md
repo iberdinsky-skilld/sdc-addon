@@ -195,7 +195,7 @@ The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1
 
 
 ## Regular storybook
-All storybook functions works as usual and you can import SDC YAML into `.stories.js`
+All storybook functions work as usual and you can import SDC YAML into `.stories.js`
 
 [example](https://github.com/iberdinsky-skilld/sdc-addon/blob/main/stories/page-example.stories.js)
 

@@ -7,10 +7,10 @@ import argTypesGenerator from './argTypesGenerator'
 import storiesGenerator from './storiesGenerator'
 import customRefsTransform from './customRefsTransform'
 import componentMetadata from './componentMetadata'
-import { MetadataSchema } from './sdc'
+import { SDCSchema } from './sdc'
 
 // Helper function to read YAML files
-const readCDC = (id: string): MetadataSchema =>
+const readCDC = (id: string): SDCSchema =>
   customRefsTransform(parse(readFileSync(id, 'utf8')))
 
 // Get all subdirectories in the given directory
@@ -119,6 +119,9 @@ export default {
 };
 
 export const Basic = {
+  args: {
+    componentMetadata: ${JSON.stringify(metadata, null, 2)},
+  },
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },

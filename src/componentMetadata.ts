@@ -1,7 +1,15 @@
 import { dirname, relative } from "path"
-import { MetadataSchema } from "./sdc"
+import { SDCSchema } from "./sdc"
 
-export default (id: string, content: MetadataSchema) => {
+export interface ComponentMetadata {
+  path: string
+  machineName: string
+  status: string
+  name: string
+  group: string
+}
+
+export default (id: string, content: SDCSchema): ComponentMetadata => {
   return {
     path: relative(process.cwd(), dirname(id)),
     machineName: id,

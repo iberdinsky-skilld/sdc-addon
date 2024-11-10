@@ -8,6 +8,7 @@ export default (stories: Record<string, Story>): string => {
     .map(([storyKey, { props = {}, slots = {} }]) => `
       export const ${storyKey} = {
         args: {
+          ...Basic.args,
           ${generateArgs(props)}
           ${generateArgs(slots, true)}
         },

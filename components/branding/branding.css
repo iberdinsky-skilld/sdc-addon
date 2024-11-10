@@ -5,7 +5,7 @@
 
 .branding__site-name {
   display: none;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5rem;
 }
@@ -17,7 +17,7 @@
 }
 
 .branding__site-name a {
-  color: #5f635d;
+  color: #63307A;
   text-decoration: none;
 }
 

@@ -1,5 +1,5 @@
 import { ArgTypes, InputType } from '@storybook/types'
-import { MetadataSchema } from './sdc'
+import { SDCSchema } from './sdc'
 
 const schemaToArgtypes = (prop: Record<string, any>): InputType => ({
   ...prop,
@@ -9,7 +9,7 @@ const schemaToArgtypes = (prop: Record<string, any>): InputType => ({
   }),
 })
 
-export default (content: MetadataSchema): ArgTypes => {
+export default (content: SDCSchema): ArgTypes => {
   const generated = content?.props?.properties
     ? Object.entries(content.props.properties).reduce((acc, [key, value]) => {
         acc[key] = schemaToArgtypes(value)

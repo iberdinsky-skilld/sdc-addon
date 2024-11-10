@@ -1,7 +1,7 @@
 import { parse } from 'yaml'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { MetadataSchema } from './sdc'
+import { SDCSchema } from './sdc'
 
 // TODO: Research https://github.com/APIDevTools/json-schema-ref-parser
 interface CustomDefSchema {
@@ -13,6 +13,6 @@ const customDefs: CustomDefSchema = parse(
 )
 
 
-export default (schema: MetadataSchema): MetadataSchema => {
+export default (schema: SDCSchema): SDCSchema => {
   return { $defs: customDefs, ...schema }
 }

@@ -25,7 +25,7 @@ const getComponentDirectories = (): string[] => {
 }
 
 // Function to resolve component paths dynamically
-const resolveComponentPath = (namespace: string, component: string) => {
+export const resolveComponentPath = (namespace: string, component: string) => {
   const componentDirectories = getComponentDirectories() // Get dynamic directories
   const possiblePaths = componentDirectories.map((dir) =>
     resolve(`${dir}/${component}/${component}.component.yml`)
