@@ -104,6 +104,11 @@ export default ({ jsonSchemaFakerOptions = {} }) => ({
       ...argsGenerator(content, jsonSchemaFakerOptions),
     }
 
+    const basicArgs: Args = {
+      componentMetadata: metadata,
+      ...argsGenerator(content, jsonSchemaFakerOptions),
+    }
+
     const stories = content.thirdPartySettings?.sdcStorybook?.stories
       ? storiesGenerator(content.thirdPartySettings.sdcStorybook.stories)
       : ''
@@ -119,9 +124,7 @@ export default {
 };
 
 export const Basic = {
-  args: {
-    componentMetadata: ${JSON.stringify(metadata, null, 2)},
-  },
+  args: ${JSON.stringify(basicArgs, null, 2)},
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
