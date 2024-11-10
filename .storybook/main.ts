@@ -1,22 +1,28 @@
-import type { StorybookConfig } from "@storybook/html-vite";
+import { join } from 'node:path'
+import type { StorybookConfig } from '@storybook/html-vite'
 const config: StorybookConfig = {
-  stories: ["../components/**/*.component.yml"],
+  stories: ['../components/**/*.component.yml', '../stories/*.stories.js'],
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-interactions",
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
     {
-      name: "../src",
+      name: '../src',
       options: {
         sdcStorybookOptions: {
-          baseNamespace: "umami"
-        }
-      }
+          baseNamespace: 'umami',
+        },
+        vitePluginTwigDrupalOptions: {
+          namespaces: {
+            umami: join(__dirname, '../components'),
+          },
+        },
+      },
     },
   ],
   framework: {
-    name: "@storybook/html-vite",
+    name: '@storybook/html-vite',
     options: {},
   },
-};
-export default config;
+}
+export default config

@@ -1,0 +1,51 @@
+# This is so your IDE knows about the syntax for fixes and autocomplete.
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+
+# The human readable name.
+name: Paragraph
+
+# Status can be: "experimental", "stable", "deprecated", "obsolete".
+status: stable
+
+# Schema for the props. We support www.json-schema.org. Learn more about the
+# syntax there.
+props:
+  type: object
+  properties:
+    extra_classes:
+      type: array
+      items:
+        type: string
+    label:
+      type: string
+      title: Title
+      examples:
+        - Paragraph title
+slots:
+  content:
+    title: Content
+    examples:
+      - Paragraph content
+
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      grid:
+        props:
+          label: Paragraph with grid
+          extra_classes:
+            - m-paragraph--grid
+        slots:
+          content:
+            - type: component
+              component: 'umami:card'
+              slots:
+                content: 'Hello from grid card!'
+            - type: component
+              component: 'umami:card'
+              slots:
+                content: 'Hello from second grid card!'
+            - type: component
+              component: 'umami:card'
+              slots:
+                content: 'Hello from third grid card!'

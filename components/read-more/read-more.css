@@ -12,13 +12,14 @@
   text-decoration: none;
   text-transform: uppercase;
   border-bottom: 1px solid transparent;
-  color: black;
-  fill: black;
+  color: inherit;
+  fill: currentColor;
+  font-weight: 700;
 }
 .read-more:focus,
 .read-more:hover {
   text-decoration: none;
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid currentColor;
 }
 .read-more__icon {
   width: 1.25rem;

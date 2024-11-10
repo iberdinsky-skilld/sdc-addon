@@ -43,6 +43,7 @@ thirdPartySettings:
           html_tag: "div"
         slots:
           content:
+            - '<img class="umami-card__image" src="https://placehold.co/800x400"/>'
             - type: component
               component: "umami:title"
               props:

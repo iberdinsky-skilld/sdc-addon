@@ -36,7 +36,7 @@ thirdPartySettings:
     stories:
       preview:
         slots:
-          image: <img src="https://placehold.co/800x400"/>
+          image: <img src="https://placehold.co/1200x400"/>
           content:
             - type: component
               component: "umami:title"

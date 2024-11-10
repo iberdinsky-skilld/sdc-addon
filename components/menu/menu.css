@@ -4,6 +4,8 @@
   list-style: none;
   display: grid;
   gap: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 @media screen and (min-width: 64rem) {

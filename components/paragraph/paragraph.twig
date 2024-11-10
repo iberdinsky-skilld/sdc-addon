@@ -1,0 +1,23 @@
+{%
+  set classes = [
+    'm-paragraph',
+    modifier,
+    extra_classes,
+
+  ]
+%}
+
+<div{{attributes.addClass(classes)}}>
+  {% include 'umami:title' with {
+    action: 'Extend'|t,
+    attributes: create_attribute(),
+    label: label,
+    extra_classes: [
+      'm-paragraph__title',
+    ],
+  } only %}
+
+  <div class="m-paragraph__content">
+    {{ content }}
+  </div>
+</div>

@@ -17,6 +17,8 @@ props:
       title: Title
       examples:
         - Accordion title
+    name:
+      type: string
 slots:
   content:
     title: Content
