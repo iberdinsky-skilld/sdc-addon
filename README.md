@@ -13,6 +13,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Configuration](#configuration)
 - [Setting Default Values](#setting-default-values)
 - [Creating Experimental Stories](#creating-experimental-stories)
+- [Regular Storybook](#regular-storybook)
 - [Known Issues](#known-issues)
 - [UI Patterns](#ui-patterns)
 
@@ -188,11 +189,40 @@ thirdPartySettings:
                 label: test2
 ```
 
-Alternatively, you can import the YAML file in a `.stories.js` file within Storybook.
-
 ### Why stories experimental?
 
 The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1lrV2gYlqmqD2pybTql6_H1dByWIKB5xQFcQ/edit?tab=t.0#heading=h.3949vjfiqczr) what format the YAML stories should be.
+
+
+## Regular storybook
+All storybook functions works as usual and you can import SDC YAML into `.stories.js`
+
+[example](https://github.com/iberdinsky-skilld/sdc-addon/blob/main/stories/page-example.stories.js)
+
+```js
+import header, {
+  preview as HeaderPreview,
+} from '../components/header/header.component.yml'
+import banner, {
+  preview as BannerPreview,
+} from '../components/banner/banner.component.yml'
+
+export default {
+  title: 'Regular Storybook Page',
+  render: () => {
+    return `
+      ${header.component({ ...HeaderPreview.args })}
+      ${banner.component({ ...BannerPreview.args })}
+    `
+  },
+  play: async ({ canvasElement }) => {
+    Drupal.attachBehaviors(canvasElement, window.drupalSettings)
+  },
+}
+
+export const Basic = {}
+```
+
 
 ## Known Issues
 - `$ref: json-schema-definitions://` for SDC from Experience Builder is unsupported.
