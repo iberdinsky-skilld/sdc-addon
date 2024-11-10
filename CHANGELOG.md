@@ -1,3 +1,15 @@
+# v0.1.17 (Sun Nov 10 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Fixed child stories componentMetadata ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.16 (Sun Nov 10 2024)
 
 #### ⚠️ Pushed to `main`
