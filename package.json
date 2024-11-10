@@ -1,6 +1,6 @@
 {
   "name": "storybook-addon-sdc",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Drupal Single Directory Components as stories",
   "keywords": [
     "SDC",
