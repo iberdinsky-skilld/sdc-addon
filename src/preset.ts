@@ -93,3 +93,5 @@ export const previewHead = (head: any) => `
   <script src="https://unpkg.com/@drupal/once"></script>
   ${head}
 `
+
+export const staticDirs = [{ from: '../components', to: '/components' }];
