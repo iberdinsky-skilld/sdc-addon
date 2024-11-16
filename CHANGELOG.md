@@ -1,3 +1,15 @@
+# v0.1.23 (Sat Nov 16 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Fixed static build (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.1.22 (Sat Nov 16 2024)
 
 #### ⚠️ Pushed to `main`
