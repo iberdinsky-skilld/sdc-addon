@@ -94,4 +94,4 @@ export const previewHead = (head: any) => `
   ${head}
 `
 
-export const staticDirs = [{ from: '../components', to: '/components' }];
+// export const staticDirs = [{ from: '../components', to: '/components' }];
