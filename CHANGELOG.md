@@ -1,3 +1,15 @@
+# v0.1.22 (Sat Nov 16 2024)
+
+#### ⚠️ Pushed to `main`
+
+- hotfix for static dirs (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.1.21 (Sun Nov 10 2024)
 
 #### ⚠️ Pushed to `main`
