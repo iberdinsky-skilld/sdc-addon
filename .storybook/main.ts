@@ -1,5 +1,6 @@
-import { join } from 'node:path'
-import type { StorybookConfig } from '@storybook/html-vite'
+import { join } from 'node:path';
+import type { StorybookConfig } from '@storybook/html-vite';
+
 const config: StorybookConfig = {
   stories: ['../components/**/*.component.yml', '../stories/*.stories.js'],
   addons: [
@@ -24,5 +25,11 @@ const config: StorybookConfig = {
     name: '@storybook/html-vite',
     options: {},
   },
-}
-export default config
+  ...(process.env.NODE_ENV === 'production'
+    ? {
+      staticDirs: [{ from: '../components', to: '/components' }],
+    }
+    : {}),
+};
+
+export default config;
