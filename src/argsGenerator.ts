@@ -4,7 +4,7 @@ import { SDCSchema, SlotDefinition } from './sdc'
 
 const generateArgs = (
   schema: SDCSchema['props']['properties'] | SlotDefinition,
-  defs: SDCSchema['$defs'],
+  defs: SDCSchema['$defs']
 ): Args => {
   const generated: Args = {}
   for (const key in schema) {
@@ -37,8 +37,10 @@ export default (
   })
 
   const generatedArgs = {
-    ...(content?.props?.properties && generateArgs(content.props.properties, content['$defs'])),
-    ...(content?.slots && generateArgs(slotsToMarkup(content.slots), content['$defs'])),
+    ...(content?.props?.properties &&
+      generateArgs(content.props.properties, content['$defs'])),
+    ...(content?.slots &&
+      generateArgs(slotsToMarkup(content.slots), content['$defs'])),
   }
 
   return generatedArgs

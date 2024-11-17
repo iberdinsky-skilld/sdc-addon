@@ -1,9 +1,9 @@
 name: Breadcrumbs(UI Patterns)
-description: "Breadcrumbs helps users to navigate through the website."
+description: 'Breadcrumbs helps users to navigate through the website.'
 props:
   type: object
   properties:
     items:
       title: Items
-      description: "Each item can contain: title, url."
-      $ref: "ui-patterns://links"
+      description: 'Each item can contain: title, url.'
+      $ref: 'ui-patterns://links'

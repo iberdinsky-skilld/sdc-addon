@@ -1,7 +1,7 @@
 import { JSONSchema4 } from 'json-schema'
 export interface SDCSchema {
   $schema?: string
-  $defs?: JSONSchema4,
+  $defs?: JSONSchema4
   name: string
   description?: string
   group?: string

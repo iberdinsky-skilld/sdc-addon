@@ -10,7 +10,6 @@ const customDefs: CustomDefSchema = parse(
   readFileSync(resolve(__dirname, 'uiPatternsSchema.yml'), 'utf8')
 )
 
-
 export default (schema: SDCSchema): SDCSchema => {
   return { $defs: customDefs, ...schema }
 }

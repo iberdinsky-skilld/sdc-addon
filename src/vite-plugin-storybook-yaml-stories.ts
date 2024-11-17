@@ -97,7 +97,7 @@ export default ({ jsonSchemaFakerOptions = {} }) => ({
       ...argTypesGenerator(content),
     }
 
-    const metadata = componentMetadata(id, content);
+    const metadata = componentMetadata(id, content)
 
     const args: Args = {
       componentMetadata: metadata,

@@ -1,6 +1,6 @@
 .umami-card {
   padding: 1rem;
-  border: 1px solid #63307A;
+  border: 1px solid #63307a;
   background-color: #fff;
 }
 
@@ -8,7 +8,6 @@
   display: grid;
   gap: 1.2rem;
 }
-
 
 .umami-card__read-more {
   justify-self: start;

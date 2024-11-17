@@ -50,7 +50,7 @@ thirdPartySettings:
         slots:
           dropdown:
             - type: component
-              component: "umami:menu"
+              component: 'umami:menu'
               props:
                 items:
                   - title: Home
@@ -61,7 +61,7 @@ thirdPartySettings:
                     url: https://example.com
           logo:
             - type: component
-              component: "umami:branding"
+              component: 'umami:branding'
               props:
                 site_logo: https://placehold.co/64x64
                 url: https://example.com

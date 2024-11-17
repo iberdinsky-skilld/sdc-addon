@@ -1,5 +1,5 @@
-import { dirname, relative } from "path"
-import { SDCSchema } from "./sdc"
+import { dirname, relative } from 'path'
+import { SDCSchema } from './sdc'
 
 export interface ComponentMetadata {
   path: string

@@ -1,11 +1,12 @@
 interface Story {
-  props?: Record<string, any>;
-  slots?: Record<string, any>;
+  props?: Record<string, any>
+  slots?: Record<string, any>
 }
 
 export default (stories: Record<string, Story>): string => {
   return Object.entries(stories)
-    .map(([storyKey, { props = {}, slots = {} }]) => `
+    .map(
+      ([storyKey, { props = {}, slots = {} }]) => `
       export const ${storyKey} = {
         args: {
           ...Basic.args,
@@ -16,18 +17,16 @@ export default (stories: Record<string, Story>): string => {
           Drupal.attachBehaviors(canvasElement, window.drupalSettings);
         },
       };
-    `)
-    .join('\n');
-};
+    `
+    )
+    .join('\n')
+}
 
 // Helper function to generate arguments (props or slots)
-const generateArgs = (
-  args: Record<string, any>,
-  isSlot = false
-): string => {
+const generateArgs = (args: Record<string, any>, isSlot = false): string => {
   return Object.entries(args)
     .map(([key, value]) => {
-      let argString = `${key}: `;
+      let argString = `${key}: `
 
       if (Array.isArray(value)) {
         const arrayContent = value
@@ -36,24 +35,24 @@ const generateArgs = (
               ? generateComponent(item)
               : JSON.stringify(item)
           )
-          .join(isSlot ? ' + ' : ', ');
-        argString += `[${arrayContent}]`;
+          .join(isSlot ? ' + ' : ', ')
+        argString += `[${arrayContent}]`
       } else {
-        argString += JSON.stringify(value);
+        argString += JSON.stringify(value)
       }
 
-      return `${argString},`; // Ensure commas are included
+      return `${argString},` // Ensure commas are included
     })
-    .join('\n');
-};
+    .join('\n')
+}
 
 // Helper function to handle component logic
 const generateComponent = (item: any): string => {
-  const componentName = item.component.split(':').pop();
-  const kebabCaseName = componentName.replace(/-/g, '');
+  const componentName = item.component.split(':').pop()
+  const kebabCaseName = componentName.replace(/-/g, '')
   const componentProps = {
     ...item.props,
     ...item.slots,
-  };
-  return `${kebabCaseName}.component(${JSON.stringify(componentProps)})`;
-};
+  }
+  return `${kebabCaseName}.component(${JSON.stringify(componentProps)})`
+}

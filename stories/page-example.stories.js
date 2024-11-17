@@ -1,4 +1,4 @@
-import accordion from '../components/accordion/accordion.component.yml'
+import accordion from '../components/atoms/accordion/accordion.component.yml'
 import breadcrumbs from '../components/breadcrumbs/breadcrumbs.component.yml'
 import header, {
   preview as HeaderPreview,

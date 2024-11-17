@@ -19,14 +19,16 @@ props:
         - ['slide 1', 'slide 2', 'slide 3', 'slide 4']
 libraryOverrides:
   dependencies:
-   - core/drupal
-   - core/once
+    - core/drupal
+    - core/once
   js:
     slider.mjs: { attributes: { type: 'module' } }
   css:
     base:
-      'https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css': { type: external, minified: true }
-      'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/scrollbar.css': { type: external, minified: true }
+      'https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css':
+        { type: external, minified: true }
+      'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/scrollbar.css':
+        { type: external, minified: true }
       'slider.css': {}
 
 thirdPartySettings:
@@ -36,14 +38,14 @@ thirdPartySettings:
         props:
           slides:
             - type: component
-              component: "umami:card"
+              component: 'umami:card'
               slots:
                 content: 'Hello from slider card!'
             - type: component
-              component: "umami:card"
+              component: 'umami:card'
               slots:
                 content: 'Hello from second slider card!'
             - type: component
-              component: "umami:card"
+              component: 'umami:card'
               slots:
                 content: 'Hello from third slider card!'

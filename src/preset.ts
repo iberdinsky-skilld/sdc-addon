@@ -4,35 +4,28 @@ import YamlStoriesPlugin, {
 import twig from 'vite-plugin-twig-drupal'
 import { UserConfig, mergeConfig } from 'vite'
 import { Indexer } from '@storybook/types'
-import { resolve, join } from 'path'
-import fs from 'fs'
+import { resolve } from 'path'
+import { existsSync } from 'fs'
+import glob from 'glob'
 
-// Function to dynamically get all subdirectories of a given directory
-const getSubdirectories = (baseDir: string): string[] => {
-  return fs
-    .readdirSync(baseDir, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => join(baseDir, dirent.name))
-}
+let cachedComponentDirectories: string[] | null = null
 
-// Function to dynamically generate the list of component directories
 const getComponentDirectories = (): string[] => {
-  const baseComponentDir = resolve('./components') // Base directory for components
-  const subdirectories = getSubdirectories(baseComponentDir)
-
-  // Return the base directory and all its subdirectories (recursively, if needed)
-  return [baseComponentDir, ...subdirectories]
+  if (cachedComponentDirectories === null) {
+    cachedComponentDirectories = glob.sync('./components/**/*.component.yml')
+  }
+  return cachedComponentDirectories
 }
 
 // Function to resolve component paths dynamically
 export const resolveComponentPath = (namespace: string, component: string) => {
-  const componentDirectories = getComponentDirectories() // Get dynamic directories
+  const componentDirectories = getComponentDirectories()
   const possiblePaths = componentDirectories.map((dir) =>
     resolve(`${dir}/${component}/${component}.component.yml`)
   )
 
   // Return the first existing path
-  return possiblePaths.find((path) => fs.existsSync(path))
+  return possiblePaths.find((path) => existsSync(path))
 }
 
 // The main function that merges configuration and sets up the namespace alias

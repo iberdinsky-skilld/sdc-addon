@@ -1,6 +1,6 @@
 {
   "name": "storybook-addon-sdc",
-  "version": "0.1.23",
+  "version": "0.2.5",
   "description": "Drupal Single Directory Components as stories",
   "keywords": [
     "SDC",
@@ -32,19 +32,21 @@
     "prerelease": "zx scripts/prepublish-checks.js",
     "release": "npm run build && auto shipit",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "format": "prettier --write ."
   },
   "dependencies": {
+    "glob": "^11.0.0",
     "json-schema-faker": "^0.5.8",
     "vite-plugin-twig-drupal": "^1.4.2"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.4.2",
-    "@storybook/addon-interactions": "^8.4.2",
-    "@storybook/addon-links": "^8.4.2",
-    "@storybook/html-vite": "^8.4.2",
-    "@storybook/test": "^8.4.2",
-    "@storybook/types": "^8.4.2",
+    "@storybook/addon-essentials": "^8.4.4",
+    "@storybook/addon-interactions": "^8.4.4",
+    "@storybook/addon-links": "^8.4.4",
+    "@storybook/html-vite": "^8.4.4",
+    "@storybook/test": "^8.4.4",
+    "@storybook/types": "^8.4.4",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^22.8.7",
     "auto": "^11.3.0",
@@ -54,7 +56,7 @@
     "prompts": "^2.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "storybook": "^8.4.2",
+    "storybook": "^8.4.4",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
     "vite": "^5.3.5",

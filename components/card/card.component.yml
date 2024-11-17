@@ -40,18 +40,18 @@ thirdPartySettings:
     stories:
       preview:
         props:
-          html_tag: "div"
+          html_tag: 'div'
         slots:
           content:
             - '<img class="umami-card__image" src="https://placehold.co/800x400"/>'
             - type: component
-              component: "umami:title"
+              component: 'umami:title'
               props:
                 extra_classes:
                   - umami-card__title
                 label: test
             - type: component
-              component: "umami:read-more"
+              component: 'umami:read-more'
               props:
                 extra_classes:
                   - umami-card__read-more

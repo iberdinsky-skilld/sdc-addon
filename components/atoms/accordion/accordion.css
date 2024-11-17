@@ -1,5 +1,5 @@
 .a-accordion {
-  border: 1px solid #63307A;
+  border: 1px solid #63307a;
 }
 
 .a-accordion__content {
@@ -18,12 +18,12 @@
 }
 
 .a-accordion__title:after {
-  content: "";
+  content: '';
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  background-color: #63307A;
+  background-color: #63307a;
   inline-size: 1.25rem;
   block-size: 1.25rem;
   mask-repeat: no-repeat;

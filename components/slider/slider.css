@@ -1,4 +1,4 @@
-@import url("https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css");
+@import url('https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css');
 
 .o-slider {
   max-width: 100%;
@@ -11,7 +11,7 @@
   width: 100%;
 }
 
-[class*="o-slider__nav"] {
+[class*='o-slider__nav'] {
   position: absolute;
   top: 50%;
   margin-top: -1.25rem;

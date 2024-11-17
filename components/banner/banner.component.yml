@@ -39,13 +39,13 @@ thirdPartySettings:
           image: <img src="https://placehold.co/1200x400"/>
           content:
             - type: component
-              component: "umami:title"
+              component: 'umami:title'
               props:
                 label: Banner title
                 extra_classes:
                   - banner__title
             - type: component
-              component: "umami:read-more"
+              component: 'umami:read-more'
               slots:
                 text: test
                 extra_classes:

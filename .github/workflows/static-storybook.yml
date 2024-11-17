@@ -4,7 +4,7 @@ name: Deploy Storybook to GitHub Pages
 on:
   # Runs on pushes to the main branch
   push:
-    branches: ["main"]
+    branches: ['main']
 
   # Allows manual triggering from the Actions tab
   workflow_dispatch:
@@ -15,7 +15,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: false
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
       - name: Upload Storybook artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'storybook-static'  # Specify the Storybook output directory
+          path: 'storybook-static' # Specify the Storybook output directory
 
       - name: Deploy to GitHub Pages
         id: deployment
