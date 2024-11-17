@@ -35,11 +35,11 @@ export const resolveComponentPath = (namespace: string, component: string) => {
 export function viteFinal(
   config: UserConfig,
   options: {
-    sdcStorybookOptions: SDCStorybookOptions,
+    sdcStorybookOptions: SDCStorybookOptions
     vitePluginTwigDrupalOptions: {
-      namespaces?: {},
-      functions?: {},
-      globalContext: {},
+      namespaces?: {}
+      functions?: {}
+      globalContext: {}
     }
     jsonSchemaFakerOptions: JSONSchemaFakerOptions
   }

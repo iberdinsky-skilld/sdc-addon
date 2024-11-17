@@ -1,0 +1,225 @@
+json-schema-definitions://experience_builder.module/textarea:
+  title: 'Multi-line string'
+  type: 'string'
+json-schema-definitions://experience_builder.module/heading-element:
+  title: 'Heading element'
+  type: 'string'
+  enum:
+    - 'div'
+    - 'h1'
+    - 'h2'
+    - 'h3'
+    - 'h4'
+    - 'h5'
+    - 'h6'
+json-schema-definitions://experience_builder.module/column-width:
+  title: 'Column Width'
+  type: 'integer'
+  enum:
+    - '25'
+    - '33'
+    - '50'
+    - '66'
+    - '75'
+json-schema-definitions://experience_builder.module/background-color:
+  title: 'Background Color'
+  type: 'string'
+  enum:
+    - ''
+    - 'primary'
+    - 'secondary'
+    - 'white'
+json-schema-definitions://experience_builder.module/date-range:
+  title: 'date range'
+  type: 'object'
+  required:
+    - 'from'
+    - 'to'
+  properties:
+    from:
+      title: 'Start date'
+      type: 'string'
+      format: 'date'
+    to:
+      title: 'End date'
+      type: 'string'
+      format: 'date'
+json-schema-definitions://experience_builder.module/stream-wrapper-uri:
+  title: 'Stream wrapper URI'
+  type: 'string'
+  format: 'uri'
+json-schema-definitions://experience_builder.module/stream-wrapper-image-uri:
+  title: 'Stream wrapper image URI'
+  type: 'string'
+  format: 'uri'
+json-schema-definitions://experience_builder.module/image-uri:
+  title: 'Image URL'
+  type: 'string'
+  format: 'uri-reference'
+json-schema-definitions://experience_builder.module/heading:
+  title: 'Heading'
+  type: 'object'
+  required:
+    - 'text'
+    - 'element'
+  properties:
+    text:
+      type: 'string'
+      title: 'Text'
+      description: 'The heading text.'
+      examples:
+        - 'A heading element'
+    style:
+      type: 'string'
+      title: 'Style'
+      description: 'The heading style to use.'
+      enum:
+        - 'primary'
+        - 'secondary'
+      examples:
+        - 'primary'
+        - 'secondary'
+    element:
+      type: 'string'
+      title: 'Element'
+      description: 'The HTML element to use.'
+      enum:
+        - 'div'
+        - 'h1'
+        - 'h2'
+        - 'h3'
+        - 'h4'
+        - 'h5'
+        - 'h6'
+      examples:
+        - 'h1'
+        - 'h2'
+        - 'h3'
+        - 'h4'
+        - 'h5'
+        - 'h6'
+        - 'div'
+json-schema-definitions://experience_builder.module/text:
+  title: 'Text'
+  type: 'object'
+  properties:
+    text:
+      type: 'string'
+      title: 'Text'
+      description: 'The text to display.'
+      examples:
+        - 'This is some text'
+json-schema-definitions://experience_builder.module/shoe-icon:
+  title: 'Icon'
+  type: 'object'
+  properties:
+    name:
+      type: 'string'
+      title: 'Name'
+      description: 'The badge’s theme variant.'
+      default: 'primary'
+      enum:
+        - 'moon-stars-fill'
+        - 'moon-stars'
+        - 'star-fill'
+        - 'star'
+        - 'stars'
+        - 'rocket-fill'
+        - 'rocket-takeoff-fill'
+        - 'rocket-takeoff'
+        - 'rocket'
+      examples:
+        - 'moon-stars-fill'
+        - 'moon-stars'
+        - 'star-fill'
+        - 'star'
+        - 'stars'
+        - 'rocket-fill'
+        - 'rocket-takeoff-fill'
+        - 'rocket-takeoff'
+        - 'rocket'
+    label:
+      type: 'string'
+      title: 'Label'
+      description: 'An alternate description to use for assistive devices. If omitted, the icon will be considered presentational and ignored by assistive devices.'
+      default: 'This is an icon'
+      examples:
+        - 'This is an icon'
+    size:
+      type: 'string'
+      title: 'Size'
+      description: 'The icon size.'
+      default: ''
+      enum:
+        - ''
+        - 'base'
+        - 'l'
+        - 's'
+        - 'xs'
+        - 'xxs'
+      examples:
+        - ''
+        - 'base'
+        - 'l'
+        - 's'
+        - 'xs'
+        - 'xxs'
+    color:
+      type: 'string'
+      title: 'Color'
+      description: 'The icon color'
+      default: ''
+      enum:
+        - ''
+        - 'gray'
+        - 'primary'
+        - 'neutral-soft'
+        - 'neutral-medium'
+        - 'neutral-loud'
+        - 'primary-medium'
+        - 'primary-loud'
+        - 'black'
+        - 'white'
+        - 'red'
+        - 'gold'
+        - 'green'
+      examples:
+        - ''
+        - 'gray'
+        - 'primary'
+        - 'neutral-soft'
+        - 'neutral-medium'
+        - 'neutral-loud'
+        - 'primary-medium'
+        - 'primary-loud'
+        - 'black'
+        - 'white'
+        - 'red'
+        - 'gold'
+        - 'green'
+    slot:
+      type: 'string'
+      title: 'Slot'
+      description: 'The slot the icon should appear in'
+      examples:
+json-schema-definitions://experience_builder.module/image:
+  title: 'image'
+  type: 'object'
+  required:
+    - 'src'
+  properties:
+    src:
+      title: 'Image URL'
+      $ref: json-schema-definitions://experience_builder.module/image-uri
+    alt:
+      title: 'Alternative text'
+      type: 'string'
+    width:
+      title: 'Image width'
+      type: 'integer'
+    height:
+      title: 'Image height'
+      type: 'integer'
+json-schema-definitions://experience_builder.module/config-entity-id:
+  title: 'config entity id'
+  type: 'string'
