@@ -7,6 +7,9 @@ import { Indexer } from '@storybook/types'
 import { resolve } from 'path'
 import { existsSync } from 'fs'
 import glob from 'glob'
+import type { StorybookConfig } from '@storybook/html-vite'
+import { SDCStorybookOptions } from './addon'
+import { JSONSchemaFakerOptions } from 'json-schema-faker'
 
 let cachedComponentDirectories: string[] | null = null
 
@@ -32,11 +35,13 @@ export const resolveComponentPath = (namespace: string, component: string) => {
 export function viteFinal(
   config: UserConfig,
   options: {
-    sdcStorybookOptions: {
-      namespace: string // Use this for namespace-based resolution
+    sdcStorybookOptions: SDCStorybookOptions,
+    vitePluginTwigDrupalOptions: {
+      namespaces?: {},
+      functions?: {},
+      globalContext: {},
     }
-    vitePluginTwigDrupalOptions: {}
-    jsonSchemaFakerOptions: {}
+    jsonSchemaFakerOptions: JSONSchemaFakerOptions
   }
 ) {
   const { namespace } = options.sdcStorybookOptions
@@ -64,12 +69,14 @@ export function viteFinal(
 }
 
 // Optional: indexer support
-export const experimental_indexers = async (
-  existingIndexers: Indexer[] | undefined
-) => [...(existingIndexers || []), yamlStoriesIndexer]
+export const experimental_indexers: StorybookConfig['experimental_indexers'] =
+  async (existingIndexers: Indexer[] | undefined) => [
+    ...(existingIndexers || []),
+    yamlStoriesIndexer,
+  ]
 
 // Optional: Add the previewHead, including necessary styles and scripts for Drupal components
-export const previewHead = (head: any) => `
+export const previewHead: StorybookConfig['previewHead'] = (head: string) => `
   <style>
     .visually-hidden {
       position: absolute !important;
