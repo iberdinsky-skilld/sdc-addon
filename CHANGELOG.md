@@ -1,3 +1,16 @@
+# v0.1.24 (Mon Nov 18 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Update defs and ts ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Format + release ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.1.23 (Sat Nov 16 2024)
 
 #### ⚠️ Pushed to `main`
