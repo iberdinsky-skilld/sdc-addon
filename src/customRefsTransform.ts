@@ -22,10 +22,10 @@ const loadYamlFile = (filePath: string): CustomDefSchema => {
 }
 
 // Load the primary custom definitions file
-const uiPatternsSchema = loadYamlFile('../drupal-defs/uiPatternsSchema.yml')
+const uiPatternsSchema = loadYamlFile('uiPatternsSchema.yml')
 
 // Load an additional custom definitions file
-const additionalSchema = loadYamlFile('../drupal-defs/exBuilderSchema.yml')
+const additionalSchema = loadYamlFile('exBuilderSchema.yml')
 
 // Merge both schemas into customDefs
 const customDefs: CustomDefSchema = {
