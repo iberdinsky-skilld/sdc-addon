@@ -1,4 +1,4 @@
-# Storybook SDC Addon Documentation
+# Storybook SDC Addon
 
 This addon streamlines the integration of Drupal Single Directory Components (SDC) into Storybook, allowing YAML-configured components (e.g., `*.component.yml`) to be dynamically loaded as stories in Storybook.
 
@@ -7,6 +7,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 ## Table of Contents
 
 - [Overview](#overview)
+- [Storybook Example Live](#storybook-example-live)
 - [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Features of the Addon](#features-of-the-addon)
 - [Dependencies](#dependencies)
@@ -15,7 +16,6 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Setting Default Values](#setting-default-values)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Regular Storybook](#regular-storybook)
-- [Storybook Example Live](#storybook-example-live)
 - [Known Issues](#known-issues)
 - [UI Patterns](#ui-patterns)
 
@@ -24,6 +24,13 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 ## Overview
 
 This Storybook addon makes it easy to integrate Drupal Single Directory Components (SDC) into Storybook using YAML configurations and Twig templates. It dynamically loads components, allowing you to quickly create and manage stories with minimal configuration.
+
+**It is still regular Storybook** but now with the added option to import and manage Drupal Single Directory Components (SDC).
+
+## Storybook Example Live
+
+You can view a [live example of the SDC Addon in Storybook](https://iberdinsky-skilld.github.io/sdc-addon), hosted on GitHub Pages, showcasing components in the `/components` directory of that repository.
+
 
 ## Why Choose SDC Storybook Over Alternatives?
 
@@ -242,10 +249,6 @@ export default {
 
 export const Basic = {}
 ```
-
-## Storybook Example Live
-
-You can view a [live example of the SDC Addon in Storybook](https://iberdinsky-skilld.github.io/sdc-addon), hosted on GitHub Pages, showcasing components in the `/components` directory of that repository.
 
 ## Known Issues
 
