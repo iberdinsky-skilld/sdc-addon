@@ -11,7 +11,7 @@ const config: StorybookConfig = {
       name: '../src',
       options: {
         sdcStorybookOptions: {
-          baseNamespace: 'umami',
+          namespace: 'umami',
         },
         vitePluginTwigDrupalOptions: {
           namespaces: {

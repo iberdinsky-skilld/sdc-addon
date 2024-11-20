@@ -1,14 +1,15 @@
-import { Component } from './sdc'
+import { Component, SDCStorybookOptions } from './sdc'
 
 export default (stories: Component[]): string =>
   Object.entries(stories)
     .map(
-      ([storyKey, { props = {}, slots = {} }]) => `
+      ([storyKey, { props = {}, slots = {}, variants = {} }]) => `
 export const ${storyKey[0].toUpperCase() + storyKey.slice(1)} = {
   args: {
     ...Basic.args,
     ${generateArgs(props)}
     ${generateArgs(slots, true)}
+    ${generateVariants(variants)}
   },
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
@@ -53,4 +54,16 @@ const generateComponent = (item: Component): string => {
     : '...{}'
 
   return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.args, ${storyArgs}, ...${JSON.stringify(componentProps)}})`
+}
+
+// Helper to generate variants args
+const generateVariants = (
+  variants: Record<string, { title: string }>
+): string => {
+  return Object.entries(variants)
+    .map(
+      ([variantKey, variantValue]) =>
+        `${variantKey}: ${JSON.stringify(variantValue.title)},`
+    )
+    .join('\n')
 }

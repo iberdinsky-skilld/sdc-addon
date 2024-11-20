@@ -10,6 +10,7 @@ export interface SDCSchema {
   slots?: SlotDefinition
   libraryOverrides?: LibraryDefinition
   thirdPartySettings?: ThirdPartySettings
+  variants?: string[]
 }
 
 interface SlotDefinition {
@@ -64,10 +65,12 @@ interface ThirdPartySettings {
 }
 
 export interface SDCStorybookOptions {
-  namespace: string
+  namespace?: string
+  experimentalVariants?: boolean
 }
 
 export interface Component {
+  variants?: JSONSchema4
   component: string
   props?: JSONSchema4
   slots?: SlotDefinition

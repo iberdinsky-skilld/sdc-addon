@@ -92,15 +92,25 @@ export default ({ jsonSchemaFakerOptions = {} }) => ({
 
     const argTypes: ArgTypes = {
       componentMetadata: { table: { disable: true } },
+      ...(content.variants && {
+        variant: {
+          control: 'select',
+          options: content.variants ? Object.keys(content.variants) : [],
+        },
+      }),
       ...argTypesGenerator(content),
     }
 
     const args: Args = {
       componentMetadata: metadata,
+      ...(content.variants && {
+        variant: Object.keys(content.variants)[0],
+      }),
       ...argsGenerator(content, jsonSchemaFakerOptions),
     }
 
     const basicArgs = { ...args }
+
     const stories = content.thirdPartySettings?.sdcStorybook?.stories
       ? storiesGenerator(content.thirdPartySettings.sdcStorybook.stories)
       : ''

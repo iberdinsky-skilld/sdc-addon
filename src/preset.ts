@@ -31,6 +31,8 @@ export const resolveComponentPath = (namespace: string, component: string) => {
   return possiblePaths.find((path) => existsSync(path))
 }
 
+const defaultOptions: SDCStorybookOptions = {}
+
 // The main function that merges configuration and sets up the namespace alias
 export function viteFinal(
   config: UserConfig,
@@ -44,6 +46,10 @@ export function viteFinal(
     jsonSchemaFakerOptions: JSONSchemaFakerOptions
   }
 ) {
+  options.sdcStorybookOptions = {
+    ...defaultOptions,
+    ...options.sdcStorybookOptions,
+  }
   const { namespace } = options.sdcStorybookOptions
 
   return mergeConfig(config, {

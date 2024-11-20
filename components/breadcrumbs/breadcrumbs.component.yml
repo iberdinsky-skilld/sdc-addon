@@ -1,5 +1,22 @@
 name: Breadcrumbs(UI Patterns)
 description: 'Breadcrumbs helps users to navigate through the website.'
+variants:
+  error:
+    title: Error
+  success:
+    title: Success
+  info:
+    title: Information
+  warning:
+    title: Warning
+  error__sm:
+    title: 'Error small'
+  success__sm:
+    title: 'Success small'
+  info__sm:
+    title: 'Information small'
+  warning__sm:
+    title: 'Warning small'
 props:
   type: object
   properties:

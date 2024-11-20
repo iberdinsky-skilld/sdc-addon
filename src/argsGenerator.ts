@@ -1,9 +1,13 @@
 import { JSONSchemaFaker, JSONSchemaFakerOptions } from 'json-schema-faker'
 import { Args } from '@storybook/types'
-import { SDCSchema, SlotDefinition } from './sdc'
+import { SDCSchema, SDCStorybookOptions, SlotDefinition } from './sdc'
 
+// Helper to generate argument strings (for props, slots, or variants)
 const generateArgs = (
-  schema: SDCSchema['props']['properties'] | SlotDefinition,
+  schema:
+    | SDCSchema['props']['properties']
+    | SlotDefinition
+    | Record<string, any>,
   defs: SDCSchema['$defs']
 ): Args => {
   return Object.entries(schema).reduce<Args>((acc, [key, property]) => {
@@ -12,6 +16,7 @@ const generateArgs = (
   }, {})
 }
 
+// Convert slot definitions to schema properties
 const slotsToSchemaProperties = (
   slots: SlotDefinition
 ): Record<string, { type: string } & SlotDefinition[string]> => {
@@ -27,7 +32,7 @@ export default function generateStorybookArgs(
   content: SDCSchema,
   jsonSchemaFakerOptions: JSONSchemaFakerOptions
 ): Args {
-  // Configure JSON Schema Faker options.
+  // Configure JSON Schema Faker options
   JSONSchemaFaker.option({
     ignoreMissingRefs: true,
     failOnInvalidTypes: false,
@@ -38,7 +43,7 @@ export default function generateStorybookArgs(
 
   const { props, slots, $defs } = content
 
-  // Generate arguments from properties and slots.
+  // Generate arguments from properties and slots
   const generatedArgs: Args = {
     ...(props?.properties && generateArgs(props.properties, $defs)),
     ...(slots && generateArgs(slotsToSchemaProperties(slots), $defs)),
