@@ -1,3 +1,16 @@
+# v0.2.10 (Wed Nov 20 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Basic and story args ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Small extra info ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.2.9 (Mon Nov 18 2024)
 
 #### ⚠️ Pushed to `main`
