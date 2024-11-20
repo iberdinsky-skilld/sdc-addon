@@ -1,10 +1,6 @@
-interface Story {
-  props?: Record<string, any>
-  slots?: Record<string, any>
-  story?: string
-}
+import { Component } from './sdc'
 
-export default (stories: Record<string, Story>): string =>
+export default (stories: Component[]): string =>
   Object.entries(stories)
     .map(
       ([storyKey, { props = {}, slots = {} }]) => `
@@ -23,7 +19,10 @@ export const ${storyKey[0].toUpperCase() + storyKey.slice(1)} = {
     .join('\n')
 
 // Helper to generate argument strings (for props or slots)
-const generateArgs = (args: Record<string, any>, isSlot = false): string =>
+const generateArgs = (
+  args: Component['props'] | Component['slots'],
+  isSlot = false
+): string =>
   Object.entries(args)
     .map(([key, value]) => `${key}: ${formatArgValue(value, isSlot)},`)
     .join('\n')
@@ -45,7 +44,7 @@ const formatArgValue = (value: any, isSlot: boolean): string => {
 }
 
 // Generate a component call for a story
-const generateComponent = (item: any): string => {
+const generateComponent = (item: Component): string => {
   const kebabCaseName = item.component.replace(/[-:]/g, '')
   const componentProps = { ...item.props, ...item.slots }
 

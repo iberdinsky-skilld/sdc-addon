@@ -8,7 +8,7 @@ import { resolve } from 'path'
 import { existsSync } from 'fs'
 import glob from 'glob'
 import type { StorybookConfig } from '@storybook/html-vite'
-import { SDCStorybookOptions } from './addon'
+import { SDCStorybookOptions } from './sdc'
 import { JSONSchemaFakerOptions } from 'json-schema-faker'
 
 let cachedComponentDirectories: string[] | null = null

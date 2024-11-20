@@ -7,7 +7,7 @@ import argTypesGenerator from './argTypesGenerator'
 import storiesGenerator from './storiesGenerator'
 import customRefsTransform from './customRefsTransform'
 import componentMetadata from './componentMetadata'
-import { SDCSchema } from './sdc'
+import { Component, SDCSchema } from './sdc'
 
 // Helper to read and transform YAML content
 const readCDC = (filePath: string): SDCSchema =>
@@ -47,7 +47,7 @@ const generateImports = (directory: string): string =>
     .join('\n')
 
 // Extract component imports dynamically based on slots or props
-const dynamicImports = (stories: Record<string, any>): string => {
+const dynamicImports = (stories: Component[]): string => {
   const imports = new Set<string>()
 
   const findComponentArgs = (args: Record<string, any>) => {

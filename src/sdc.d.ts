@@ -62,3 +62,14 @@ interface LibraryDefinition {
 interface ThirdPartySettings {
   [key: string]: Record<string, any>
 }
+
+export interface SDCStorybookOptions {
+  namespace: string
+}
+
+export interface Component {
+  component: string
+  props?: JSONSchema4
+  slots?: SlotDefinition
+  story?: string
+}
