@@ -1,3 +1,9 @@
+# v0.3.8 (Wed Nov 20 2024)
+
+
+
+---
+
 # v0.3.7 (Wed Nov 20 2024)
 
 #### ⚠️ Pushed to `main`
