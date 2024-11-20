@@ -1,3 +1,15 @@
+# v0.3.5 (Wed Nov 20 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Update ts ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.3.4 (Wed Nov 20 2024)
 
 #### ⚠️ Pushed to `main`
