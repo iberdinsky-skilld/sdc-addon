@@ -187,7 +187,7 @@ Refer to:
 
 ## Creating Experimental Stories
 
-The `thirdPartySettings` configuration in the SDC YAML file provides a flexible way to define custom stories for your components. This feature allows you to use predefined props, custom slots, or even reuse stories defined elsewhere. Here's how it works:
+The `sdcStorybook` configuration in the SDC YAML file provides a flexible way to define custom stories for your components. This feature allows you to use predefined props, custom slots, or even reuse stories defined elsewhere. Here's how it works:
 
 ### Example Configuration
 

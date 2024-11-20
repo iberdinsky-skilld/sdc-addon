@@ -53,5 +53,5 @@ const generateComponent = (item: any): string => {
     ? `...${kebabCaseName}.${item.story}.args`
     : '...{}'
 
-  return `${kebabCaseName}.default.component({...Basic.args, ${storyArgs}, ...${JSON.stringify(componentProps)}})`
+  return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.args, ${storyArgs}, ...${JSON.stringify(componentProps)}})`
 }

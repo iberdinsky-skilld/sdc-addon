@@ -39,13 +39,10 @@ thirdPartySettings:
           slides:
             - type: component
               component: 'umami:card'
-              slots:
-                content: 'Hello from slider card!'
+              story: Preview
             - type: component
               component: 'umami:card'
-              slots:
-                content: 'Hello from second slider card!'
+              story: Preview
             - type: component
               component: 'umami:card'
-              slots:
-                content: 'Hello from third slider card!'
+              story: Preview
