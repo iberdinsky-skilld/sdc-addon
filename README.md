@@ -138,7 +138,7 @@ const config = {
         vitePluginTwigDrupalOptions: {
           // vite-plugin-twig-drupal options.
           namespaces: {
-            umami: join(__dirname, '/components'), // Your namespace and path to components.
+            umami: join(__dirname, '../components'), // Your namespace and path to components.
           },
         },
         jsonSchemaFakerOptions: {}, // json-schema-faker options.
@@ -310,5 +310,5 @@ export const Basic = {}
 
 ## UI Patterns
 
-- Variants are not yet supported ([Issue 3390712](https://www.drupal.org/project/drupal/issues/3390712)).
+- Variants partially supported ([Issue 3390712](https://www.drupal.org/project/drupal/issues/3390712)).
 - Custom Twig filters and functions are not supported ([UI Patterns TwigExtension](https://git.drupalcode.org/project/ui_patterns/-/blob/8.x-1.x/src/Template/TwigExtension.php)).
