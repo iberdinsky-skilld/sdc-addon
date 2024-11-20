@@ -57,9 +57,10 @@ const dynamicImports = (stories: Record<string, any>): string => {
           if (item.type === 'component') {
             const [namespace, componentName] = item.component.split(':')
             const resolvedPath = resolveComponentPath(namespace, componentName)
+            const kebabCaseName = item.component.replace(/[-:]/g, '')
             if (resolvedPath) {
               imports.add(
-                `import ${componentName.replace(/-/g, '')} from '${resolvedPath}';`
+                `import * as ${kebabCaseName} from '${resolvedPath}';`
               )
             }
           }

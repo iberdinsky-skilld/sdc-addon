@@ -1,15 +1,15 @@
 import accordion from '../components/atoms/accordion/accordion.component.yml'
 import breadcrumbs from '../components/breadcrumbs/breadcrumbs.component.yml'
 import header, {
-  preview as HeaderPreview,
+  Preview as HeaderPreview,
 } from '../components/header/header.component.yml'
 import banner, {
-  preview as BannerPreview,
+  Preview as BannerPreview,
 } from '../components/banner/banner.component.yml'
 import paragraph from '../components/paragraph/paragraph.component.yml'
 import slider from '../components/slider/slider.component.yml'
 import card, {
-  preview as CardPreview,
+  Preview as CardPreview,
 } from '../components/card/card.component.yml'
 
 export default {

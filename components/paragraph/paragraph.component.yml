@@ -39,13 +39,12 @@ thirdPartySettings:
           content:
             - type: component
               component: 'umami:card'
-              slots:
-                content: 'Hello from grid card!'
             - type: component
               component: 'umami:card'
-              slots:
-                content: 'Hello from second grid card!'
+              story: Preview
             - type: component
               component: 'umami:card'
+              props:
+                html_tag: 'div'
               slots:
                 content: 'Hello from third grid card!'

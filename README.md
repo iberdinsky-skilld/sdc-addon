@@ -31,7 +31,6 @@ This Storybook addon makes it easy to integrate Drupal Single Directory Componen
 
 You can view a [live example of the SDC Addon in Storybook](https://iberdinsky-skilld.github.io/sdc-addon), hosted on GitHub Pages, showcasing components in the `/components` directory of that repository.
 
-
 ## Why Choose SDC Storybook Over Alternatives?
 
 While solutions like [SDC Styleguide](https://www.drupal.org/project/sdc_styleguide) and [Drupal Storybook](https://www.drupal.org/project/storybook) are valuable, the SDC Storybook addon offers distinct advantages:
@@ -188,33 +187,84 @@ Refer to:
 
 ## Creating Experimental Stories
 
-By default, the addon generates only a basic story for each component. To add more stories, use `thirdPartySettings` in the SDC YAML file:
+The `thirdPartySettings` configuration in the SDC YAML file provides a flexible way to define custom stories for your components. This feature allows you to use predefined props, custom slots, or even reuse stories defined elsewhere. Here's how it works:
+
+### Example Configuration
 
 ```yaml
 thirdPartySettings:
   sdcStorybook:
     stories:
-      preview:
-        title: Preview
+      grid:
         props:
-          html_tag: 'div'
+          label: Paragraph with grid
+          extra_classes:
+            - m-paragraph--grid
         slots:
           content:
+            # 1. Basic Props
+            # This card uses only the basic default props defined in the component YAML.
             - type: component
-              component: 'umami:title'
-              props:
-                label: test
-      preview2:
-        title: Preview2
-        props:
-          html_tag: 'div'
-        slots:
-          content:
+              component: 'umami:card'
+
+            # 2. Predefined Story
+            # This card references an existing story (e.g., "Preview")
+            # from the component YAML, which includes predefined props and slots.
             - type: component
-              component: 'umami:title'
+              component: 'umami:card'
+              story: Preview
+
+            # 3. Custom Props and Slots
+            # This card defines custom props to modify its behavior (e.g., setting
+            # the HTML tag to 'div') and custom slots to override specific content.
+            - type: component
+              component: 'umami:card'
               props:
-                label: test2
+                html_tag: 'div' # Custom HTML tag for the card container
+              slots:
+                content: 'Hello from third grid card!'
 ```
+
+### Key Features
+
+This configuration provides three distinct options for creating stories:
+
+1. **Render Using Basic Args**
+   The first card in the `grid` example uses only its basic arguments (`Basic.args`). No additional configuration or props are required for this component.
+
+```yaml
+- type: component
+  component: 'umami:card'
+```
+
+2. **Reuse an Existing Story**
+   The second card uses the `Preview` story defined earlier. This is particularly useful for reusing pre-configured props and slots without redefining them in each story.
+
+```yaml
+- type: component
+  component: 'umami:card'
+  story: Preview
+```
+
+3. **Define Custom Slots**
+   The third card defines a custom `content` slot. This allows you to override or enhance the default behavior of the component with specific content.
+
+```yaml
+- type: component
+  component: 'umami:card'
+  props:
+    html_tag: 'div'
+  slots:
+    content: 'Hello from third grid card!'
+```
+
+### How It Works in Practice
+
+The addon dynamically renders the components and stories as defined:
+
+- **Basic Args:** The default `Basic.args` of the `umami:card` component are used.
+- **Existing Story:** The `Preview` story is loaded, ensuring consistency across the Storybook environment.
+- **Custom Slots and Props:** Overrides the default slots and props behavior with unique content for that instance.
 
 ### Why stories experimental?
 
@@ -228,10 +278,10 @@ All storybook functions work as usual and you can import SDC YAML into `.stories
 
 ```js
 import header, {
-  preview as HeaderPreview,
+  Preview as HeaderPreview,
 } from '../components/header/header.component.yml'
 import banner, {
-  preview as BannerPreview,
+  Preview as BannerPreview,
 } from '../components/banner/banner.component.yml'
 
 export default {

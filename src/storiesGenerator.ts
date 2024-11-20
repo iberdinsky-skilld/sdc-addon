@@ -1,13 +1,14 @@
 interface Story {
   props?: Record<string, any>
   slots?: Record<string, any>
+  story?: string
 }
 
 export default (stories: Record<string, Story>): string =>
   Object.entries(stories)
     .map(
       ([storyKey, { props = {}, slots = {} }]) => `
-export const ${storyKey} = {
+export const ${storyKey[0].toUpperCase() + storyKey.slice(1)} = {
   args: {
     ...Basic.args,
     ${generateArgs(props)}
@@ -45,8 +46,12 @@ const formatArgValue = (value: any, isSlot: boolean): string => {
 
 // Generate a component call for a story
 const generateComponent = (item: any): string => {
-  const componentName = item.component.split(':').pop() ?? 'unknown'
-  const kebabCaseName = componentName.replace(/-/g, '')
+  const kebabCaseName = item.component.replace(/[-:]/g, '')
   const componentProps = { ...item.props, ...item.slots }
-  return `${kebabCaseName}.component(${JSON.stringify(componentProps)})`
+
+  const storyArgs = item.story
+    ? `...${kebabCaseName}.${item.story}.args`
+    : '...{}'
+
+  return `${kebabCaseName}.default.component({...Basic.args, ${storyArgs}, ...${JSON.stringify(componentProps)}})`
 }
