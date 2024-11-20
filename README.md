@@ -8,14 +8,14 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 
 - [Overview](#overview)
 - [Storybook Example Live](#storybook-example-live)
-- [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Features of the Addon](#features-of-the-addon)
-- [Dependencies](#dependencies)
+- [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
 - [Setting Default Values](#setting-default-values)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Regular Storybook](#regular-storybook)
+- [Dependencies](#dependencies)
 - [Known Issues](#known-issues)
 - [UI Patterns](#ui-patterns)
 
@@ -30,6 +30,16 @@ This Storybook addon makes it easy to integrate Drupal Single Directory Componen
 ## Storybook Example Live
 
 You can view a [live example of the SDC Addon in Storybook](https://iberdinsky-skilld.github.io/sdc-addon), hosted on GitHub Pages, showcasing components in the `/components` directory of that repository.
+
+## Features of the Addon
+
+The SDC Storybook Addon simplifies the integration of Drupal Single Directory Components (SDC) into Storybook, offering several key features:
+
+- Vite Plugin Integration: Leverages the vite-plugin-twig-drupal plugin to seamlessly load and process Twig templates used in SDC components.
+- Dynamic Path Resolution: Utilizes namespaces to dynamically discover components within your project structure, eliminating the need for manual configuration.
+- Story Generation: Automatically creates stories based on the YAML configurations of your SDC components, streamlining the story creation process.
+- JSON Schema Support: Supports JSON Schema for props and slots, enabling the generation of mock data for missing values and ensuring data consistency.
+- Drupal Behavior Embedding: Allows you to directly embed Drupal behaviors like Drupal.attachBehaviors() into Storybook previews, ensuring components behave similarly to their Drupal counterparts.
 
 ## Why Choose SDC Storybook Over Alternatives?
 
@@ -72,18 +82,6 @@ While using Drupal to render components offers tighter integration, there are st
 - Many Components **Don’t Need Full Drupal Logic**. Basic components (buttons, cards, lists) rely on simple HTML and CSS, not on complex template logic. For such components, Twig.js provides sufficient rendering without the need for full Drupal preprocessing.
 - Twig.js Works Well for Frontend-Focused Use Cases.
 - Styling and Behavior Mismatches Can Be Managed Separately in Drupal implelentation phase.
-
-## Features of the Addon
-
-- Vite plugin for loading YAML-based SDC configurations.
-- Dynamic path resolution based on namespaces for easy component discovery.
-- Story generator that creates stories directly from YAML files.
-- JSON schema-based props and support for Drupal behaviors.
-
-## Dependencies
-
-- [vite-plugin-twig-drupal](https://github.com/larowlan/vite-plugin-twig-drupal): Loads Twig with Drupal functions.
-- [json-schema-faker](https://github.com/json-schema-faker/json-schema-faker): Generates mock data for missing props and slots.
 
 ## Quickstart Guide
 
@@ -202,8 +200,8 @@ thirdPartySettings:
             - m-paragraph--grid
         slots:
           content:
-            # 1. Basic Props
-            # This card uses only the basic default props defined in the component YAML.
+            # 1. Basic Props and Slots
+            # This card uses only the basic default props and slots defined in the component YAML.
             - type: component
               component: 'umami:card'
 
@@ -299,6 +297,11 @@ export default {
 
 export const Basic = {}
 ```
+
+## Dependencies
+
+- [vite-plugin-twig-drupal](https://github.com/larowlan/vite-plugin-twig-drupal): Loads Twig with Drupal functions.
+- [json-schema-faker](https://github.com/json-schema-faker/json-schema-faker): Generates mock data for missing props and slots.
 
 ## Known Issues
 
