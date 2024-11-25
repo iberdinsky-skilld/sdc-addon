@@ -1,5 +1,104 @@
 import { join } from 'node:path'
 import type { StorybookConfig } from '@storybook/html-vite'
+import { SDCStorybookOptions } from '../src/sdc'
+
+const sdcStorybookOptions: SDCStorybookOptions = {
+  namespace: 'umami',
+  customDefs: {
+    'ui-patterns://attributes': {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+        },
+        class: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+      additionalProperties: true,
+    },
+    'ui-patterns://boolean': {
+      type: 'boolean',
+    },
+    'ui-patterns://enum_list': {
+      type: 'array',
+      items: {
+        type: ['string', 'number', 'integer'],
+        enum: [],
+      },
+    },
+    'ui-patterns://enum': {
+      type: ['string', 'number', 'integer'],
+      enum: [],
+    },
+    'ui-patterns://identifier': {
+      type: 'string',
+      pattern:
+        '(?:--|-?[A-Za-z_\\x{00A0}-\\x{10FFFF}])[A-Za-z0-9-_\\x{00A0}-\\x{10FFFF}\\.]*',
+    },
+    'ui-patterns://links': {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            description: 'The title of the link.',
+          },
+          url: {
+            $ref: 'ui-patterns://url',
+          },
+          attributes: {
+            $ref: 'ui-patterns://attributes',
+          },
+          link_attributes: {
+            $ref: 'ui-patterns://attributes',
+          },
+          below: {
+            type: 'array',
+            items: {
+              type: 'object',
+            },
+          },
+        },
+        required: ['url', 'title'],
+      },
+    },
+    'ui-patterns://list': {
+      type: 'array',
+      items: {
+        type: ['string', 'number', 'integer'],
+      },
+    },
+    'ui-patterns://number': {
+      type: ['number', 'integer'],
+    },
+    'ui-patterns://url': {
+      type: 'string',
+      format: 'iri-reference',
+    },
+    'ui-patterns://slot': {
+      title: 'Slot',
+    },
+    'ui-patterns://string': {
+      type: 'string',
+    },
+    'ui-patterns://unknown': {
+      title: 'Unknown',
+    },
+    'ui-patterns://variant': {
+      type: 'string',
+      enum: [],
+    },
+  },
+  externalDefs: [
+    'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.3.8/src/uiPatternsSchema.yml',
+    join(__dirname, '../drupal-defs/uiPatternsSchema.yml'),
+  ],
+}
 
 const config: StorybookConfig = {
   stories: ['../components/**/*.component.yml', '../stories/*.stories.js'],
@@ -10,9 +109,7 @@ const config: StorybookConfig = {
     {
       name: '../src',
       options: {
-        sdcStorybookOptions: {
-          namespace: 'umami',
-        },
+        sdcStorybookOptions,
         vitePluginTwigDrupalOptions: {
           namespaces: {
             umami: join(__dirname, '../components'),

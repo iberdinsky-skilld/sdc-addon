@@ -67,6 +67,10 @@ interface ThirdPartySettings {
 export interface SDCStorybookOptions {
   namespace?: string
   experimentalVariants?: boolean
+  customDefs?: {
+    [key: string]: JSONSchema4
+  }
+  externalDefs?: string[]
 }
 
 export interface Component {

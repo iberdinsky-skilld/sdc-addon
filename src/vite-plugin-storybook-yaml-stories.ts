@@ -5,13 +5,16 @@ import { Args, ArgTypes, Indexer, IndexInput } from '@storybook/types'
 import argsGenerator from './argsGenerator'
 import argTypesGenerator from './argTypesGenerator'
 import storiesGenerator from './storiesGenerator'
-import customRefsTransform from './customRefsTransform'
+import customDefs from './customDef'
 import componentMetadata from './componentMetadata'
-import { Component, SDCSchema } from './sdc'
+import { Component, SDCSchema, SDCStorybookOptions } from './sdc'
+import { JSONSchemaFakerOptions } from 'json-schema-faker'
+import { JSONSchema4 } from 'json-schema'
 
 // Helper to read and transform YAML content
-const readCDC = (filePath: string): SDCSchema =>
-  customRefsTransform(parse(readFileSync(filePath, 'utf8')))
+const readCDC = (filePath: string, defs?: JSONSchema4): SDCSchema => {
+  return { $defs: defs, ...parse(readFileSync(filePath, 'utf8')) }
+}
 
 // Retrieve subdirectories from a base directory
 const getSubdirectories = (baseDir: string): string[] =>
@@ -78,12 +81,15 @@ const dynamicImports = (stories: Component[]): string => {
 }
 
 // Vite plugin for Storybook YAML stories
-export default ({ jsonSchemaFakerOptions = {} }) => ({
+export default ({
+  jsonSchemaFakerOptions = {} as JSONSchemaFakerOptions,
+  globalDefs = {} as JSONSchema4,
+}) => ({
   name: 'vite-plugin-storybook-yaml-stories',
   async load(id: string) {
     if (!id.endsWith('component.yml')) return
 
-    const content = readCDC(id)
+    const content = readCDC(id, { ...globalDefs })
     const imports = generateImports(dirname(id))
     const storiesImports = dynamicImports(
       content.thirdPartySettings?.sdcStorybook?.stories || {}
