@@ -1,3 +1,15 @@
+# v0.4.4 (Tue Nov 26 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Update specs ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.3.9 (Tue Nov 26 2024)
 
 #### ⚠️ Pushed to `main`
