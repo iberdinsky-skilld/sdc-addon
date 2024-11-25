@@ -298,6 +298,49 @@ export default {
 export const Basic = {}
 ```
 
+## Configuration Options
+
+In addition to the standard configuration options, you can also specify customDefs and externalDefs to provide additional schema definitions. These options are optional and can be used to extend or override the default definitions.
+
+#### `customDefs`
+
+The `customDefs` option allows you to define custom schema definitions directly within your configuration. This can be a link to an external file, a link to a local file, or an object with custom definitions.
+
+Example:
+
+```typescript
+const options = {
+  sdcStorybookOptions: {
+    customDefs: {
+      'json-schema-definitions://experience_builder.module/column-width': {
+        title: 'Column Width',
+        type: 'integer',
+        enum: [25, 33, 50],
+      },
+    },
+  },
+}
+```
+
+#### `externalDefs`
+
+The `externalDefs` option allows you to specify an array of paths to external definition files. These paths can be URLs to CDN-hosted files or local file paths.
+
+Example:
+
+```typescript
+const options = {
+  sdcStorybookOptions: {
+    externalDefs: [
+      'https://example.com/path/to/definitions.yml',
+      './local/path/to/definitions.yml',
+    ],
+  },
+}
+```
+
+When using externalDefs, the definitions will be fetched and registered automatically.
+
 ## Dependencies
 
 - [vite-plugin-twig-drupal](https://github.com/larowlan/vite-plugin-twig-drupal): Loads Twig with Drupal functions.
@@ -305,7 +348,6 @@ export const Basic = {}
 
 ## Known Issues
 
-- `$ref: json-schema-definitions://` for SDC from Experience Builder is unsupported.
 - The addon relies on [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers).
 
 ## UI Patterns
