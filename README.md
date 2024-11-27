@@ -225,39 +225,6 @@ thirdPartySettings:
                 content: 'Hello from third grid card!'
 ```
 
-### Key Features
-
-This configuration provides three distinct options for creating stories:
-
-1. **Render Using Basic Args**
-   The first card in the `grid` example uses only its basic arguments (`Basic.args`). No additional configuration or props are required for this component.
-
-```yaml
-- type: component
-  component: 'umami:card'
-```
-
-2. **Reuse an Existing Story**
-   The second card uses the `Preview` story defined earlier. This is particularly useful for reusing pre-configured props and slots without redefining them in each story.
-
-```yaml
-- type: component
-  component: 'umami:card'
-  story: Preview
-```
-
-3. **Define Custom Slots**
-   The third card defines a custom `content` slot. This allows you to override or enhance the default behavior of the component with specific content.
-
-```yaml
-- type: component
-  component: 'umami:card'
-  props:
-    html_tag: 'div'
-  slots:
-    content: 'Hello from third grid card!'
-```
-
 ### How It Works in Practice
 
 The addon dynamically renders the components and stories as defined:
@@ -265,6 +232,8 @@ The addon dynamically renders the components and stories as defined:
 - **Basic Args:** The default `Basic.args` of the `umami:card` component are used.
 - **Existing Story:** The `Preview` story is loaded, ensuring consistency across the Storybook environment.
 - **Custom Slots and Props:** Overrides the default slots and props behavior with unique content for that instance.
+
+[![Stories](https://i.gyazo.com/7212a3f44052ebde34b59a1555d96afe.png)](https://gyazo.com/7212a3f44052ebde34b59a1555d96afe)
 
 ### Why stories experimental?
 
@@ -304,7 +273,7 @@ export const Basic = {}
 
 In addition to the standard configuration options, you can also specify customDefs and externalDefs to provide additional schema definitions. These options are optional and can be used to extend or override the default definitions.
 
-#### `customDefs`
+### `customDefs`
 
 The `customDefs` option allows you to define custom schema definitions directly within your configuration. This can be object with custom definitions.
 
@@ -324,7 +293,7 @@ const options = {
 }
 ```
 
-#### `externalDefs`
+### `externalDefs`
 
 The `externalDefs` option allows you to specify an array of paths to external definition files. These paths can be URLs to CDN-hosted files or local file paths.
 
@@ -344,7 +313,7 @@ const options = {
 
 When using externalDefs, the definitions will be fetched and registered automatically.
 
-### `validate` Option
+### `validate`
 
 The `validate` option enables schema validation for SDC components using the [JSON Schema](https://www.npmjs.com/package/jsonschema) validator. By default, the validator checks the component configurations against the global schema located at:
 
