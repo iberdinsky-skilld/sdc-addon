@@ -15,6 +15,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Setting Default Values](#setting-default-values)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Regular Storybook](#regular-storybook)
+- [Configuration Options](#configuration-options)
 - [Dependencies](#dependencies)
 - [Known Issues](#known-issues)
 - [UI Patterns](#ui-patterns)
@@ -35,11 +36,12 @@ You can view a [live example of the SDC Addon in Storybook](https://iberdinsky-s
 
 The SDC Storybook Addon simplifies the integration of Drupal Single Directory Components (SDC) into Storybook, offering several key features:
 
-- Vite Plugin Integration: Leverages the vite-plugin-twig-drupal plugin to seamlessly load and process Twig templates used in SDC components.
-- Dynamic Path Resolution: Utilizes namespaces to dynamically discover components within your project structure, eliminating the need for manual configuration.
-- Story Generation: Automatically creates stories based on the YAML configurations of your SDC components, streamlining the story creation process.
-- JSON Schema Support: Supports JSON Schema for props and slots, enabling the generation of mock data for missing values and ensuring data consistency.
-- Drupal Behavior Embedding: Allows you to directly embed Drupal behaviors like Drupal.attachBehaviors() into Storybook previews, ensuring components behave similarly to their Drupal counterparts.
+- **Vite Plugin Integration**: Leverages the vite-plugin-twig-drupal plugin to seamlessly load and process Twig templates used in SDC components.
+- **Dynamic Path Resolution**: Utilizes namespaces to dynamically discover components within your project structure, eliminating the need for manual configuration.
+- **Story Generation**: Automatically creates stories based on the YAML configurations of your SDC components, streamlining the story creation process.
+- **JSON Schema Support**: Supports JSON Schema for props and slots, enabling the generation of mock data for missing values and ensuring data consistency.
+- **Drupal Behavior Embedding**: Allows you to directly embed Drupal behaviors like `Drupal.attachBehaviors()` into Storybook previews, ensuring components behave similarly to their Drupal counterparts.
+- **Custom and External Schema Definitions**: Supports custom and external JSON schema definitions to validate components based on Drupal-specific configurations (e.g., UI Patterns, Experience Builder).
 
 ## Why Choose SDC Storybook Over Alternatives?
 
@@ -304,7 +306,7 @@ In addition to the standard configuration options, you can also specify customDe
 
 #### `customDefs`
 
-The `customDefs` option allows you to define custom schema definitions directly within your configuration. This can be a link to an external file, a link to a local file, or an object with custom definitions.
+The `customDefs` option allows you to define custom schema definitions directly within your configuration. This can be object with custom definitions.
 
 Example:
 
@@ -332,6 +334,7 @@ Example:
 const options = {
   sdcStorybookOptions: {
     externalDefs: [
+      'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.4.3/drupal-defs/uiPatternsSchema.yml',
       'https://example.com/path/to/definitions.yml',
       './local/path/to/definitions.yml',
     ],
@@ -341,10 +344,45 @@ const options = {
 
 When using externalDefs, the definitions will be fetched and registered automatically.
 
+### `validate` Option
+
+The `validate` option enables schema validation for SDC components using the [JSON Schema](https://www.npmjs.com/package/jsonschema) validator. By default, the validator checks the component configurations against the global schema located at:
+
+```
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+```
+
+#### How It Works:
+
+- **Global Schema Validation (Default):** The addon uses the default global schema for validation. This schema is provided by Drupal and ensures that SDC components conform to the expected structure with the correct data types and properties.
+
+- **Custom Component Schema:** If a specific SDC component includes its own `$schema` field pointing to a custom schema, the validator will use that schema for validation instead of the global one. This allows for more flexibility and component-specific validation, especially when components have custom requirements.
+
+- **Validation Warnings:** Validation errors or warnings are logged to the console, helping developers identify any issues with component configurations. **Note:** Validation will not break the rendering of the components. Even if a validation error occurs, the component will still appear in Storybook, and the warning will be logged for review.
+
+To disable validation, set `validate: false`:
+
+```js
+const config = {
+  stories: ['../components/**/*.component.yml'],
+  addons: [
+    {
+      name: 'storybook-addon-sdc',
+      options: {
+        sdcStorybookOptions: {
+          validate: false, // Disable schema validation
+        },
+      },
+    },
+  ],
+}
+```
+
 ## Dependencies
 
 - [vite-plugin-twig-drupal](https://github.com/larowlan/vite-plugin-twig-drupal): Loads Twig with Drupal functions.
-- [json-schema-faker](https://github.com/json-schema-faker/json-schema-faker): Generates mock data for missing props and slots.
+- [json-schema-faker](https://github.com/json-schema-faker/json-schema-faker): Generates mock data for missing props and
+- [JSON Schema validator](https://www.npmjs.com/package/jsonschema)
 
 ## Known Issues
 

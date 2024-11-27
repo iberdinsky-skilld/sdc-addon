@@ -71,6 +71,7 @@ export interface SDCStorybookOptions {
     [key: string]: JSONSchema4
   }
   externalDefs?: string[]
+  validate?: string | boolean
 }
 
 export interface Component {

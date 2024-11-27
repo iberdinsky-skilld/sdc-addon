@@ -3,7 +3,7 @@ import YamlStoriesPlugin, {
 } from './vite-plugin-storybook-yaml-stories'
 import twig from 'vite-plugin-twig-drupal'
 import { UserConfig, mergeConfig } from 'vite'
-import { Indexer } from '@storybook/types'
+import { Indexer, IndexerOptions } from '@storybook/types'
 import { resolve } from 'path'
 import { existsSync, readFileSync } from 'node:fs'
 import { parse } from 'yaml'
@@ -13,6 +13,7 @@ import { SDCStorybookOptions } from './sdc'
 import { JSONSchemaFakerOptions } from 'json-schema-faker'
 import { JSONSchema4 } from 'json-schema'
 import fetch from 'node-fetch'
+import { logger } from './logger'
 
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
   if (defPath.startsWith('http://') || defPath.startsWith('https://')) {
@@ -48,7 +49,10 @@ export const resolveComponentPath = (namespace: string, component: string) => {
   return possiblePaths.find((path) => existsSync(path))
 }
 
-const defaultOptions: SDCStorybookOptions = {}
+const defaultOptions: SDCStorybookOptions = {
+  validate:
+    'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
+}
 
 // The main function that merges configuration and sets up the namespace alias
 export async function viteFinal(
@@ -67,7 +71,8 @@ export async function viteFinal(
     ...defaultOptions,
     ...options.sdcStorybookOptions,
   }
-  const { namespace, customDefs, externalDefs } = options.sdcStorybookOptions
+  const { namespace, customDefs, externalDefs, validate } =
+    options.sdcStorybookOptions
 
   const globalDefs: JSONSchema4 = {}
 
@@ -76,7 +81,6 @@ export async function viteFinal(
       externalDefs.map(async (defPath) => {
         const def = await loadExternalDef(defPath)
         Object.entries(def).forEach(([component, schema]) => {
-          console.log(`Registering external definition: ${component}`)
           globalDefs[component] = schema
         })
       })
@@ -85,9 +89,14 @@ export async function viteFinal(
 
   if (customDefs) {
     Object.entries(customDefs).forEach(([component, schema]) => {
-      console.log(`Registering custom definition: ${component}`)
       globalDefs[component] = schema
     })
+  }
+
+  if (globalDefs?.length) {
+    logger.info(
+      `Registering custom definitions: ${Object.keys(globalDefs).join(', ')}`
+    )
   }
 
   return mergeConfig(config, {

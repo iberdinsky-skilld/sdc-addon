@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, existsSync } from 'fs'
-import { parse } from 'yaml'
+import { parse as parseYaml } from 'yaml'
 import { dirname, extname, join, resolve } from 'path'
 import { Args, ArgTypes, Indexer, IndexInput } from '@storybook/types'
 import argsGenerator from './argsGenerator'
@@ -9,19 +9,32 @@ import componentMetadata from './componentMetadata'
 import { Component, SDCSchema, SDCStorybookOptions } from './sdc'
 import { JSONSchemaFakerOptions } from 'json-schema-faker'
 import { JSONSchema4 } from 'json-schema'
+import { validateJson } from './validateJson'
+import { logger } from './logger'
 
-// Helper to read and transform YAML content
-const readCDC = (filePath: string, defs?: JSONSchema4): SDCSchema => {
-  return { $defs: defs, ...parse(readFileSync(filePath, 'utf8')) }
+// Helper to read and validate SDC YAML files
+const readSDC = (
+  filePath: string,
+  defs?: JSONSchema4,
+  validate?: string | boolean
+): SDCSchema => {
+  const sdcSchema = {
+    $defs: defs,
+    ...(parseYaml(readFileSync(filePath, 'utf8')) as SDCSchema),
+  }
+  if (typeof validate === 'string' && validate.length > 0) {
+    validateJson(sdcSchema, sdcSchema['$schema'] || validate)
+  }
+  return sdcSchema
 }
 
-// Retrieve subdirectories from a base directory
+// Get all subdirectories in a given base directory
 const getSubdirectories = (baseDir: string): string[] =>
   readdirSync(baseDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => join(baseDir, entry.name))
 
-// Resolve the path to a component YAML file
+// Resolve the file path to a component YAML definition
 const resolveComponentPath = (
   namespace: string,
   component: string
@@ -34,25 +47,23 @@ const resolveComponentPath = (
   return possiblePaths.find(existsSync)
 }
 
-// Generate imports for assets within a directory
+// Generate import statements for all assets in a directory
 const generateImports = (directory: string): string =>
   readdirSync(directory)
-    .filter((asset) =>
-      ['.css', '.js', '.mjs', '.twig'].includes(extname(asset))
-    )
-    .map((asset) => {
-      const assetPath = `./${asset}`
-      return extname(asset) === '.twig'
-        ? `import COMPONENT from '${assetPath}';`
-        : `import '${assetPath}';`
+    .filter((file) => ['.css', '.js', '.mjs', '.twig'].includes(extname(file)))
+    .map((file) => {
+      const filePath = `./${file}`
+      return extname(file) === '.twig'
+        ? `import COMPONENT from '${filePath}';`
+        : `import '${filePath}';`
     })
     .join('\n')
 
-// Extract component imports dynamically based on slots or props
+// Dynamically generate component imports from story configurations
 const dynamicImports = (stories: Component[]): string => {
   const imports = new Set<string>()
 
-  const findComponentArgs = (args: Record<string, any>) => {
+  const extractComponentImports = (args: Record<string, any>) => {
     Object.values(args).forEach((value) => {
       if (Array.isArray(value)) {
         value.forEach((item) => {
@@ -68,27 +79,28 @@ const dynamicImports = (stories: Component[]): string => {
           }
         })
       } else if (value && typeof value === 'object') {
-        findComponentArgs(value)
+        extractComponentImports(value)
       }
     })
   }
 
   Object.values(stories).forEach(({ slots = {}, props = {} }) =>
-    findComponentArgs({ ...slots, ...props })
+    extractComponentImports({ ...slots, ...props })
   )
   return Array.from(imports).join('\n')
 }
 
-// Vite plugin for Storybook YAML stories
+// Vite plugin to process YAML component files
 export default ({
   jsonSchemaFakerOptions = {} as JSONSchemaFakerOptions,
+  sdcStorybookOptions = {} as SDCStorybookOptions,
   globalDefs = {} as JSONSchema4,
 }) => ({
   name: 'vite-plugin-storybook-yaml-stories',
   async load(id: string) {
     if (!id.endsWith('component.yml')) return
 
-    const content = readCDC(id, { ...globalDefs })
+    const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
     const imports = generateImports(dirname(id))
     const storiesImports = dynamicImports(
       content.thirdPartySettings?.sdcStorybook?.stories || {}
@@ -100,7 +112,7 @@ export default ({
       ...(content.variants && {
         variant: {
           control: 'select',
-          options: content.variants ? Object.keys(content.variants) : [],
+          options: Object.keys(content.variants),
         },
       }),
       ...argTypesGenerator(content),
@@ -142,11 +154,11 @@ ${stories}
   },
 })
 
-// Storybook indexer for YAML stories
+// Indexer for YAML-based Storybook stories
 export const yamlStoriesIndexer: Indexer = {
   test: /component\.yml$/,
   createIndex: async (fileName, { makeTitle }) => {
-    const content = readCDC(fileName)
+    const content = readSDC(fileName)
     const baseTitle = makeTitle(`SDC/${content.name}`)
     const storiesIndex: IndexInput[] = [
       {

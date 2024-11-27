@@ -1,7 +1,6 @@
-# This is so your IDE knows about the syntax for fixes and autocomplete.
 $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
 
-# The human readable name.
+# The human-readable name.
 name: Menu
 
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
@@ -28,9 +27,13 @@ props:
               - Recipes
               - Articles
           url:
-            type: iri-reference
+            type: string
+            format: uri
             examples:
               - https://example.com
+        required:
+          - title
+          - url
 
 # Slots always hold arbitrary markup. We know that beforehand, so no need for
 # a schema for slots.
