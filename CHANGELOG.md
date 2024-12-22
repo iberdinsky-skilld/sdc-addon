@@ -1,3 +1,16 @@
+# v0.5.2 (Sun Dec 22 2024)
+
+#### ⚠️ Pushed to `main`
+
+- Audit fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Updaed readme ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.4.5 (Wed Nov 27 2024)
 
 #### ⚠️ Pushed to `main`
