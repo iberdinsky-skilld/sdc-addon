@@ -18,16 +18,21 @@ import { logger } from './logger.ts'
 
 // Load external definitions (local or remote)
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
-  if (defPath.startsWith('http://') || defPath.startsWith('https://')) {
-    const response = await fetch(defPath)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${defPath}: ${response.statusText}`)
+  try {
+    if (defPath.startsWith('http://') || defPath.startsWith('https://')) {
+      const response = await fetch(defPath)
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${defPath}: ${response.statusText}`)
+      }
+      const content = await response.text()
+      return parse(content)
+    } else {
+      const content = readFileSync(defPath, 'utf8')
+      return parse(content)
     }
-    const content = await response.text()
-    return parse(content)
-  } else {
-    const content = readFileSync(defPath, 'utf8')
-    return parse(content)
+  } catch (error) {
+    logger.error(`Error loading external definition from ${defPath}: ${error}`)
+    throw error
   }
 }
 
@@ -62,26 +67,11 @@ const defaultOptions: SDCStorybookOptions = {
   //   'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
 }
 
-// Main function to merge Vite configuration
-export async function viteFinal(
-  config: UserConfig,
-  options: {
-    sdcStorybookOptions: SDCStorybookOptions
-    vitePluginTwigDrupalOptions: {
-      namespaces?: {}
-      functions?: {}
-      globalContext: {}
-    }
-    jsonSchemaFakerOptions: JSONSchemaFakerOptions
-  }
-) {
-  options.sdcStorybookOptions = {
-    ...defaultOptions,
-    ...options.sdcStorybookOptions,
-  }
-
-  const { namespace, customDefs, externalDefs, validate } =
-    options.sdcStorybookOptions
+// Helper to load and merge definitions
+async function loadAndMergeDefinitions(
+  externalDefs: string[] | undefined,
+  customDefs: Record<string, any> | undefined
+): Promise<JSONSchema4> {
   const globalDefs: JSONSchema4 = {}
 
   // Load external definitions
@@ -108,6 +98,30 @@ export async function viteFinal(
       `Registering custom definitions: ${Object.keys(globalDefs).join(', ')}`
     )
   }
+
+  return globalDefs
+}
+
+// Main function to merge Vite configuration
+export async function viteFinal(
+  config: UserConfig,
+  options: {
+    sdcStorybookOptions: SDCStorybookOptions
+    vitePluginTwigDrupalOptions: {
+      namespaces?: {}
+      functions?: {}
+      globalContext: {}
+    }
+    jsonSchemaFakerOptions: JSONSchemaFakerOptions
+  }
+) {
+  options.sdcStorybookOptions = {
+    ...defaultOptions,
+    ...options.sdcStorybookOptions,
+  }
+
+  const { namespace, customDefs, externalDefs } = options.sdcStorybookOptions
+  const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
 
   return mergeConfig(config, {
     plugins: [

@@ -27,7 +27,7 @@
   "scripts": {
     "build": "tsup",
     "build:watch": "npm run build -- --watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
     "start": "run-p build:watch \"storybook --quiet\"",
     "prerelease": "zx scripts/prepublish-checks.js",
     "release": "npm run build && auto shipit",
@@ -68,6 +68,7 @@
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
     "vite": "^6.0.11",
+    "vitest": "^3.0.7",
     "zx": "^8.2.0"
   },
   "publishConfig": {
