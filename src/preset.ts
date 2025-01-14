@@ -3,7 +3,7 @@ import YamlStoriesPlugin, {
 } from './vite-plugin-storybook-yaml-stories'
 import twig from 'vite-plugin-twig-drupal'
 import { UserConfig, mergeConfig } from 'vite'
-import { Indexer, IndexerOptions } from '@storybook/types'
+import { Indexer } from '@storybook/types'
 import { resolve } from 'path'
 import { existsSync, readFileSync } from 'node:fs'
 import { parse } from 'yaml'
@@ -15,6 +15,7 @@ import { JSONSchema4 } from 'json-schema'
 import fetch from 'node-fetch'
 import { logger } from './logger'
 
+// Load external definitions (local or remote)
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
   if (defPath.startsWith('http://') || defPath.startsWith('https://')) {
     const response = await fetch(defPath)
@@ -29,32 +30,37 @@ async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
   }
 }
 
-let cachedComponentDirectories: string[] | null = null
-
-const getComponentDirectories = (): string[] => {
-  if (cachedComponentDirectories === null) {
-    cachedComponentDirectories = glob.sync('./components/**/*.component.yml')
-  }
-  return cachedComponentDirectories
+// Isolated utility to fetch component directories
+function getComponentDirectories(): string[] {
+  return glob.sync('./components/**/*.component.yml')
 }
 
-// Function to resolve component paths dynamically
-export const resolveComponentPath = (namespace: string, component: string) => {
+// Resolve component paths dynamically
+function resolveComponentPath(
+  namespace: string,
+  component: string
+): string | undefined {
   const componentDirectories = getComponentDirectories()
   const possiblePaths = componentDirectories.map((dir) =>
     resolve(`${dir}/${component}/${component}.component.yml`)
   )
 
-  // Return the first existing path
-  return possiblePaths.find((path) => existsSync(path))
+  const resolvedPath = possiblePaths.find((path) => existsSync(path))
+  if (!resolvedPath) {
+    logger.error(
+      `Component ${component} could not be resolved in namespace ${namespace}`
+    )
+  }
+  return resolvedPath
 }
 
+// Default options for SDC Storybook
 const defaultOptions: SDCStorybookOptions = {
   validate:
     'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
 }
 
-// The main function that merges configuration and sets up the namespace alias
+// Main function to merge Vite configuration
 export async function viteFinal(
   config: UserConfig,
   options: {
@@ -71,11 +77,12 @@ export async function viteFinal(
     ...defaultOptions,
     ...options.sdcStorybookOptions,
   }
+
   const { namespace, customDefs, externalDefs, validate } =
     options.sdcStorybookOptions
-
   const globalDefs: JSONSchema4 = {}
 
+  // Load external definitions
   if (externalDefs) {
     await Promise.all(
       externalDefs.map(async (defPath) => {
@@ -87,13 +94,14 @@ export async function viteFinal(
     )
   }
 
+  // Merge custom definitions
   if (customDefs) {
     Object.entries(customDefs).forEach(([component, schema]) => {
       globalDefs[component] = schema
     })
   }
 
-  if (globalDefs?.length) {
+  if (Object.keys(globalDefs).length > 0) {
     logger.info(
       `Registering custom definitions: ${Object.keys(globalDefs).join(', ')}`
     )
@@ -121,14 +129,14 @@ export async function viteFinal(
   })
 }
 
-// Optional: indexer support
+// Optional: Indexer support
 export const experimental_indexers: StorybookConfig['experimental_indexers'] =
   async (existingIndexers: Indexer[] | undefined) => [
     ...(existingIndexers || []),
     yamlStoriesIndexer,
   ]
 
-// Optional: Add the previewHead, including necessary styles and scripts for Drupal components
+// Optional: Add the previewHead
 export const previewHead: StorybookConfig['previewHead'] = (head: string) => `
   <style>
     .visually-hidden {
