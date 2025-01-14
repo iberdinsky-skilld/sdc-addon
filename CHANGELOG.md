@@ -1,3 +1,18 @@
+# v0.5.2 (Tue Jan 14 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Fixed Win issue (iberdinsky@skilld.cloud)
+- Audit fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Updaed readme ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.5.2 (Sun Dec 22 2024)
 
 #### ⚠️ Pushed to `main`
