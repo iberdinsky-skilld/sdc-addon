@@ -1,3 +1,15 @@
+# v0.5.5 (Wed Jan 15 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Update dependencies (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.5.2 (Tue Jan 14 2025)
 
 #### ⚠️ Pushed to `main`
