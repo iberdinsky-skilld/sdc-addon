@@ -1,3 +1,15 @@
+# v0.5.6 (Thu Jan 16 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Fixed glob, esbuild (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.5.5 (Wed Jan 15 2025)
 
 #### ⚠️ Pushed to `main`
