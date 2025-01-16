@@ -1,3 +1,15 @@
+# v0.5.7 (Thu Jan 16 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Moved validate to optional ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.5.6 (Thu Jan 16 2025)
 
 #### ⚠️ Pushed to `main`
