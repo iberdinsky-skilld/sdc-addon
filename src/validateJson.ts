@@ -1,8 +1,8 @@
 import { Validator } from 'jsonschema'
 import fetch from 'node-fetch'
-import { JSONSchema4 } from 'json-schema'
-import { logger } from './logger'
-import { SDCSchema } from './sdc'
+import type { JSONSchema4 } from 'json-schema'
+import { logger } from './logger.ts'
+import type { SDCSchema } from './sdc'
 import { log } from 'console'
 
 const validator = new Validator()

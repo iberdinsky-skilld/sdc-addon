@@ -1,4 +1,4 @@
-import { Component, SDCStorybookOptions } from './sdc'
+import type { Component, SDCStorybookOptions } from './sdc'
 
 export default (stories: Component[]): string =>
   Object.entries(stories)

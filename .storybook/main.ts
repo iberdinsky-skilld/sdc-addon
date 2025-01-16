@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import type { StorybookConfig } from '@storybook/html-vite'
-import { SDCStorybookOptions } from '../src/sdc'
+import type { SDCStorybookOptions } from '../src/sdc'
+const __dirname = import.meta.dirname
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
@@ -107,7 +108,7 @@ const config: StorybookConfig = {
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
     {
-      name: '../src',
+      name: join(__dirname, '../src/preset.ts'),
       options: {
         sdcStorybookOptions,
         vitePluginTwigDrupalOptions: {

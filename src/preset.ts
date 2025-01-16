@@ -1,19 +1,20 @@
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
-} from './vite-plugin-storybook-yaml-stories'
+} from './vite-plugin-storybook-yaml-stories.ts'
 import twig from 'vite-plugin-twig-drupal'
-import { UserConfig, mergeConfig } from 'vite'
-import { Indexer } from '@storybook/types'
+import { mergeConfig } from 'vite'
+import type { UserConfig } from 'vite'
+import type { Indexer } from '@storybook/types'
 import { resolve } from 'path'
 import { existsSync, readFileSync } from 'node:fs'
 import { parse } from 'yaml'
-import glob from 'glob'
+import { sync } from 'glob'
 import type { StorybookConfig } from '@storybook/html-vite'
-import { SDCStorybookOptions } from './sdc'
-import { JSONSchemaFakerOptions } from 'json-schema-faker'
-import { JSONSchema4 } from 'json-schema'
+import type { SDCStorybookOptions } from './sdc'
+import { type JSONSchemaFakerOptions } from 'json-schema-faker'
+import type { JSONSchema4 } from 'json-schema'
 import fetch from 'node-fetch'
-import { logger } from './logger'
+import { logger } from './logger.ts'
 
 // Load external definitions (local or remote)
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
@@ -32,7 +33,7 @@ async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
 
 // Isolated utility to fetch component directories
 function getComponentDirectories(): string[] {
-  return glob.sync('./components/**/*.component.yml')
+  return sync('./components/**/*.component.yml')
 }
 
 // Resolve component paths dynamically

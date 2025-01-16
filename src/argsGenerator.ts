@@ -1,6 +1,7 @@
-import { JSONSchemaFaker, JSONSchemaFakerOptions } from 'json-schema-faker'
-import { Args } from '@storybook/types'
-import { SDCSchema, SDCStorybookOptions, SlotDefinition } from './sdc'
+import { JSONSchemaFaker } from 'json-schema-faker'
+import type { JSONSchemaFakerOptions } from 'json-schema-faker'
+import type { Args } from '@storybook/types'
+import type { SDCSchema, SDCStorybookOptions, SlotDefinition } from './sdc'
 
 // Helper to generate argument strings (for props, slots, or variants)
 const generateArgs = (

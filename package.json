@@ -44,12 +44,12 @@
     "vite-plugin-twig-drupal": "^1.4.2"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.4.4",
-    "@storybook/addon-interactions": "^8.4.4",
-    "@storybook/addon-links": "^8.4.4",
-    "@storybook/html-vite": "^8.4.4",
-    "@storybook/test": "^8.4.4",
-    "@storybook/types": "^8.4.4",
+    "@storybook/addon-essentials": "^8.5.0",
+    "@storybook/addon-interactions": "^8.5.0",
+    "@storybook/addon-links": "^8.5.0",
+    "@storybook/html-vite": "^8.5.0",
+    "@storybook/test": "^8.5.0",
+    "@storybook/types": "^8.5.0",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^22.8.7",
     "@types/node-fetch": "^2.6.12",
@@ -61,10 +61,10 @@
     "prompts": "^2.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "storybook": "^8.4.4",
+    "storybook": "^8.5.0",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
-    "vite": "^5.3.5",
+    "vite": "^6.0.7",
     "zx": "^8.2.0"
   },
   "publishConfig": {

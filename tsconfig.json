@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "esModuleInterop": true,
@@ -7,12 +8,16 @@
     "incremental": false,
     "isolatedModules": true,
     "jsx": "react",
-    "lib": ["es2020", "dom"],
-    "module": "commonjs",
+    "lib": ["ES2024", "dom"],
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "noImplicitAny": true,
-    "rootDir": "./src",
     "skipLibCheck": true,
-    "target": "ES2020"
+    "target": "ES2024",
+    "resolveJsonModule": true,
+    "paths": {
+      "@src/*": ["src/*"]
+    }
   },
   "include": ["src/**/*"]
 }
