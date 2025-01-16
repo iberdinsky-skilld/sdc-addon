@@ -329,7 +329,7 @@ $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schema
 
 - **Validation Warnings:** Validation errors or warnings are logged to the console, helping developers identify any issues with component configurations. **Note:** Validation will not break the rendering of the components. Even if a validation error occurs, the component will still appear in Storybook, and the warning will be logged for review.
 
-To disable validation, set `validate: false`:
+To enable validation, set `validate: URL of schema`:
 
 ```js
 const config = {
@@ -339,7 +339,7 @@ const config = {
       name: 'storybook-addon-sdc',
       options: {
         sdcStorybookOptions: {
-          validate: false, // Disable schema validation
+          validate: 'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
         },
       },
     },

@@ -57,8 +57,9 @@ function resolveComponentPath(
 
 // Default options for SDC Storybook
 const defaultOptions: SDCStorybookOptions = {
-  validate:
-    'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
+  validate: false,
+  // validate:
+  //   'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
 }
 
 // Main function to merge Vite configuration
