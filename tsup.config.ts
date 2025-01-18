@@ -1,6 +1,6 @@
 import { defineConfig, type Options } from 'tsup'
 
-const NODE_TARGET: Options['target'] = ['node22']
+const NODE_TARGET: Options['target'] = ['node23']
 
 export default defineConfig(async (options) => {
   const commonConfig: Options = {

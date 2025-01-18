@@ -39,9 +39,11 @@
     "glob": "^11.0.0",
     "json-schema-faker": "^0.5.8",
     "jsonschema": "^1.4.1",
+    "node-fetch": "^3.3.2",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
-    "vite-plugin-twig-drupal": "^1.4.2"
+    "vite-plugin-twig-drupal": "^1.4.2",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.5.0",
