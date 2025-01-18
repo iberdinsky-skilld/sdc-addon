@@ -1,3 +1,16 @@
+# v0.5.10 (Sat Jan 18 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Fix directory ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Bump ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.5.9 (Sat Jan 18 2025)
 
 #### ⚠️ Pushed to `main`
