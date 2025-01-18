@@ -116,7 +116,14 @@ While using Drupal to render components offers tighter integration, there are st
 
 6. **Add components to the `components` directory** (or copy from this [repository](https://github.com/iberdinsky-skilld/sdc-addon/tree/main/components)).
 
-7. **Start Storybook**:
+7. **Set [type: module](https://nodejs.org/api/packages.html#type) in package.json:**
+   ```json
+    {
+      "type": "module"
+    }
+   ```
+
+8. **Start Storybook**:
    ```bash
    npm run storybook
    ```
@@ -126,7 +133,8 @@ While using Drupal to render components offers tighter integration, there are st
 To configure the addon, update `.storybook/main.js` as shown below:
 
 ```js
-import { join } from 'node:path' // 1. Add path dependency.
+import { join } from 'node:path' // 1. Add dependencies.
+import { cwd } from 'node:process'
 
 const config = {
   stories: ['../components/**/*.component.yml'], // 2. Set components glob.
@@ -140,7 +148,7 @@ const config = {
         vitePluginTwigDrupalOptions: {
           // vite-plugin-twig-drupal options.
           namespaces: {
-            umami: join(__dirname, '../components'), // Your namespace and path to components.
+            umami: join(cwd(), './components'), // Your namespace and path to components.
           },
         },
         jsonSchemaFakerOptions: {}, // json-schema-faker options.

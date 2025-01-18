@@ -1,7 +1,7 @@
 import { join } from 'node:path'
+import { cwd } from 'node:process'
 import type { StorybookConfig } from '@storybook/html-vite'
 import type { SDCStorybookOptions } from '../src/sdc'
-const __dirname = import.meta.dirname
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
@@ -97,7 +97,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
   },
   externalDefs: [
     'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.4.3/drupal-defs/uiPatternsSchema.yml',
-    join(__dirname, '../drupal-defs/uiPatternsSchema.yml'),
+    join(cwd(), './drupal-defs/uiPatternsSchema.yml'),
   ],
 }
 
@@ -108,12 +108,12 @@ const config: StorybookConfig = {
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
     {
-      name: join(__dirname, '../src/preset.ts'),
+      name: join(cwd(), 'src/preset.ts'),
       options: {
         sdcStorybookOptions,
         vitePluginTwigDrupalOptions: {
           namespaces: {
-            umami: join(__dirname, '../components'),
+            umami: join(cwd(), './components'),
           },
         },
       },

@@ -33,6 +33,7 @@
     "release": "npm run build && auto shipit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "serve": "npx http-server ./storybook-static",
     "format": "prettier --write ."
   },
   "dependencies": {
