@@ -1,5 +1,17 @@
 # v0.5.9 (Sat Jan 18 2025)
 
+#### ⚠️ Pushed to `main`
+
+- Extend deps (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
+# v0.5.9 (Sat Jan 18 2025)
+
 
 
 ---
