@@ -24,3 +24,17 @@ props:
       title: Items
       description: 'Each item can contain: title, url.'
       $ref: 'ui-patterns://links'
+
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      previewVariant:
+        props:
+          variant: success
+          items:
+            - title: Home
+              url: /
+            - title: About
+              url: /about
+            - title: Contact
+              url: /contact
