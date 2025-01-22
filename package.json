@@ -67,7 +67,7 @@
     "storybook": "^8.5.0",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
-    "vite": "^6.0.7",
+    "vite": "^6.0.11",
     "zx": "^8.2.0"
   },
   "publishConfig": {
