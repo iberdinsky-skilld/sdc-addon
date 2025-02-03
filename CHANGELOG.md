@@ -1,3 +1,15 @@
+# v0.6.7 (Mon Feb 03 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Upgrade sb ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.6.3 (Wed Jan 22 2025)
 
 #### ⚠️ Pushed to `main`
