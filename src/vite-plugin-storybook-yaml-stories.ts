@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, existsSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
-import { dirname, extname, join, resolve } from 'path'
+import { basename, dirname, extname, join, resolve } from 'path'
 import type { Args, ArgTypes, Indexer, IndexInput } from '@storybook/types'
 import argsGenerator from './argsGenerator.ts'
 import argTypesGenerator from './argTypesGenerator.ts'
@@ -119,6 +119,7 @@ export default ({
     }
 
     const args: Args = {
+      defaultAttributes: [['data-component-id', `${sdcStorybookOptions?.namespace}:${basename(id, '.component.yml')}`]],
       componentMetadata: metadata,
       ...(content.variants && {
         variant: Object.keys(content.variants)[0],

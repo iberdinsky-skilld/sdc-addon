@@ -117,10 +117,11 @@ While using Drupal to render components offers tighter integration, there are st
 6. **Add components to the `components` directory** (or copy from this [repository](https://github.com/iberdinsky-skilld/sdc-addon/tree/main/components)).
 
 7. **Set [type: module](https://nodejs.org/api/packages.html#type) in package.json:**
+
    ```json
-    {
-      "type": "module"
-    }
+   {
+     "type": "module"
+   }
    ```
 
 8. **Start Storybook**:
@@ -347,7 +348,8 @@ const config = {
       name: 'storybook-addon-sdc',
       options: {
         sdcStorybookOptions: {
-          validate: 'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
+          validate:
+            'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
         },
       },
     },
