@@ -1,5 +1,17 @@
 # v0.6.8 (Sat Feb 15 2025)
 
+#### ⚠️ Pushed to `main`
+
+- Dedault Attributes (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
+# v0.6.8 (Sat Feb 15 2025)
+
 
 
 ---
