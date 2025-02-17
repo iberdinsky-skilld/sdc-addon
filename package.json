@@ -1,6 +1,6 @@
 {
   "name": "storybook-addon-sdc",
-  "version": "0.6.8",
+  "version": "0.7.0",
   "description": "Drupal Single Directory Components as stories",
   "keywords": [
     "SDC",
@@ -43,7 +43,7 @@
     "node-fetch": "^3.3.2",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
-    "vite-plugin-twig-drupal": "^1.4.2",
+    "vite-plugin-twig-drupal": "^1.6.0",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
@@ -87,6 +87,6 @@
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee",
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.34.7"
+    "@rollup/rollup-linux-x64-gnu": "^4.34.8"
   }
 }
