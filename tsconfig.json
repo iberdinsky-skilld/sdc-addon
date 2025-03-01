@@ -8,12 +8,12 @@
     "incremental": false,
     "isolatedModules": true,
     "jsx": "react",
-    "lib": ["ES2024", "dom"],
+    "lib": ["ES2022", "dom"],
     "module": "ESNext",
     "moduleResolution": "Node",
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "target": "ES2024",
+    "target": "ES2022",
     "resolveJsonModule": true,
     "paths": {
       "@src/*": ["src/*"]

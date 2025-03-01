@@ -1,10 +1,11 @@
-import type { Component, SDCStorybookOptions } from './sdc'
+import type { Component } from './sdc'
+import { capitalize, convertToKebabCase } from './utils'
 
 export default (stories: Component[]): string =>
   Object.entries(stories)
     .map(
       ([storyKey, { props = {}, slots = {}, variants = {} }]) => `
-export const ${storyKey[0].toUpperCase() + storyKey.slice(1)} = {
+export const ${capitalize(storyKey)} = {
   args: {
     ...Basic.args,
     ${generateArgs(props)}
@@ -46,7 +47,7 @@ const formatArgValue = (value: any, isSlot: boolean): string => {
 
 // Generate a component call for a story
 const generateComponent = (item: Component): string => {
-  const kebabCaseName = item.component.replace(/[-:]/g, '')
+  const kebabCaseName = convertToKebabCase(item.component)
   const componentProps = { ...item.props, ...item.slots }
 
   const storyArgs = item.story
