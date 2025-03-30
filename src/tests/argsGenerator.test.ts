@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import generateStorybookArgs from '../argsGenerator';
-import { SDCSchema } from '../sdc';
+import { describe, it, expect, vi } from 'vitest'
+import generateStorybookArgs from '../argsGenerator'
+import { SDCSchema } from '../sdc'
 
 describe('generateStorybookArgs', () => {
   it('should generate arguments from properties', () => {
@@ -12,12 +12,12 @@ describe('generateStorybookArgs', () => {
       },
       $defs: {},
       name: '',
-    };
+    }
 
-    const jsonSchemaFakerOptions = {};
-    const args = generateStorybookArgs(content, jsonSchemaFakerOptions);
-    expect(args).toHaveProperty('title');
-  });
+    const jsonSchemaFakerOptions = {}
+    const args = generateStorybookArgs(content, jsonSchemaFakerOptions)
+    expect(args).toHaveProperty('title')
+  })
 
   it('should generate arguments from slots', () => {
     const content: SDCSchema = {
@@ -26,12 +26,12 @@ describe('generateStorybookArgs', () => {
       },
       $defs: {},
       name: '',
-    };
+    }
 
-    const jsonSchemaFakerOptions = {};
-    const args = generateStorybookArgs(content, jsonSchemaFakerOptions);
-    expect(args).toHaveProperty('slot1');
-  });
+    const jsonSchemaFakerOptions = {}
+    const args = generateStorybookArgs(content, jsonSchemaFakerOptions)
+    expect(args).toHaveProperty('slot1')
+  })
 
   it('should handle both properties and slots', () => {
     const content: SDCSchema = {
@@ -45,11 +45,11 @@ describe('generateStorybookArgs', () => {
       },
       $defs: {},
       name: '',
-    };
+    }
 
-    const jsonSchemaFakerOptions = {};
-    const args = generateStorybookArgs(content, jsonSchemaFakerOptions);
-    expect(args).toHaveProperty('title');
-    expect(args).toHaveProperty('slot1');
-  });
-});
+    const jsonSchemaFakerOptions = {}
+    const args = generateStorybookArgs(content, jsonSchemaFakerOptions)
+    expect(args).toHaveProperty('title')
+    expect(args).toHaveProperty('slot1')
+  })
+})

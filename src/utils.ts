@@ -3,7 +3,8 @@ import { join, resolve } from 'path'
 
 export const capitalize = (str: string) => str[0].toUpperCase() + str.slice(1)
 
-export const convertToKebabCase = (str: string): string => str.replace(/[-:]/g, '')
+export const convertToKebabCase = (str: string): string =>
+  str.replace(/[-:]/g, '')
 
 export const getSubdirectories = (baseDir: string): string[] =>
   readdirSync(baseDir, { withFileTypes: true })

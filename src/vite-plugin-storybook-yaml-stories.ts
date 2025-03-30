@@ -72,7 +72,11 @@ const dynamicImports = (stories: Component[]): string => {
 }
 
 // Helper to create story index
-const createStoryIndex = (fileName: string, baseTitle: string, stories: Record<string, any>): IndexInput[] => {
+const createStoryIndex = (
+  fileName: string,
+  baseTitle: string,
+  stories: Record<string, any>
+): IndexInput[] => {
   const storiesIndex: IndexInput[] = [
     {
       type: 'story',
@@ -126,7 +130,12 @@ export default ({
       }
 
       const args: Args = {
-        defaultAttributes: [['data-component-id', `${sdcStorybookOptions?.namespace}:${basename(id, '.component.yml')}`]],
+        defaultAttributes: [
+          [
+            'data-component-id',
+            `${sdcStorybookOptions?.namespace}:${basename(id, '.component.yml')}`,
+          ],
+        ],
         componentMetadata: metadata,
         ...(content.variants && {
           variant: Object.keys(content.variants)[0],

@@ -167,6 +167,6 @@ export const previewHead: StorybookConfig['previewHead'] = (head: string) => `
   <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupalSettingsLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupal.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupal.init.js"></script>
-  <script src="https://unpkg.com/@drupal/once"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@drupal/once@1.0.1/dist/once.min.js"></script>
   ${head}
 `
