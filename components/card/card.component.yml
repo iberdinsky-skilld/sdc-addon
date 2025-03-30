@@ -49,11 +49,11 @@ thirdPartySettings:
               props:
                 extra_classes:
                   - umami-card__title
-                label: test
+                label: Preview Story Title
             - type: component
               component: 'umami:read-more'
               props:
                 extra_classes:
                   - umami-card__read-more
               slots:
-                text: test
+                text: Learn More

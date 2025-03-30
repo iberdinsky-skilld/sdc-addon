@@ -1,7 +1,8 @@
 .umami-card {
   padding: 1rem;
-  border: 1px solid #63307a;
+  border: 1px solid lightgray;
   background-color: #fff;
+  border-radius: 0.5rem;
 }
 
 .umami-card__content {

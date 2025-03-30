@@ -1,5 +1,6 @@
 .a-accordion {
-  border: 1px solid #63307a;
+  border: 1px solid lightgray;
+  border-radius: 0.5rem;
 }
 
 .a-accordion__content {
@@ -11,7 +12,7 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 1.25rem;
   user-select: none;
   padding: 0.75rem 1rem;
@@ -23,7 +24,7 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  background-color: #63307a;
+  background-color: lightgray;
   inline-size: 1.25rem;
   block-size: 1.25rem;
   mask-repeat: no-repeat;

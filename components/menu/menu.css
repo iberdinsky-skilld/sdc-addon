@@ -8,8 +8,8 @@
   list-style: none;
   display: grid;
   gap: 1rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 400;
+  text-transform: capitalize;
 }
 
 @media screen and (min-width: 64rem) {

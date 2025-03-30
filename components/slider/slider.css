@@ -12,24 +12,25 @@
 }
 
 [class*='o-slider__nav'] {
-  position: absolute;
-  top: 50%;
-  margin-top: -1.25rem;
-  z-index: 10;
-  cursor: pointer;
-  fill: white;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  color: white;
+  background-color: black;
 
   &[disabled] {
     display: none;
   }
-}
 
-.o-slider__nav--prev {
-  left: -1.25rem;
-}
+  svg {
+    width: 1rem;
+    height: 1rem;
+    fill: white;
+  }
 
-.o-slider__nav--next {
-  right: -1.25rem;
+  &:after {
+    display: none;
+  }
 }
 
 .o-slider__wrapper {

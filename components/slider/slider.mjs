@@ -12,8 +12,13 @@ import { Navigation } from 'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/i
               nextEl: slider.querySelector('.o-slider__nav--next'),
               prevEl: slider.querySelector('.o-slider__nav--prev'),
             },
-            slidesPerView: 2,
+            slidesPerView: 1,
             spaceBetween: 20,
+            breakpoints: {
+              640: {
+                slidesPerView: 2,
+              }
+            }
           }
 
           const swiper = new Swiper(slider.querySelector('.swiper'), options)

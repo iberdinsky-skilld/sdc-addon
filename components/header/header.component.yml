@@ -30,7 +30,7 @@ slots:
   dropdown:
     title: Dropdown
     examples:
-      - Dropdown content
+      - Header Dropdown Content Example
 
 # This is how you take control of the keys in your library
 # declaration. The overrides specified here will be merged (shallow merge) with

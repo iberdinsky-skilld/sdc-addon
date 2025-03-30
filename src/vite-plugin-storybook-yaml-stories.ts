@@ -120,6 +120,7 @@ export default ({
 
       const argTypes: ArgTypes = {
         componentMetadata: { table: { disable: true } },
+        defaultAttributes: { table: { disable: true } },
         ...(content.variants && {
           variant: {
             control: 'select',

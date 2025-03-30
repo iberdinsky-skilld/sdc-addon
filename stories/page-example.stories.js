@@ -6,7 +6,7 @@ import header, {
 import banner, {
   Preview as BannerPreview,
 } from '../components/banner/banner.component.yml'
-import paragraph from '../components/paragraph/paragraph.component.yml'
+import paragraph, { Badges as ParagraphBadges, Grid as ParagraphGrid } from '../components/paragraph/paragraph.component.yml'
 import slider from '../components/slider/slider.component.yml'
 import card, {
   Preview as CardPreview,
@@ -38,6 +38,8 @@ export default {
         `,
       })}
       ${paragraph.component({ ...paragraph.args })}
+      ${paragraph.component({ ...ParagraphGrid.args })}
+      ${paragraph.component({ ...ParagraphBadges.args })}
       ${paragraph.component({
         label: 'Paragraph with Slider',
         content: () => `

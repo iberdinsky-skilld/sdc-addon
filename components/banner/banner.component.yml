@@ -45,8 +45,13 @@ thirdPartySettings:
                 extra_classes:
                   - banner__title
             - type: component
+              component: 'umami:title'
+              props:
+                label: Lorem ipsum dolor sit amet, saepe scripta in pri. Legendos deterruisset ut vix.
+                html_tag: span
+            - type: component
               component: 'umami:read-more'
               slots:
-                text: test
+                text: Learn More
                 extra_classes:
                   - banner__link

@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 4vw;
-  border-bottom: 1px solid #63307a;
+  border-bottom: 1px solid lightgray;
 }
 
 .umami-header__burger {
@@ -43,4 +43,5 @@
 .umami-header__burger[aria-expanded='true'] ~ .umami-header__dropdown {
   overflow-y: auto;
   max-height: 18.75rem;
+  padding-block: 2rem;
 }

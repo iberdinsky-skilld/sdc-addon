@@ -19,7 +19,7 @@
 @media screen and (min-width: 64rem) {
   .banner {
     position: relative;
-    background-color: #63307a;
+    background-color: lightgray;
   }
 
   .banner__inner {
@@ -36,10 +36,10 @@
     position: relative;
     max-width: 50%;
     margin: 0;
-    padding: 1.777em;
-    color: #fff;
-    border: 1px solid #63307a;
-    background: rgba(0, 0, 0, 0.42);
+    padding: 1.5rem;
+    color: white;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 0.5rem;
   }
 
   .banner__image img {

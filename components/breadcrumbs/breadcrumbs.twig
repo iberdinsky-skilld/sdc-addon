@@ -7,7 +7,8 @@
 
   <div{{attributes}}>
     <ul class="breadcrumbs__list">
-      <li>Variant: {{ variant }}</li>
+      {% if variant %}<li>Variant: {{ variant }}</li>{% endif %}
+
       {% for item in items %}
         {% if item.url %}
           <li>

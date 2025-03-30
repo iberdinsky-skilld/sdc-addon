@@ -25,7 +25,7 @@ slots:
   content:
     title: Content
     examples:
-      - Paragraph content
+      - Lorem ipsum dolor sit amet, euripidis voluptatum nam ex, ullum hendrerit pertinacia vim et. Ex habeo ponderum sapientem has, id vide utamur gloriatur cum. Per quas diceret cu. Ea mea noster ancillae, per et audiam impedit habemus, ad aperiam offendit persecuti qui. Ei consul copiosae eos. Ex sed quaeque senserit.
 
 thirdPartySettings:
   sdcStorybook:
@@ -48,3 +48,26 @@ thirdPartySettings:
                 html_tag: 'div'
               slots:
                 content: 'Hello from third grid card!'
+      badges:
+        props:
+          label: Paragraph with badges
+          extra_classes:
+            - m-paragraph--badges
+        slots:
+          content:
+            - type: component
+              component: 'umami:badge'
+              props:
+                icon: 'knife'
+            - type: component
+              component: 'umami:badge'
+              props:
+                icon: 'timer'
+            - type: component
+              component: 'umami:badge'
+              props:
+                icon: 'serves'
+            - type: component
+              component: 'umami:badge'
+              props:
+                icon: 'difficulty'

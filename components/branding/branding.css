@@ -1,6 +1,8 @@
 .branding__site-logo {
-  grid-row: span 3;
+  grid-row: span 2;
   line-height: 1;
+  overflow: hidden;
+  border-radius: 0.5rem;
 }
 
 .branding__site-name {
@@ -8,6 +10,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5rem;
+  align-self: end;
 }
 
 @media screen and (min-width: 64rem) {
@@ -17,7 +20,7 @@
 }
 
 .branding__site-name a {
-  color: #63307a;
+  color: black;
   text-decoration: none;
 }
 
@@ -25,6 +28,7 @@
   display: none;
   text-transform: lowercase;
   font-size: 0.75rem;
+  align-self: start;
 }
 
 @media screen and (min-width: 64rem) {

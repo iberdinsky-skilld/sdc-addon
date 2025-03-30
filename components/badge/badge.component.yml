@@ -28,4 +28,4 @@ slots:
     type: string
     description: Text
     examples:
-      - Text
+      - Badge Label
