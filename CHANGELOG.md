@@ -1,3 +1,23 @@
+# v0.6.9 (Wed May 21 2025)
+
+#### 🐛 Bug Fix
+
+- Init tests [#17](https://github.com/iberdinsky-skilld/sdc-addon/pull/17) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Upgrade [#16](https://github.com/iberdinsky-skilld/sdc-addon/pull/16) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Default attributes [#15](https://github.com/iberdinsky-skilld/sdc-addon/pull/15) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
+- Components improvements. Default Attributes ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Format + Packages Update + CDN Fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Fix for github-pages ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.6.9 (Sun Mar 30 2025)
 
 #### 🐛 Bug Fix
