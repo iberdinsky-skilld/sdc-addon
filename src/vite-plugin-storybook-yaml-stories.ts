@@ -114,7 +114,7 @@ export default ({
     if (id.endsWith('story.yml'))  {
       // We need to load the story.yml to support reload.
       // But we ignore to load them.
-      return '';S
+      return '';
     }
 
     if (!id.endsWith('component.yml')) return
