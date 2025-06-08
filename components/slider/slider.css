@@ -36,3 +36,14 @@
 .o-slider__wrapper {
   margin-bottom: 1rem;
 }
+
+:where(.o-slider--type--basic) .o-slider__slide {
+  padding: 3rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid lightgray;
+  background-color: #fff;
+  border-radius: 0.5rem;
+}

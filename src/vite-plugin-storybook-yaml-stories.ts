@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname, extname } from 'path'
-import { globSync } from 'glob';
+import { globSync } from 'glob'
 
 import type { Args, ArgTypes, Indexer, IndexInput } from '@storybook/types'
 import argsGenerator from './argsGenerator.ts'
@@ -33,7 +33,9 @@ const readSDC = (
 // Generate import statements for all assets in a directory
 const generateImports = (directory: string): string =>
   readdirSync(directory)
-    .filter((file) => ['.css', '.js', '.mjs', '.twig', '.yml'].includes(extname(file)))
+    .filter((file) =>
+      ['.css', '.js', '.mjs', '.twig', '.yml'].includes(extname(file))
+    )
     .map((file) => {
       const filePath = `./${file}`
       return extname(file) === '.twig'
@@ -110,11 +112,10 @@ export default ({
 }) => ({
   name: 'vite-plugin-storybook-yaml-stories',
   async load(id: string) {
-
-    if (id.endsWith('story.yml'))  {
+    if (id.endsWith('story.yml')) {
       // We need to load the story.yml to support reload.
       // But we ignore to load them.
-      return '';
+      return ''
     }
 
     if (!id.endsWith('component.yml')) return
@@ -123,13 +124,11 @@ export default ({
       const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
       const imports = generateImports(dirname(id))
       const previewsStories = {
-        ... content.thirdPartySettings?.sdcStorybook?.stories || {},
-        ... loadStoryFilesSync(id)
-      };
+        ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
+        ...loadStoryFilesSync(id),
+      }
 
-      const storiesImports = dynamicImports(
-        previewsStories
-      )
+      const storiesImports = dynamicImports(previewsStories)
       const metadata = componentMetadata(id, content)
 
       const argTypes: ArgTypes = {
@@ -160,9 +159,7 @@ export default ({
 
       const basicArgs = { ...args }
 
-      const stories = previewsStories
-        ? storiesGenerator(previewsStories)
-        : ''
+      const stories = previewsStories ? storiesGenerator(previewsStories) : ''
 
       return `
 ${imports}
@@ -198,8 +195,8 @@ export const yamlStoriesIndexer: Indexer = {
       const content = readSDC(fileName)
       const baseTitle = makeTitle(`SDC/${content.name}`)
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
-      const storiesContent = loadStoryFilesSync(fileName);
-      const mergedStories = {...stories, ...storiesContent}
+      const storiesContent = loadStoryFilesSync(fileName)
+      const mergedStories = { ...stories, ...storiesContent }
       return createStoryIndex(fileName, baseTitle, mergedStories)
     } catch (error) {
       console.error(`Error creating index for YAML file: ${fileName}`, error)
@@ -210,15 +207,18 @@ export const yamlStoriesIndexer: Indexer = {
 
 // Load *.story.yml files.
 const loadStoryFilesSync = (fileName: string) => {
-  const folderPath = dirname(fileName);
-  const storyFiles = globSync(join(folderPath, '*.story.yml'));
+  const folderPath = dirname(fileName)
+  const storyFiles = globSync(join(folderPath, '*.story.yml'))
 
-  return storyFiles.reduce((acc, file) => {
-    const content = readFileSync(file, 'utf8');
-    const key = basename(file).split('.')[1];
-    return {
-      ...acc,
-      [key]: parseYaml(content)
-    };
-  }, {} as Record<string, any>);
-};
+  return storyFiles.reduce(
+    (acc, file) => {
+      const content = readFileSync(file, 'utf8')
+      const key = basename(file).split('.')[1]
+      return {
+        ...acc,
+        [key]: parseYaml(content),
+      }
+    },
+    {} as Record<string, any>
+  )
+}

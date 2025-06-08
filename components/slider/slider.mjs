@@ -17,8 +17,8 @@ import { Navigation } from 'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/i
             breakpoints: {
               640: {
                 slidesPerView: 2,
-              }
-            }
+              },
+            },
           }
 
           const swiper = new Swiper(slider.querySelector('.swiper'), options)

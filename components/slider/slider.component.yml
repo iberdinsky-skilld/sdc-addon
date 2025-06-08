@@ -12,6 +12,13 @@ status: stable
 props:
   type: object
   properties:
+    sliderType:
+      title: Type
+      type: string
+      enum:
+        - 'basic'
+        - 'naked'
+      default: basic
     slides:
       title: Slider Items
       type: array
@@ -36,6 +43,7 @@ thirdPartySettings:
     stories:
       cards:
         props:
+          sliderType: naked
           slides:
             - type: component
               component: 'umami:card'

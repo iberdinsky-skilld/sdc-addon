@@ -1,0 +1,21 @@
+name: Badges
+props:
+  slides:
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: timer
+      slots:
+        text: Hola
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: serves
+      slots:
+        text: Bonjour
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: difficulty
+      slots:
+        text: Ciao

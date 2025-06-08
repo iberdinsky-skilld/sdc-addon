@@ -14,6 +14,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Configuration](#configuration)
 - [Setting Default Values](#setting-default-values)
 - [Creating Experimental Stories](#creating-experimental-stories)
+- [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
 - [Dependencies](#dependencies)
@@ -243,6 +244,39 @@ The addon dynamically renders the components and stories as defined:
 - **Custom Slots and Props:** Overrides the default slots and props behavior with unique content for that instance.
 
 [![Stories](https://i.gyazo.com/7212a3f44052ebde34b59a1555d96afe.png)](https://gyazo.com/7212a3f44052ebde34b59a1555d96afe)
+
+## Support for Single Story Files (`*.story.yml`)
+
+In addition to stories defined inside `*.component.yml` files, the addon now supports standalone story files with the `.story.yml` extension.
+
+This means you can create independent stories for your components by simply adding a `.story.yml` file in your component directory. These files are automatically discovered and indexed by Storybook, allowing you to organize and share stories outside of the main component YAML.
+
+**Example:**
+
+```yaml
+# components/slider/slider.badges.story.yml
+name: Badges
+props:
+  slides:
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: timer
+      slots:
+        text: Hola
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: serves
+      slots:
+        text: Bonjour
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: difficulty
+      slots:
+        text: Ciao
+```
 
 ### Why stories experimental?
 
