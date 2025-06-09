@@ -50,7 +50,7 @@
     "@storybook/addon-essentials": "^8.6.11",
     "@storybook/addon-interactions": "^8.6.11",
     "@storybook/addon-links": "^8.6.11",
-    "@storybook/html-vite": "^8.6.11",
+    "@storybook/html-vite": "^9.0.6",
     "@storybook/test": "^8.6.11",
     "@storybook/types": "^8.6.11",
     "@types/json-schema": "^7.0.15",
