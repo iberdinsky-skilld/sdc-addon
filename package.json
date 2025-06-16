@@ -54,7 +54,7 @@
     "@storybook/test": "^8.6.11",
     "@storybook/types": "^8.6.11",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^22.13.14",
+    "@types/node": "^24.0.3",
     "@types/node-fetch": "^2.6.12",
     "@types/twig": "^1.12.16",
     "auto": "^11.3.0",
