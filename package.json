@@ -49,7 +49,7 @@
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.11",
     "@storybook/addon-interactions": "^8.6.11",
-    "@storybook/addon-links": "^8.6.11",
+    "@storybook/addon-links": "^9.0.14",
     "@storybook/html-vite": "^8.6.11",
     "@storybook/test": "^8.6.11",
     "@storybook/types": "^8.6.11",
