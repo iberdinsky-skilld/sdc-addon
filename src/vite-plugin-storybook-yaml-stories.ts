@@ -3,7 +3,7 @@ import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname, extname } from 'path'
 import { globSync } from 'glob'
 
-import type { Args, ArgTypes, Indexer, IndexInput } from '@storybook/types'
+import type { Args, ArgTypes, Indexer, IndexInput } from 'storybook/internal/types'
 import argsGenerator from './argsGenerator.ts'
 import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'

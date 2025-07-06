@@ -4,7 +4,7 @@ import YamlStoriesPlugin, {
 import twig from 'vite-plugin-twig-drupal'
 import { mergeConfig } from 'vite'
 import type { UserConfig } from 'vite'
-import type { Indexer } from '@storybook/types'
+import type { Indexer } from 'storybook/internal/types'
 import { resolve } from 'path'
 import { existsSync, readFileSync } from 'node:fs'
 import { parse } from 'yaml'
