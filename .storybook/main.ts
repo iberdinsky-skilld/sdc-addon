@@ -105,8 +105,6 @@ const config: StorybookConfig = {
   stories: ['../components/**/*.component.yml', '../stories/*.stories.js'],
   addons: [
     '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
     {
       name: join(cwd(), 'src/preset.ts'),
       options: {
