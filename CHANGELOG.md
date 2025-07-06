@@ -1,3 +1,27 @@
+# v0.6.9 (Sun Jul 06 2025)
+
+#### 🐛 Bug Fix
+
+- Add support for .story.yml files [#32](https://github.com/iberdinsky-skilld/sdc-addon/pull/32) ([@christianwiedemann](https://github.com/christianwiedemann))
+- Init tests [#17](https://github.com/iberdinsky-skilld/sdc-addon/pull/17) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Upgrade [#16](https://github.com/iberdinsky-skilld/sdc-addon/pull/16) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Default attributes [#15](https://github.com/iberdinsky-skilld/sdc-addon/pull/15) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
+- Create docs for single story file ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Security fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Components improvements. Default Attributes ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Format + Packages Update + CDN Fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Fix for github-pages ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+
+---
+
 # v0.6.9 (Sun Jun 08 2025)
 
 #### 🐛 Bug Fix
