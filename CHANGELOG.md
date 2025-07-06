@@ -1,3 +1,15 @@
+# v0.7.11 (Sun Jul 06 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Fix types (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.6.9 (Sun Jul 06 2025)
 
 #### 🐛 Bug Fix
