@@ -50,7 +50,7 @@
     "@storybook/addon-links": "^9.0.15",
     "@storybook/html-vite": "^9.0.15",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^22.13.14",
+    "@types/node": "^24.0.13",
     "@types/node-fetch": "^2.6.12",
     "@types/twig": "^1.12.16",
     "auto": "^11.3.0",
