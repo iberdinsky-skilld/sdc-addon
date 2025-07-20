@@ -1,3 +1,15 @@
+# v0.7.12 (Sun Jul 20 2025)
+
+#### ⚠️ Pushed to `main`
+
+- TwigSafeArray for slots. (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.7.11 (Sun Jul 06 2025)
 
 #### ⚠️ Pushed to `main`
