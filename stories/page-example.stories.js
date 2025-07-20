@@ -48,6 +48,7 @@ export default {
         content: () => `
           ${slider.component({
             ...slider.args,
+            sliderType: 'naked',
             slides: [
               card.component({ ...CardPreview.args }),
               card.component({ ...CardPreview.args }),

@@ -38,8 +38,8 @@ const formatArgValue = (value: any, isSlot: boolean): string => {
           ? generateComponent(item)
           : JSON.stringify(item)
       )
-      .join(isSlot ? ' + ' : ', ')
-    return `[${arrayContent}]`
+
+    return `new TwigSafeArray(${arrayContent.join(', ')})`;
   }
 
   return JSON.stringify(value)

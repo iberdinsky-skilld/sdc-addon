@@ -1,5 +1,5 @@
 name: Badges
-props:
+slots:
   slides:
     - type: component
       component: 'umami:badge'

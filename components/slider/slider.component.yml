@@ -19,11 +19,12 @@ props:
         - 'basic'
         - 'naked'
       default: basic
-    slides:
-      title: Slider Items
-      type: array
-      examples:
-        - ['slide 1', 'slide 2', 'slide 3', 'slide 4']
+slots:
+  slides:
+    title: Slider Items
+    type: array
+    examples:
+      - ['slide 1', 'slide 2', 'slide 3', 'slide 4']
 libraryOverrides:
   dependencies:
     - core/drupal
@@ -44,6 +45,7 @@ thirdPartySettings:
       cards:
         props:
           sliderType: naked
+        slots:
           slides:
             - type: component
               component: 'umami:card'

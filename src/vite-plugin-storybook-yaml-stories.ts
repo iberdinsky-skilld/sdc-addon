@@ -165,6 +165,12 @@ export default ({
 ${imports}
 ${storiesImports}
 
+class TwigSafeArray extends Array {
+  toString() {
+    return this.join('');
+  }
+}
+
 export default {
   component: COMPONENT,
   argTypes: ${JSON.stringify(argTypes, null, 2)},

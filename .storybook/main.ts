@@ -3,6 +3,14 @@ import { cwd } from 'node:process'
 import type { StorybookConfig } from '@storybook/html-vite'
 import type { SDCStorybookOptions } from '../src/sdc'
 
+class TwigSafeArray<T> extends Array<T> {
+  toString() {
+    return this.join('');
+  }
+}
+
+(globalThis as any).TwigSafeArray = TwigSafeArray;
+
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
   customDefs: {
