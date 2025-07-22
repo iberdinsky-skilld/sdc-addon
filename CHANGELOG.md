@@ -1,3 +1,15 @@
+# v0.8.3 (Tue Jul 22 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Upgrade packages (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.7.12 (Sun Jul 20 2025)
 
 #### ⚠️ Pushed to `main`
