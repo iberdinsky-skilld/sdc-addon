@@ -1,8 +1,9 @@
 <div{{ attributes.addClass('umami-badge') }}>
+    Badge
   <div class="umami-badge__container">
     {% if icon %}
       <div class="umami-badge__icon">
-        {{ source(componentMetadata.path ~ '/icons/' ~ icon|default('knife') ~ '.svg') }}
+
       </div>
     {% endif %}
     {% block text %}{{ text }}{% endblock %}

@@ -14,63 +14,68 @@ import slider from '../components/slider/slider.component.yml'
 import card, {
   Preview as CardPreview,
 } from '../components/card/card.component.yml'
-
 export default {
   title: 'Page with imported SDC',
-  render: () => {
-    return `
-      ${header.component({ ...HeaderPreview.args })}
-      ${banner.component({ ...BannerPreview.args })}
-      ${paragraph.component({
-        content: () => `
-          ${breadcrumbs.component({
-            items: [
-              {
-                title: 'Home',
-                url: '#',
-              },
-              {
-                title: 'Sweet',
-                url: '#',
-              },
-              {
-                title: 'Home',
-              },
-            ],
-          })}
-        `,
-      })}
-      ${paragraph.component({ ...paragraph.args })}
-      ${paragraph.component({ ...ParagraphGrid.args })}
-      ${paragraph.component({ ...ParagraphBadges.args })}
-      ${paragraph.component({
-        label: 'Paragraph with Slider',
-        content: () => `
-          ${slider.component({
-            ...slider.args,
-            sliderType: 'naked',
-            slides: [
-              card.component({ ...CardPreview.args }),
-              card.component({ ...CardPreview.args }),
-              card.component({ ...CardPreview.args }),
-            ],
-          })}
+  render: async () => {
+    const headerHtml = await header.baseComponent({ ...HeaderPreview.args });
+    const bannerHtml = await banner.baseComponent({ ...BannerPreview.args });
 
-        `,
-      })}
-      ${paragraph.component({
-        label: 'Paragraph with Accordions',
-        content: () => `
-          ${accordion.component({ content: 'Test', title: 'Test', name: 'acc' })}
-          ${accordion.component({ content: 'Test', title: 'Test', name: 'acc' })}
-        `,
-      })}
+    const breadcrumbsHtml = await breadcrumbs.baseComponent({
+      items: [
+        { title: 'Home', url: '#' },
+        { title: 'Sweet', url: '#' },
+        { title: 'Home' },
+      ],
+    });
 
+    const paragraphWithBreadcrumbs = await paragraph.baseComponent({
+      content: () => breadcrumbsHtml,
+    });
+
+    const paragraph1 = await paragraph.baseComponent({ ...paragraph.args });
+    const paragraphGrid = await paragraph.baseComponent({ ...ParagraphGrid.args });
+    const paragraphBadges = await paragraph.baseComponent({ ...ParagraphBadges.args });
+
+    const card1 = await card.baseComponent({ ...CardPreview.args });
+    const card2 = await card.baseComponent({ ...CardPreview.args });
+    const card3 = await card.baseComponent({ ...CardPreview.args });
+
+    const sliderHtml = await slider.baseComponent({
+      ...slider.args,
+      sliderType: 'naked',
+      slides: [card1, card2, card3],
+    });
+
+    const paragraphWithSlider = await paragraph.baseComponent({
+      label: 'Paragraph with Slider',
+      content: () => sliderHtml,
+    });
+
+    const accordion1 = await accordion.baseComponent({ content: 'Test', title: 'Test', name: 'acc' });
+    const accordion2 = await accordion.baseComponent({ content: 'Test', title: 'Test', name: 'acc' });
+
+    const paragraphWithAccordion = await paragraph.baseComponent({
+      label: 'Paragraph with Accordions',
+      content: () => `${accordion1}${accordion2}`,
+    });
+
+    return Promise.resolve(
+      `
+      ${headerHtml}
+      ${bannerHtml}
+      ${paragraphWithBreadcrumbs}
+      ${paragraph1}
+      ${paragraphGrid}
+      ${paragraphBadges}
+      ${paragraphWithSlider}
+      ${paragraphWithAccordion}
     `
+    );
   },
+
   play: async ({ canvasElement }) => {
-    Drupal.attachBehaviors(canvasElement, window.drupalSettings)
+    Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
-}
+};
 
 export const Basic = {}

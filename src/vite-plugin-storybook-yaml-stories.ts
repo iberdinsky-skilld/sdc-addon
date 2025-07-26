@@ -172,7 +172,8 @@ class TwigSafeArray extends Array {
 }
 
 export default {
-  component: COMPONENT,
+  component: await COMPONENT(${JSON.stringify(args, null, 2)}),
+  baseComponent: COMPONENT,
   argTypes: ${JSON.stringify(argTypes, null, 2)},
   args: ${JSON.stringify(args, null, 2)},
 };

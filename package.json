@@ -43,7 +43,8 @@
     "node-fetch": "^3.3.2",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
-    "vite-plugin-twig-drupal": "^1.6.0",
+    "vite-plugin-node-polyfills": "^0.24.0",
+    "vite-plugin-twing-drupal": "^1.0.0",
     "yaml": "^2.7.1"
   },
   "devDependencies": {
@@ -53,7 +54,7 @@
     "@types/node": "^22.13.14",
     "@types/node-fetch": "^2.6.12",
     "@types/twig": "^1.12.16",
-    "auto": "^11.3.0",
+    "auto": "^9.10.4",
     "boxen": "^8.0.1",
     "dedent": "^1.5.3",
     "prettier": "^3.5.3",
