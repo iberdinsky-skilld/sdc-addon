@@ -119,7 +119,7 @@ const config: StorybookConfig = {
         sdcStorybookOptions,
         vitePluginTwigDrupalOptions: {
           namespaces: {
-            umami: join(cwd(), './components'),
+            umami: [join(cwd(), './components')],
           },
         },
       },

@@ -54,7 +54,7 @@ const generateComponent = (item: Component): string => {
     ? `...${kebabCaseName}.${item.story}.args`
     : '...{}'
 
-  return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.args, ${storyArgs}, ...${JSON.stringify(componentProps)}})`
+  return `await ${kebabCaseName}.default.baseComponent({...${kebabCaseName}.Basic.args, ${storyArgs}, ...${JSON.stringify(componentProps)}})`
 }
 
 // Helper to generate variants args

@@ -8,7 +8,7 @@
 %}
 
 <div{{attributes.addClass(classes)}}>
-  {% include 'umami:title' with {
+  {% include '@umami/title/title.twig' with {
     action: 'Extend'|t,
     attributes: create_attribute(),
     label: label,
