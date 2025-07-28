@@ -1,6 +1,6 @@
 <div{{ attributes.addClass('umami-header') }}>
   <div class="umami-header__logo">
-    {% block logo %}{{ logo|render }}{% endblock %}
+    {% block logo %}{{ logo }}{% endblock %}
   </div>
   <button
     type="button"
@@ -12,7 +12,7 @@
     {{ source('@umami/header/icons/burger.svg') }}
   </button>
   <div class="umami-header__dropdown">
-    {% block dropdown %}{{ dropdown|render }}{% endblock %}
+    {% block dropdown %}{{ dropdown }}{% endblock %}
   </div>
   </div>
 </div>
