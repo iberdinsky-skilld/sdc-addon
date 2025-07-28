@@ -120,7 +120,7 @@ const config: StorybookConfig = {
         sdcStorybookOptions,
         vitePluginTwingDrupalOptions: {
           namespaces: {
-            umami: join(cwd(), './components'),
+            umami: [join(cwd(), './components')],
           },
           hooks: join(cwd(), '.storybook/twing-hooks.js'),
         },
