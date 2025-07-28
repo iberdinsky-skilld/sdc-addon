@@ -1,5 +1,6 @@
 import type { Component } from './sdc.d.ts'
 import { capitalize, convertToKebabCase } from './utils.ts'
+import { storyRendererRegistry } from './storiesRender.ts'
 
 export default (stories: Component[]): string =>
   Object.entries(stories)
@@ -32,29 +33,15 @@ const generateArgs = (
 // Format an argument's value, handling arrays, components, and primitives
 const formatArgValue = (value: any, isSlot: boolean): string => {
   if (Array.isArray(value)) {
-    const arrayContent = value.map((item) =>
-      item?.type === 'component'
-        ? generateComponent(item)
-        : JSON.stringify(item)
-    )
-
-    return `new TwigSafeArray(${arrayContent.join(', ')})`
+    const arrayContent = value
+      .map((item) => storyRendererRegistry.render(item))
+    return `new TwigSafeArray(${arrayContent.join(', ')})`;
   }
 
   return JSON.stringify(value)
 }
 
-// Generate a component call for a story
-const generateComponent = (item: Component): string => {
-  const kebabCaseName = convertToKebabCase(item.component)
-  const componentProps = { ...item.props, ...item.slots }
 
-  const storyArgs = item.story
-    ? `...${kebabCaseName}.${item.story}.args`
-    : '...{}'
-
-  return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.args, ${storyArgs}, ...${JSON.stringify(componentProps)}})`
-}
 
 // Helper to generate variants args
 const generateVariants = (
