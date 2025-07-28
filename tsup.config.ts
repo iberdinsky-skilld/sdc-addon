@@ -15,8 +15,8 @@ export default defineConfig(async (options) => {
     platform: 'node',
     outDir: 'dist',
     clean: true,
-    shims: true,
-    external: ['vite', 'fs'],
+    shims: false,
+    external: ['vite', 'fs', 'vite-plugin-node-polyfills'],
   }
 
   const configs: Options[] = []
