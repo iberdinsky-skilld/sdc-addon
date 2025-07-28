@@ -13,6 +13,7 @@ class TwigSafeArray<T> extends Array<T> {
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
+
   customDefs: {
     'ui-patterns://attributes': {
       type: 'object',
@@ -117,10 +118,11 @@ const config: StorybookConfig = {
       name: join(cwd(), 'src/preset.ts'),
       options: {
         sdcStorybookOptions,
-        vitePluginTwigDrupalOptions: {
+        vitePluginTwingDrupalOptions: {
           namespaces: {
             umami: join(cwd(), './components'),
           },
+          hooks: join(cwd(), '.storybook/twing-hooks.js'),
         },
       },
     },

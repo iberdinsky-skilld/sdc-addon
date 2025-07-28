@@ -108,6 +108,12 @@ export async function viteFinal(
   config: UserConfig,
   options: {
     sdcStorybookOptions: SDCStorybookOptions
+    twigLib: 'twing',
+    vitePluginTwingDrupalOptions: {
+      namespaces?: {}
+      include: '/\.twig(\?.*)?$/'
+      hooks?: ''
+    }
     vitePluginTwigDrupalOptions: {
       namespaces?: {}
       functions?: {}
@@ -129,10 +135,7 @@ export async function viteFinal(
       nodePolyfills({
         include: ['buffer', 'stream', 'util', 'events', 'path'],
       }),
-      twig({
-        include: /\.twig(\?.*)?$/     ,      // match bare and query imports.
-        namespaces: options.vitePluginTwigDrupalOptions.namespaces
-      }),
+      twig(options.vitePluginTwingDrupalOptions),
       //twig(options.vitePluginTwigDrupalOptions),
       YamlStoriesPlugin({ ...options, globalDefs }),
     ],
