@@ -188,7 +188,6 @@ export const Basic = {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
 };
-
 ${stories}
       `
     } catch (error) {

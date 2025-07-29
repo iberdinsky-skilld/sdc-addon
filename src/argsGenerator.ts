@@ -13,6 +13,9 @@ const generateArgs = (
 ): Args => {
   return Object.entries(schema).reduce<Args>((acc, [key, property]) => {
     acc[key] = JSONSchemaFaker.generate(property, defs)
+    if (acc[key] instanceof Object) {
+      acc[key] = Object.values(acc[key]);
+    }
     return acc
   }, {})
 }

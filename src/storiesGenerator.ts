@@ -31,17 +31,14 @@ const generateArgs = (
     .join('\n')
 
 // Format an argument's value, handling arrays, components, and primitives
-const formatArgValue = (value: any, isSlot: boolean): string => {
+  const formatArgValue = (value: any, isSlot: boolean): string => {
   if (Array.isArray(value)) {
     const arrayContent = value
       .map((item) => storyRendererRegistry.render(item))
     return `new TwigSafeArray(${arrayContent.join(', ')})`;
   }
-
-  return JSON.stringify(value)
+  return storyRendererRegistry.render(value)
 }
-
-
 
 // Helper to generate variants args
 const generateVariants = (
