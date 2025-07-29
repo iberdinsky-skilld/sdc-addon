@@ -38,7 +38,11 @@ props:
 slots:
   content:
     type: object
-    title: Title prefix
+    title: Content
+
+  content2:
+    type: object
+    title: Content
 
 thirdPartySettings:
   sdcStorybook:
@@ -47,6 +51,10 @@ thirdPartySettings:
         props:
           html_tag: 'div'
         slots:
+          content2:
+            type: component
+            component: 'umami:card'
+
           content:
             - '<img class="umami-card__image" src="https://placehold.co/800x400"/>'
             - type: html_tag
