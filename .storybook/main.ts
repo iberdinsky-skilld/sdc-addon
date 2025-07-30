@@ -14,6 +14,13 @@ class TwigSafeArray<T> extends Array<T> {
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
   twigLib: 'twing', // Switch here to twing
+  storyNodesRenderer: [
+    {
+      appliesTo: item => item?.type === 'sample',
+      render: item => `'SAMPLE'`,
+      priority: -4,
+    },
+  ],
   customDefs: {
     'ui-patterns://attributes': {
       type: 'object',

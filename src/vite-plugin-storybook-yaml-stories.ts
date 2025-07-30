@@ -12,6 +12,7 @@ import type {
 import argsGenerator from './argsGenerator.ts'
 import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'
+import {storyNodeRenderer} from './storyNodeRender.ts';
 import componentMetadata from './componentMetadata.ts'
 import type { Component, SDCSchema, SDCStorybookOptions } from './sdc'
 import { type JSONSchemaFakerOptions } from 'json-schema-faker'
@@ -70,6 +71,7 @@ const dynamicImports = (stories: Component[]): string => {
           if (item.type === 'component') {
             importComponent(item)
           }
+          extractComponentImports(value)
         })
       } else if (value && typeof value === 'object') {
         if (value.type === 'component') {
@@ -138,7 +140,7 @@ export default ({
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
       }
-
+      storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer)
       const storiesImports = dynamicImports(previewsStories)
       const metadata = componentMetadata(id, content)
 

@@ -67,6 +67,7 @@ interface ThirdPartySettings {
 export interface SDCStorybookOptions {
   namespace?: string
   experimentalVariants?: boolean
+  storyNodesRenderer?: StoryNodeRenderer[]
   twigLib?: 'twing' | 'twig'
   customDefs?: {
     [key: string]: JSONSchema4
@@ -74,6 +75,12 @@ export interface SDCStorybookOptions {
   externalDefs?: string[]
   validate?: string | boolean
 }
+
+export type StoryNodeRenderer = {
+  appliesTo: (item: any) => boolean;
+  render: (item: any) => string;
+  priority?: number;
+};
 
 export interface Component {
   variants?: JSONSchema4
