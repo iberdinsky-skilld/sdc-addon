@@ -54,7 +54,10 @@ thirdPartySettings:
           content2:
             type: component
             component: 'umami:card'
-
+            slots:
+              content:
+                - type: component
+                  component: 'umami:badge'
           content:
             - '<img class="umami-card__image" src="https://placehold.co/800x400"/>'
             - type: html_tag
