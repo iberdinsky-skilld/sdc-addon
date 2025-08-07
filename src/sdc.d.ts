@@ -60,12 +60,18 @@ interface LibraryDefinition {
   js?: JsAttributes
 }
 
+interface DesignSystem {
+  path: string,
+  namespace: string
+}
+
 interface ThirdPartySettings {
   [key: string]: Record<string, any>
 }
 
 export interface SDCStorybookOptions {
   namespace?: string
+  dependencies?: DesignSystem[]
   experimentalVariants?: boolean
   storyNodesRenderer?: StoryNodeRenderer[]
   twigLib?: 'twing' | 'twig'
