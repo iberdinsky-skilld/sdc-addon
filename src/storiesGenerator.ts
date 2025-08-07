@@ -1,5 +1,5 @@
-import type { Component } from './sdc'
-import { capitalize, convertToKebabCase } from './utils'
+import type { Component } from './sdc.d.ts'
+import { capitalize, convertToKebabCase } from './utils.ts'
 
 export default (stories: Component[]): string =>
   Object.entries(stories)
@@ -32,14 +32,13 @@ const generateArgs = (
 // Format an argument's value, handling arrays, components, and primitives
 const formatArgValue = (value: any, isSlot: boolean): string => {
   if (Array.isArray(value)) {
-    const arrayContent = value
-      .map((item) =>
-        item?.type === 'component'
-          ? generateComponent(item)
-          : JSON.stringify(item)
-      )
+    const arrayContent = value.map((item) =>
+      item?.type === 'component'
+        ? generateComponent(item)
+        : JSON.stringify(item)
+    )
 
-    return `new TwigSafeArray(${arrayContent.join(', ')})`;
+    return `new TwigSafeArray(${arrayContent.join(', ')})`
   }
 
   return JSON.stringify(value)

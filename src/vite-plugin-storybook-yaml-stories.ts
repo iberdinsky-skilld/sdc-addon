@@ -3,7 +3,12 @@ import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname, extname } from 'path'
 import { globSync } from 'glob'
 
-import type { Args, ArgTypes, Indexer, IndexInput } from 'storybook/internal/types'
+import type {
+  Args,
+  ArgTypes,
+  Indexer,
+  IndexInput,
+} from 'storybook/internal/types'
 import argsGenerator from './argsGenerator.ts'
 import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'
@@ -12,7 +17,7 @@ import type { Component, SDCSchema, SDCStorybookOptions } from './sdc'
 import { type JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
-import { convertToKebabCase, resolveComponentPath } from './utils'
+import { convertToKebabCase, resolveComponentPath } from './utils.ts'
 
 // Helper to read and validate SDC YAML files
 const readSDC = (

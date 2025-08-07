@@ -1,13 +1,13 @@
-import { createSynchronousFunction } from "twing"
+import { createSynchronousFunction } from 'twing'
 
 /**
  * Simple test function.
  */
 function testFunction() {
-  return "IT WORKS!"
+  return 'IT WORKS!'
 }
 
 export function initEnvironment(twingEnvironment, config = {}) {
-  const func = createSynchronousFunction('testFunction', testFunction, []);
-  twingEnvironment.addFunction(func);
+  const func = createSynchronousFunction('testFunction', testFunction, [])
+  twingEnvironment.addFunction(func)
 }

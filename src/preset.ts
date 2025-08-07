@@ -1,7 +1,8 @@
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
 } from './vite-plugin-storybook-yaml-stories.ts'
-import twig from 'vite-plugin-twing-drupal'
+import twing from 'vite-plugin-twing-drupal'
+import twig from 'vite-plugin-twig-drupal'
 import { mergeConfig } from 'vite'
 import type { UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
@@ -63,6 +64,7 @@ function resolveComponentPath(
 // Default options for SDC Storybook
 const defaultOptions: SDCStorybookOptions = {
   validate: false,
+  twigLib: 'twig',
   // validate:
   //   'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
 }
@@ -107,7 +109,6 @@ export async function viteFinal(
   config: UserConfig,
   options: {
     sdcStorybookOptions: SDCStorybookOptions
-    twigLib: 'twing',
     vitePluginTwingDrupalOptions: {
       namespaces?: {}
       include: '/\.twig(\?.*)?$/'
@@ -128,15 +129,19 @@ export async function viteFinal(
 
   const { namespace, customDefs, externalDefs } = options.sdcStorybookOptions
   const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
-  const { nodePolyfills } = await import('vite-plugin-node-polyfills');
+  const { nodePolyfills } = await import('vite-plugin-node-polyfills')
 
   return mergeConfig(config, {
     plugins: [
       nodePolyfills({
-        include: ['buffer', 'stream', 'util', 'events', 'path'],
+        include: ['buffer', 'stream', 'path'],
       }),
-      twig(options.vitePluginTwingDrupalOptions),
-      //twig(options.vitePluginTwigDrupalOptions),
+      options.sdcStorybookOptions.twigLib === 'twing'
+        ? twing(options.vitePluginTwingDrupalOptions)
+        : {},
+      options.sdcStorybookOptions.twigLib === 'twig'
+        ? twig(options.vitePluginTwigDrupalOptions)
+        : {},
       YamlStoriesPlugin({ ...options, globalDefs }),
     ],
     resolve: {
