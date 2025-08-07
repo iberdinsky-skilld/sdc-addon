@@ -9,7 +9,7 @@
     aria-expanded="false"
     aria-label="{{ 'Toggle the menu'|t }}"
   >
-    {{ source('@umami/header/icons/burger.svg') }}
+    {{ source(componentMetadata.path ~ '/icons/burger.svg') }}
   </button>
   <div class="umami-header__dropdown">
     {% block dropdown %}{{ dropdown }}{% endblock %}

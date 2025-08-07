@@ -133,6 +133,9 @@ While using Drupal to render components offers tighter integration, there are st
 ## Configuration
 
 To configure the addon, update `.storybook/main.js` as shown below:
+You can use this plugin either with [Twig.js](https://github.com/twigjs/twig.js or [Twing.js](https://twing.nightlycommit.com/).
+
+### [Twig.js](https://github.com/twigjs/twig.js)
 
 ```js
 import { join } from 'node:path' // 1. Add dependencies.
@@ -167,6 +170,58 @@ const config = {
 export default config
 ```
 
+### [Twing.js](https://twing.nightlycommit.com/)
+
+```js
+import { join } from 'node:path' // 1. Add dependencies.
+import { cwd } from 'node:process'
+
+const config = {
+  stories: ['../components/**/*.component.yml'], // 2. Set components glob.
+  addons: [
+    {
+      name: 'storybook-addon-sdc', // 3. Configure addon.
+      options: {
+        sdcStorybookOptions: {
+          twigLib: 'twing',
+          namespace: 'umami', // Your namespace.
+        },
+        vitePluginTwingDrupalOptions: {
+           namespaces: {
+              umami: [join(cwd(), './components')],
+           },
+           hooks: join(cwd(), '.storybook/twing-hooks.js'), # (Optional) With twing hooks you can add additional twig functions|filters
+        },
+        jsonSchemaFakerOptions: {}, // json-schema-faker options.
+      },
+    },
+    // Any other addons.
+    '@chromatic-com/storybook',
+  ],
+  framework: {
+    name: '@storybook/html-vite',
+    options: {},
+  },
+}
+export default config
+```
+Sample twing hook file.
+```
+import { createSynchronousFunction } from 'twing'
+
+/**
+* Simple test function.
+*/
+function testFunction() {
+  return 'IT WORKS!'
+}
+
+export function initEnvironment(twingEnvironment, config = {}) {
+   const func = createSynchronousFunction('testFunction', testFunction, [])
+   twingEnvironment.addFunction(func)
+}
+
+```
 ## Setting Default Values
 
 For `json-schema-faker` to generate reliable data, use `default` or `examples` in your SDC schema:
