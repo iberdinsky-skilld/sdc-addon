@@ -190,7 +190,8 @@ const config = {
            namespaces: {
               umami: [join(cwd(), './components')],
            },
-           hooks: join(cwd(), '.storybook/twing-hooks.js'), # (Optional) With twing hooks you can add additional twig functions|filters
+           // (Optional) With twing hooks you can adjust twing environment.
+           hooks: join(cwd(), '.storybook/twing-hooks.js'), 
         },
         jsonSchemaFakerOptions: {}, // json-schema-faker options.
       },
@@ -205,7 +206,7 @@ const config = {
 }
 export default config
 ```
-Sample twing hook file.
+Sample twing hook file. See [twing.js documentation](https://twing.nightlycommit.com/) for more infos.
 ```
 import { createSynchronousFunction } from 'twing'
 

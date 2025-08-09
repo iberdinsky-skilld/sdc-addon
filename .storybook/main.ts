@@ -127,7 +127,6 @@ const config: StorybookConfig = {
           namespaces: {
             umami: [join(cwd(), './components')],
           },
-          hooks: join(cwd(), '.storybook/twing-hooks.js'),
         },
       },
     },
