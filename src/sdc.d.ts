@@ -67,6 +67,7 @@ interface ThirdPartySettings {
 export interface SDCStorybookOptions {
   namespace?: string
   experimentalVariants?: boolean
+  twigLib?: 'twing' | 'twig'
   customDefs?: {
     [key: string]: JSONSchema4
   }

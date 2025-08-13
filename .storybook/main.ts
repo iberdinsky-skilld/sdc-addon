@@ -5,14 +5,15 @@ import type { SDCStorybookOptions } from '../src/sdc'
 
 class TwigSafeArray<T> extends Array<T> {
   toString() {
-    return this.join('');
+    return this.join('')
   }
 }
 
-(globalThis as any).TwigSafeArray = TwigSafeArray;
+;(globalThis as any).TwigSafeArray = TwigSafeArray
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
+  twigLib: 'twig', // Switch here to twing
   customDefs: {
     'ui-patterns://attributes': {
       type: 'object',
@@ -120,6 +121,11 @@ const config: StorybookConfig = {
         vitePluginTwigDrupalOptions: {
           namespaces: {
             umami: join(cwd(), './components'),
+          },
+        },
+        vitePluginTwingDrupalOptions: {
+          namespaces: {
+            umami: [join(cwd(), './components')],
           },
         },
       },
