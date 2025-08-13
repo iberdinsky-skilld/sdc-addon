@@ -1,3 +1,15 @@
+# v0.8.4 (Wed Aug 13 2025)
+
+#### 🐛 Bug Fix
+
+- Twing integration [#61](https://github.com/iberdinsky-skilld/sdc-addon/pull/61) ([@christianwiedemann](https://github.com/christianwiedemann))
+
+#### Authors: 1
+
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+
+---
+
 # v0.8.3 (Tue Jul 22 2025)
 
 #### ⚠️ Pushed to `main`
