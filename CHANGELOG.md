@@ -4,6 +4,23 @@
 
 - Twing integration [#61](https://github.com/iberdinsky-skilld/sdc-addon/pull/61) ([@christianwiedemann](https://github.com/christianwiedemann))
 
+#### ⚠️ Pushed to `main`
+
+- Update version + format (iberdinsky@skilld.cloud)
+
+#### Authors: 2
+
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
+# v0.8.4 (Wed Aug 13 2025)
+
+#### 🐛 Bug Fix
+
+- Twing integration [#61](https://github.com/iberdinsky-skilld/sdc-addon/pull/61) ([@christianwiedemann](https://github.com/christianwiedemann))
+
 #### Authors: 1
 
 - Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
