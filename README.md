@@ -133,7 +133,9 @@ While using Drupal to render components offers tighter integration, there are st
 ## Configuration
 
 To configure the addon, update `.storybook/main.js` as shown below:
-You can use this plugin either with [Twig.js](https://github.com/twigjs/twig.js or [Twing.js](https://twing.nightlycommit.com/).
+You can use this plugin either with
+[Twig.js](https://github.com/twigjs/twig.js) or
+[Twing.js](https://twing.nightlycommit.com/).
 
 ### [Twig.js](https://github.com/twigjs/twig.js)
 
@@ -187,11 +189,11 @@ const config = {
           namespace: 'umami', // Your namespace.
         },
         vitePluginTwingDrupalOptions: {
-           namespaces: {
-              umami: [join(cwd(), './components')],
-           },
-           // (Optional) With twing hooks you can adjust twing environment.
-           hooks: join(cwd(), '.storybook/twing-hooks.js'), 
+          namespaces: {
+            umami: [join(cwd(), './components')],
+          },
+          // (Optional) With twing hooks you can adjust twing environment.
+          hooks: join(cwd(), '.storybook/twing-hooks.js'),
         },
         jsonSchemaFakerOptions: {}, // json-schema-faker options.
       },
@@ -206,7 +208,9 @@ const config = {
 }
 export default config
 ```
+
 Sample twing hook file. See [twing.js documentation](https://twing.nightlycommit.com/) for more infos.
+
 ```
 import { createSynchronousFunction } from 'twing'
 
@@ -223,6 +227,7 @@ export function initEnvironment(twingEnvironment, config = {}) {
 }
 
 ```
+
 ## Setting Default Values
 
 For `json-schema-faker` to generate reliable data, use `default` or `examples` in your SDC schema:
