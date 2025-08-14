@@ -1,3 +1,16 @@
+# v0.9.2 (Thu Aug 14 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Dynamic plugin import ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- README update ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.8.4 (Wed Aug 13 2025)
 
 #### 🐛 Bug Fix
