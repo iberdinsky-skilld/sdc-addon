@@ -13,7 +13,7 @@ class TwigSafeArray<T> extends Array<T> {
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
-  twigLib: 'twig', // Switch here to twing
+  twigLib: 'twing', // Switch here to twing
   customDefs: {
     'ui-patterns://attributes': {
       type: 'object',

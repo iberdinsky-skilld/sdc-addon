@@ -1,8 +1,6 @@
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
 } from './vite-plugin-storybook-yaml-stories.ts'
-import twing from 'vite-plugin-twing-drupal'
-import twig from 'vite-plugin-twig-drupal'
 import { mergeConfig } from 'vite'
 import type { UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
@@ -131,17 +129,21 @@ export async function viteFinal(
   const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
   const { nodePolyfills } = await import('vite-plugin-node-polyfills')
 
+  let twigPlugin = null
+  if (options.sdcStorybookOptions.twigLib === 'twing') {
+    const { default: twing } = await import('vite-plugin-twing-drupal')
+    twigPlugin = twing(options.vitePluginTwingDrupalOptions)
+  } else if (options.sdcStorybookOptions.twigLib === 'twig') {
+    const { default: twig } = await import('vite-plugin-twig-drupal')
+    twigPlugin = twig(options.vitePluginTwigDrupalOptions)
+  }
+
   return mergeConfig(config, {
     plugins: [
       nodePolyfills({
         include: ['buffer', 'stream', 'path'],
       }),
-      options.sdcStorybookOptions.twigLib === 'twing'
-        ? twing(options.vitePluginTwingDrupalOptions)
-        : {},
-      options.sdcStorybookOptions.twigLib === 'twig'
-        ? twig(options.vitePluginTwigDrupalOptions)
-        : {},
+      ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs }),
     ],
     resolve: {

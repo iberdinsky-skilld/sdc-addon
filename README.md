@@ -214,17 +214,16 @@ Sample twing hook file. See [twing.js documentation](https://twing.nightlycommit
 import { createSynchronousFunction } from 'twing'
 
 /**
-* Simple test function.
-*/
+ * Simple test function.
+ */
 function testFunction() {
   return 'IT WORKS!'
 }
 
 export function initEnvironment(twingEnvironment, config = {}) {
-   const func = createSynchronousFunction('testFunction', testFunction, [])
-   twingEnvironment.addFunction(func)
+  const func = createSynchronousFunction('testFunction', testFunction, [])
+  twingEnvironment.addFunction(func)
 }
-
 ```
 
 ## Setting Default Values
@@ -459,6 +458,7 @@ const config = {
 ## Known Issues
 
 - The addon relies on [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers).
+- Twing works in Node 23+
 
 ## UI Patterns
 
