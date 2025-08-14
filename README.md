@@ -458,7 +458,6 @@ const config = {
 ## Known Issues
 
 - The addon relies on [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers).
-- Twing works in Node 23+
 
 ## UI Patterns
 
