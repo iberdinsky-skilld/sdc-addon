@@ -1,4 +1,4 @@
-import { convertToKebabCase } from './utils.ts'
+import { capitalize, convertToKebabCase, toAttributes } from './utils.ts'
 import type { Component, StoryNodeRenderer } from './sdc'
 
 
@@ -34,7 +34,7 @@ class StoryNodeRenderService {
 
   render(item: any): string {
     const renderer = this.renderer.find(h => h.appliesTo(item));
-    return renderer?.render(item) ?? JSON.stringify(item);
+    return renderer?.render ? renderer.render(item) : JSON.stringify(item);
   }
 }
 
@@ -43,19 +43,24 @@ const renderComponent = (item: Component): string => {
   const kebabCaseName = convertToKebabCase(item.component)
   const componentProps = `...{ ${generateArgs(item.props ?? {}, false)}}, ...{${generateArgs(item.slots ?? {}, true)}}`;
   const storyArgs = item.story
-    ? `...${kebabCaseName}.${item.story}.args`
+    ? `...${kebabCaseName}.${capitalize(item.story)}.args`
     : '...{}'
   return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.args, ${storyArgs}, ${componentProps}})`
 }
 
 // Render theme=image
 const renderImage = (item: any): string => {
-  return `'<img src="${item.uri}">'`;
+  return JSON.stringify(`<img src="${item.uri}"${toAttributes(item.attributes)}>`);
 }
 
 // Generate type=html_tag
 const renderHtmlTag = (item: any): string => {
-  return `'<${item.tag}> ${item.value} </${item.tag}>'`;
+  return JSON.stringify(`<${item.tag ?? 'div'}${toAttributes(item.attributes)}> ${item.value} </${item.tag ?? 'div'}>`);
+}
+
+// Generate type=html_tag
+const renderMarkup = (item: any): string => {
+  return JSON.stringify(`${item.markup}`);
 }
 
 const defaultStoryNodes: StoryNodeRenderer[] = [
@@ -65,13 +70,18 @@ const defaultStoryNodes: StoryNodeRenderer[] = [
     priority: -4,
   },
   {
-    appliesTo: item => item?.theme === 'image',
+    appliesTo: item => item?.theme === 'image' || item?.type === 'image',
     render: item => renderImage(item),
     priority: -1,
   },
   {
-    appliesTo: item => item?.type === 'html_tag',
+    appliesTo: item => item?.type === 'html_tag' || item?.theme === 'html_tag',
     render: item => renderHtmlTag(item),
+    priority: -2,
+  },
+  {
+    appliesTo: item => item?.type === 'markup' || item?.theme === 'markup',
+    render: item => renderMarkup(item),
     priority: -2,
   },
 ];

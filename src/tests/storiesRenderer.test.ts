@@ -1,36 +1,38 @@
-import { describe, it, expect, vi } from 'vitest'
-import generateStorybookArgs from '../argsGenerator'
-import { SDCSchema } from '../sdc'
+import { describe, it, expect, test } from 'vitest'
+import { storyNodeRenderer } from '../storyNodeRender.ts'
 
 describe('storiesRenderer', () => {
-  it('should generate arguments from properties', () => {
-    const content: SDCSchema = {
-      props: {
-        properties: {
-          title: { type: 'string' },
-        },
+  test.each([
+    ['sample string', '"sample string"'],
+    [1, '1'],
+    [
+      { type: 'image', uri: 'https://placehold.co/600x400' },
+      '"<img src=\\"https://placehold.co/600x400\\">"',
+    ],
+    [
+      {
+        type: 'image',
+        uri: 'https://placehold.co/600x400',
+        attributes: { class: ['class-1', 'class-2'] },
       },
-      $defs: {},
-      name: '',
-    }
-
-    const jsonSchemaFakerOptions = {}
-    const args = generateStorybookArgs(content, jsonSchemaFakerOptions)
-    expect(args).toHaveProperty('title')
-  })
-
-  it('should generate arguments from slots', () => {
-    const content: SDCSchema = {
-      slots: {
-        slot1: { type: 'string' },
+      '"<img src=\\"https://placehold.co/600x400\\" class=\\"class-1 class-2\\">"',
+    ],
+    [{ type: 'html_tag', value: 'sample' }, '"<div> sample </div>"'],
+    [
+      {
+        type: 'html_tag',
+        value: 'sample',
+        tag: 'span',
+        attributes: { class: 'class-1' },
       },
-      $defs: {},
-      name: '',
-    }
-
-    const jsonSchemaFakerOptions = {}
-    const args = generateStorybookArgs(content, jsonSchemaFakerOptions)
-    expect(args).toHaveProperty('slot1')
+      '"<span class=\\"class-1\\"> sample </span>"',
+    ],
+    [
+      { type: 'markup', markup: '<div> sample </div>' },
+      '"<div> sample </div>"',
+    ],
+  ])('Render(%s) -> expected: %s', (storyArray, expected: string) => {
+    expect(storyNodeRenderer.render(storyArray)).toBe(expected)
   })
 
 

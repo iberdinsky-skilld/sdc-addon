@@ -4,7 +4,7 @@
     modifier,
   ]
 %}
-{% set attributes = create_attribute(attributes) %}
+
 <details{{attributes.addClass(classes).setAttribute('name',name|default(''))}}>
   <summary class="a-accordion__title">{{ title }}</summary>
   <div class="a-accordion__content">
