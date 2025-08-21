@@ -302,6 +302,51 @@ The addon dynamically renders the components and stories as defined:
 
 [![Stories](https://i.gyazo.com/7212a3f44052ebde34b59a1555d96afe.png)](https://gyazo.com/7212a3f44052ebde34b59a1555d96afe)
 
+### Supported Types
+
+#### `component`
+
+Use `component` to nest other components within your story.
+
+```yaml
+type: component
+component: 'umami:badge'
+props:
+  icon: serves
+slots:
+  text:
+    type: component
+    component: 'umami:title'
+```
+
+---
+
+#### `html_tag`
+
+Use `html_tag` to embed HTML markup within a specific tag.
+
+```yaml
+type: html_tag
+value: 'Markup'
+attributes:
+  class: class-1
+```
+
+---
+
+#### `image`
+
+Use `image` to embed images into your story.
+
+```yaml
+type: image
+uri: 'Markup'
+attributes:
+  class: class-1
+```
+
+---
+
 ## Support for Single Story Files (`*.story.yml`)
 
 In addition to stories defined inside `*.component.yml` files, the addon now supports standalone story files with the `.story.yml` extension.
@@ -320,7 +365,10 @@ props:
       props:
         icon: timer
       slots:
-        text: Hola
+        text:
+          type: html_tag
+          tag: span
+          value: Test
     - type: component
       component: 'umami:badge'
       props:
@@ -333,6 +381,35 @@ props:
         icon: difficulty
       slots:
         text: Ciao
+```
+
+## Extending SDC Story Rendering
+
+You can add custom renderers for additional `story` node types.
+For example, to render a custom `icon` type:
+
+```yaml
+- type: icon
+  icon: arrow
+```
+
+Add the following to your `sdcStorybookOptions`:
+
+```ts
+const sdcStorybookOptions: SDCStorybookOptions = {
+  ...
+  storyNodesRenderer: [
+    {
+      appliesTo: item => item?.type === 'icon',
+      render: item =>
+        Json.toString(
+          `<svg class="icon" aria-hidden="true"><use xlink:href="#${item.icon}"></use></svg>`
+        ),
+      priority: -4,
+    },
+  ],
+  ...
+}
 ```
 
 ### Why stories experimental?
