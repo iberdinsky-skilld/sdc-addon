@@ -2,7 +2,7 @@
 $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
 
 # The human readable name.
-name: "Page: Front"
+name: 'Page: Front'
 
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
 status: experimental
@@ -24,15 +24,12 @@ thirdPartySettings:
       preview:
         slots:
           content:
-            -
-              type: component
+            - type: component
               component: 'umami:header'
-            -
-              type: component
+            - type: component
               component: 'umami:banner'
               story: preview
-            -
-              type: component
+            - type: component
               component: 'umami:paragraph'
               slots:
                 content:
@@ -46,8 +43,7 @@ thirdPartySettings:
                     attributes:
                       class: 'w-full'
 
-            -
-              type: component
+            - type: component
               component: 'umami:paragraph'
               slots:
                 content:
@@ -55,16 +51,12 @@ thirdPartySettings:
                     component: umami:breadcrumbs
                     props:
                       items:
-                        -
-                          title: 'Home'
+                        - title: 'Home'
                           url: '#'
-                        -
-                          title: 'Sweet'
+                        - title: 'Sweet'
                           url: '#'
-                        -
-                          title: 'Home'
-            -
-              type: component
+                        - title: 'Home'
+            - type: component
               component: 'umami:paragraph'
               slots:
                 content:

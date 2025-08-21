@@ -21,8 +21,6 @@ export const ${capitalize(storyKey)} = {
     )
     .join('\n')
 
-
-
 // Helper to generate variants args
 const generateVariants = (
   variants: Record<string, { title: string }>

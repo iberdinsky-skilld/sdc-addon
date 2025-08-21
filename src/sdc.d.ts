@@ -77,10 +77,10 @@ export interface SDCStorybookOptions {
 }
 
 export type StoryNodeRenderer = {
-  appliesTo: (item: any) => boolean;
-  render: (item: any) => string;
-  priority?: number;
-};
+  appliesTo: (item: any) => boolean
+  render: (item: any) => string
+  priority?: number
+}
 
 export interface Component {
   variants?: JSONSchema4

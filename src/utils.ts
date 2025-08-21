@@ -24,13 +24,16 @@ export const resolveComponentPath = (
 }
 
 export const toAttributes = (attrs: any): string => {
-  if (!attrs) return '';
-  return ' ' + Object.entries(attrs)
-    .map(([key, value]) => {
-      if (Array.isArray(value)) {
-        value = value.join(" ");
-      }
-      return `${key}="${value}"`;
-    })
-    .join(" ");
+  if (!attrs) return ''
+  return (
+    ' ' +
+    Object.entries(attrs)
+      .map(([key, value]) => {
+        if (Array.isArray(value)) {
+          value = value.join(' ')
+        }
+        return `${key}="${value}"`
+      })
+      .join(' ')
+  )
 }

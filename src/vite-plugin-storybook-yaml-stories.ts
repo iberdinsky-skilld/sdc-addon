@@ -12,7 +12,7 @@ import type {
 import argsGenerator from './argsGenerator.ts'
 import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'
-import {storyNodeRenderer} from './storyNodeRender.ts';
+import { storyNodeRenderer } from './storyNodeRender.ts'
 import componentMetadata from './componentMetadata.ts'
 import type { Component, SDCSchema, SDCStorybookOptions } from './sdc'
 import { type JSONSchemaFakerOptions } from 'json-schema-faker'
@@ -54,14 +54,12 @@ const generateImports = (directory: string): string =>
 const dynamicImports = (stories: Component[]): string => {
   const imports = new Set<string>()
 
-  const importComponent = (item: Component)=> {
+  const importComponent = (item: Component) => {
     const [namespace, componentName] = item.component.split(':')
     const resolvedPath = resolveComponentPath(namespace, componentName)
     const kebabCaseName = convertToKebabCase(item.component)
     if (resolvedPath) {
-      imports.add(
-        `import * as ${kebabCaseName} from '${resolvedPath}';`
-      )
+      imports.add(`import * as ${kebabCaseName} from '${resolvedPath}';`)
     }
   }
   const extractComponentImports = (args: Record<string, any>) => {

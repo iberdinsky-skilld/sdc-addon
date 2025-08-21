@@ -16,8 +16,8 @@ const sdcStorybookOptions: SDCStorybookOptions = {
   twigLib: 'twing', // Switch here to twing
   storyNodesRenderer: [
     {
-      appliesTo: item => item?.type === 'sample',
-      render: item => `'SAMPLE'`,
+      appliesTo: (item) => item?.type === 'sample',
+      render: (item) => `'SAMPLE'`,
       priority: -4,
     },
   ],
