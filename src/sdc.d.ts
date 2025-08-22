@@ -1,4 +1,5 @@
 import { JSONSchema4 } from 'json-schema'
+
 export interface SDCSchema {
   $schema?: string
   $defs?: JSONSchema4
@@ -60,18 +61,22 @@ interface LibraryDefinition {
   js?: JsAttributes
 }
 
-interface DesignSystem {
-  path: string,
+interface SDCDesignSystem {
+  path: string
   namespace: string
 }
 
 interface ThirdPartySettings {
   [key: string]: Record<string, any>
 }
+export interface SDCDesignSystemConfig {
+  namespace: string
+  designSystems?: SDCDesignSystem[]
+}
 
 export interface SDCStorybookOptions {
   namespace?: string
-  dependencies?: DesignSystem[]
+  designSystemConfig?: SDCDesignSystemConfig
   experimentalVariants?: boolean
   storyNodesRenderer?: StoryNodeRenderer[]
   twigLib?: 'twing' | 'twig'

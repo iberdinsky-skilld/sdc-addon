@@ -14,11 +14,16 @@ import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'
 import { storyNodeRenderer } from './storyNodeRender.ts'
 import componentMetadata from './componentMetadata.ts'
-import type { Component, SDCSchema, SDCStorybookOptions } from './sdc'
+import { Component, SDCSchema, SDCStorybookOptions } from './sdc'
 import { type JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
-import { convertToKebabCase, resolveComponentPath } from './utils.ts'
+import {
+  convertToKebabCase,
+  getProjectName,
+  resolveComponentPath,
+  toDesignSystemConfig,
+} from './utils.ts'
 
 // Helper to read and validate SDC YAML files
 const readSDC = (
@@ -37,26 +42,38 @@ const readSDC = (
 }
 
 // Generate import statements for all assets in a directory
-const generateImports = (directory: string): string =>
+const generateImports = (
+  directory: string,
+  designSystemConfig: DesignSystemConfig
+): string =>
   readdirSync(directory)
     .filter((file) =>
       ['.css', '.js', '.mjs', '.twig', '.yml'].includes(extname(file))
     )
     .map((file) => {
       const filePath = `./${file}`
+      const namespace = designSystemConfig.pathToNamespace(directory)
+      console.log('Generating imports', filePath, directory)
       return extname(file) === '.twig'
-        ? `import COMPONENT from '${filePath}';`
+        ? `import COMPONENT from '${namespace}/${file}';`
         : `import '${filePath}';`
     })
     .join('\n')
 
 // Dynamically generate component imports from story configurations
-const dynamicImports = (stories: Component[]): string => {
+const dynamicImports = (
+  stories: Component[],
+  designSystemConfig: DesignSystemConfig
+): string => {
   const imports = new Set<string>()
 
   const importComponent = (item: Component) => {
     const [namespace, componentName] = item.component.split(':')
-    const resolvedPath = resolveComponentPath(namespace, componentName)
+    const resolvedPath = resolveComponentPath(
+      namespace,
+      componentName,
+      designSystemConfig
+    )
     const kebabCaseName = convertToKebabCase(item.component)
     if (resolvedPath) {
       imports.add(`import * as ${kebabCaseName} from '${resolvedPath}';`)
@@ -132,14 +149,18 @@ export default ({
     if (!id.endsWith('component.yml')) return
 
     try {
+      const designSystemConfig = toDesignSystemConfig(
+        sdcStorybookOptions.designSystemConfig
+      )
       const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
-      const imports = generateImports(dirname(id))
+      const imports = generateImports(dirname(id), designSystemConfig)
       const previewsStories = {
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
       }
-      storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer ?? [])
-      const storiesImports = dynamicImports(previewsStories)
+      storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer)
+
+      const storiesImports = dynamicImports(previewsStories, designSystemConfig)
       const metadata = componentMetadata(id, content)
 
       const argTypes: ArgTypes = {
@@ -209,10 +230,11 @@ export const yamlStoriesIndexer: Indexer = {
   createIndex: async (fileName, { makeTitle }) => {
     try {
       const content = readSDC(fileName)
-      const baseTitle = makeTitle(`SDC/${content.name}`)
+      const baseTitle = makeTitle(`${getProjectName(fileName)}/${content.name}`)
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
+
       return createStoryIndex(fileName, baseTitle, mergedStories)
     } catch (error) {
       console.error(`Error creating index for YAML file: ${fileName}`, error)

@@ -14,6 +14,7 @@ import { type JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import fetch from 'node-fetch'
 import { logger } from './logger.ts'
+import { DesignSystemConfig, toDesignSystemConfig } from './utils.ts'
 
 // Load external definitions (local or remote)
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
@@ -125,6 +126,13 @@ export async function viteFinal(
     ...options.sdcStorybookOptions,
   }
 
+  if (!options.sdcStorybookOptions.designSystemConfig) {
+    options.sdcStorybookOptions.designSystemConfig = {
+      namespace: options.sdcStorybookOptions.namespace,
+      designSystems: [],
+    }
+  }
+
   const { namespace, customDefs, externalDefs } = options.sdcStorybookOptions
   const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
   const { nodePolyfills } = await import('vite-plugin-node-polyfills')
@@ -148,16 +156,21 @@ export async function viteFinal(
     ],
     resolve: {
       alias: [
-        {
-          find: new RegExp(`${namespace}:(.*)`), // Use namespace from options
-          replacement: (match: string, component: string) => {
-            const resolvedPath = resolveComponentPath(namespace, component)
-            if (!resolvedPath) {
-              throw new Error(`Component ${component} could not be resolved.`)
-            }
-            return resolvedPath
+        ...toDesignSystemConfig(
+          options.sdcStorybookOptions.designSystemConfig
+        ).toViteAlias(),
+        ...[
+          {
+            find: new RegExp(`${namespace}:(.*)`), // Use namespace from options
+            replacement: (match: string, component: string) => {
+              const resolvedPath = resolveComponentPath(namespace, component)
+              if (!resolvedPath) {
+                throw new Error(`Component ${component} could not be resolved.`)
+              }
+              return resolvedPath
+            },
           },
-        },
+        ],
       ],
     },
   })
