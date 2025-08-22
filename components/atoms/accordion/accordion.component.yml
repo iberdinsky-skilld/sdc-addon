@@ -12,9 +12,6 @@ status: stable
 props:
   type: object
   properties:
-    attributes:
-      title: Attributes
-      $ref: 'ui-patterns://attributes'
     title:
       type: string
       title: Title
@@ -27,13 +24,3 @@ slots:
     title: Content
     examples:
       - Accordion content
-thirdPartySettings:
-  sdcStorybook:
-    stories:
-      attributes:
-        slots:
-          content:
-            - type: sample
-        props:
-          attributes:
-            class: EXTERNAL-CLASS

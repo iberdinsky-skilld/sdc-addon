@@ -13,19 +13,3 @@ props:
   # Props are always an object with keys. Each key is a variable in your
   # component template.
   type: object
-
-  properties:
-    icon:
-      type: string
-      description: Icon Name
-      enum:
-        - knife
-        - timer
-        - serves
-        - difficulty
-slots:
-  text:
-    type: string
-    description: Text
-    examples:
-      - Badge Label
