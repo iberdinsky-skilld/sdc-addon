@@ -1,8 +1,7 @@
 import { readdirSync, existsSync } from 'fs'
-import { join, resolve, sep } from 'path'
-import { SDCDesignSystem, SDCDesignSystemConfig } from './sdc'
+import { join, resolve, sep, relative } from 'path'
+import { NamespaceDefinition } from './sdc'
 import type { Alias } from 'vite'
-import { config } from 'storybook/actions'
 
 export const capitalize = (str: string) => str[0].toUpperCase() + str.slice(1)
 
@@ -17,9 +16,9 @@ export const getSubdirectories = (baseDir: string): string[] =>
 export const resolveComponentPath = (
   namespace: string,
   component: string,
-  designSystemConfig: DesignSystemConfig
+  namespaces: Namespaces
 ): string | undefined => {
-  const baseDir = designSystemConfig.findDesignSystemByNamespace(namespace).path
+  const baseDir = namespaces.findPath(namespace)
   const directories = [baseDir, ...getSubdirectories(baseDir)]
   const possiblePaths = directories.map((dir) =>
     join(dir, component, `${component}.component.yml`)
@@ -51,31 +50,27 @@ export const toAttributes = (attrs: any): string => {
       .join(' ')
   )
 }
-export const toDesignSystemConfig = (
-  config: SDCDesignSystemConfig
-): DesignSystemConfig => {
-  return new DesignSystemConfig(config)
+export const namespaceHelper = (
+  namespaceDefinition: NamespaceDefinition
+): Namespaces => {
+  return new Namespaces(namespaceDefinition)
 }
-class DesignSystemConfig {
-  private readonly designSystems: SDCDesignSystem[]
-  constructor(config: SDCDesignSystemConfig) {
-    this.designSystems = [
-      ...[
-        {
-          path: process.cwd(),
-          namespace: config.namespace,
-        },
-      ],
-      ...(config.designSystems ?? []),
-    ]
+export class Namespaces {
+  private namespaces?: Record<string, string>
+  private stripTrailingSlash = (p: string) => p.replace(/\/+$/g, '')
+
+  constructor(namespaceDefinition: NamespaceDefinition) {
+    this.namespaces = namespaceDefinition.namespaces
+    this.namespaces[namespaceDefinition.namespace] = process.cwd()
   }
 
   public toViteAlias(): Alias[] {
     const aliases: Alias[] = []
-    this.designSystems.forEach((designSystem) => {
+
+    Object.keys(this.namespaces).forEach((namespace) => {
       aliases.push({
-        find: '@' + designSystem.namespace,
-        replacement: resolve(designSystem.path, 'components').replace(
+        find: '@' + namespace,
+        replacement: resolve(this.namespaces[namespace], 'components').replace(
           /\\/g,
           '/'
         ),
@@ -83,39 +78,52 @@ class DesignSystemConfig {
     })
     return aliases
   }
-  public toComponentsGlob(glob: string): string[] {
-    const folders: string[] = []
-    this.designSystems.forEach((designSystem) => {
-      folders.push(designSystem.path + sep + 'components' + sep + glob)
-    })
-    return folders
-  }
-  public findDesignSystemByNamespace = (namespace: string): SDCDesignSystem => {
-    return this.designSystems.find((ds) => namespace === ds.namespace)
+  public findPath = (namespace: string): string => {
+    return this.namespaces[namespace] || ''
   }
 
-  public findDesignSystemByPath = (path: string): SDCDesignSystem => {
-    return this.designSystems
-      .slice()
-      .sort((a, b) => b.path.split('/').length - a.path.split('/').length)
-      .find((item) => path.startsWith(item.path))
-  }
-  public pathToNamespace(path: string) {
-    const foundDesignSystem = this.findDesignSystemByPath(path)
-    if (foundDesignSystem) {
-      const fullPath = resolve(path)
-      const componentFolderPath = foundDesignSystem.path + sep + 'components'
-      const idx = fullPath.indexOf(componentFolderPath)
-      if (idx === -1) {
-        throw new Error(
-          `Could not find 'components' folder in path: ${fullPath}`
-        )
+  public find = (fsPath: string): string => {
+    const fp = this.stripTrailingSlash(fsPath)
+
+    let bestPath: string
+    let bestNs: string
+    for (const [ns, path] of Object.entries(this.namespaces)) {
+      const base = this.stripTrailingSlash(path)
+      // prefix match with segment boundary
+      if (fp === base || fp.startsWith(base + '/')) {
+        if (!bestPath || base.length > bestPath.length) {
+          bestPath = base
+          bestNs = ns
+        }
       }
-      const relativePath = fullPath.slice(componentFolderPath.length + 1)
-      return `@${foundDesignSystem.namespace}/${relativePath}`
     }
-    throw new Error(
-      `Could not find valid 'externalDesignSystem' for folder: ${path} ${JSON.stringify(this.designSystems)}`
-    )
+    return bestNs
+  }
+  public pathToNamespace(fsPath: string) {
+    const ns = this.find(fsPath)
+    if (!ns) {
+      throw new Error(
+        `Could not find valid 'namespace' for folder: ${fsPath} in namespaces: ${JSON.stringify(this.namespaces)}`
+      )
+    }
+
+    const rootPath = resolve(this.namespaces[ns]) // z.B. "/root/ds-a"
+    const componentsDir = join(rootPath, 'components')
+
+    const isExact = fsPath === componentsDir
+    const isChild = fsPath.startsWith(componentsDir + sep)
+    if (!isExact && !isChild) {
+      throw new Error(
+        `Could not find 'components' folder in path: ${fsPath}, namespace: ${ns} (${Object.values(this.namespaces).join(', ')})`
+      )
+    }
+
+    let rel = relative(componentsDir, fsPath) // z.B. "component-a/sub-component-b"
+
+    if (sep !== '/') {
+      rel = rel.split(sep).join('/')
+    }
+
+    return `@${ns}/${rel}`
   }
 }

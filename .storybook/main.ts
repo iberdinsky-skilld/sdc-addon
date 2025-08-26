@@ -13,6 +13,9 @@ class TwigSafeArray<T> extends Array<T> {
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
+  namespaces: {
+    'parent-ds': resolve('./sub-ds'),
+  },
   twigLib: 'twig', // Switch here to twing
   storyNodesRenderer: [
     {
@@ -131,15 +134,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
       enum: [],
     },
   },
-  designSystemConfig: {
-    namespace: 'umami',
-    designSystems: [
-      {
-        path: resolve('./sub-ds'),
-        namespace: 'parent-ds',
-      },
-    ],
-  },
+
   externalDefs: [
     'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.4.3/drupal-defs/uiPatternsSchema.yml',
     join(cwd(), './drupal-defs/uiPatternsSchema.yml'),

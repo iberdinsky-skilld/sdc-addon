@@ -61,22 +61,15 @@ interface LibraryDefinition {
   js?: JsAttributes
 }
 
-interface SDCDesignSystem {
-  path: string
-  namespace: string
-}
-
 interface ThirdPartySettings {
   [key: string]: Record<string, any>
 }
-export interface SDCDesignSystemConfig {
-  namespace: string
-  designSystems?: SDCDesignSystem[]
+export interface NamespaceDefinition {
+  namespace?: string
+  namespaces?: Record<string, string>
 }
 
-export interface SDCStorybookOptions {
-  namespace?: string
-  designSystemConfig?: SDCDesignSystemConfig
+export interface SDCStorybookOptions extends NamespaceDefinition {
   experimentalVariants?: boolean
   storyNodesRenderer?: StoryNodeRenderer[]
   twigLib?: 'twing' | 'twig'

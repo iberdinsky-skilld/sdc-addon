@@ -22,7 +22,8 @@ import {
   convertToKebabCase,
   getProjectName,
   resolveComponentPath,
-  toDesignSystemConfig,
+  namespaceHelper,
+  Namespaces,
 } from './utils.ts'
 
 // Helper to read and validate SDC YAML files
@@ -42,17 +43,14 @@ const readSDC = (
 }
 
 // Generate import statements for all assets in a directory
-const generateImports = (
-  directory: string,
-  designSystemConfig: DesignSystemConfig
-): string =>
+const generateImports = (directory: string, namespaces: Namespaces): string =>
   readdirSync(directory)
     .filter((file) =>
       ['.css', '.js', '.mjs', '.twig', '.yml'].includes(extname(file))
     )
     .map((file) => {
       const filePath = `./${file}`
-      const namespace = designSystemConfig.pathToNamespace(directory)
+      const namespace = namespaces.pathToNamespace(directory)
       console.log('Generating imports', filePath, directory)
       return extname(file) === '.twig'
         ? `import COMPONENT from '${namespace}/${file}';`
@@ -63,7 +61,7 @@ const generateImports = (
 // Dynamically generate component imports from story configurations
 const dynamicImports = (
   stories: Component[],
-  designSystemConfig: DesignSystemConfig
+  namespaces: Namespaces
 ): string => {
   const imports = new Set<string>()
 
@@ -72,7 +70,7 @@ const dynamicImports = (
     const resolvedPath = resolveComponentPath(
       namespace,
       componentName,
-      designSystemConfig
+      namespaces
     )
     const kebabCaseName = convertToKebabCase(item.component)
     if (resolvedPath) {
@@ -149,9 +147,7 @@ export default ({
     if (!id.endsWith('component.yml')) return
 
     try {
-      const designSystemConfig = toDesignSystemConfig(
-        sdcStorybookOptions.designSystemConfig
-      )
+      const designSystemConfig = namespaceHelper(sdcStorybookOptions)
       const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
       const imports = generateImports(dirname(id), designSystemConfig)
       const previewsStories = {
