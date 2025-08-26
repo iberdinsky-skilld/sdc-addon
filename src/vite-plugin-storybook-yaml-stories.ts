@@ -138,7 +138,7 @@ export default ({
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
       }
-      storyNodeRenderer.register(s0dcStorybookOptions.storyNodesRenderer ?? [])
+      storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer ?? [])
       const storiesImports = dynamicImports(previewsStories)
       const metadata = componentMetadata(id, content)
 
