@@ -22,7 +22,7 @@ import {
   convertToKebabCase,
   getProjectName,
   resolveComponentPath,
-  namespaceDefinition,
+  toNamespaces,
   Namespaces,
 } from './utils.ts'
 
@@ -147,16 +147,16 @@ export default ({
     if (!id.endsWith('component.yml')) return
 
     try {
-      const designSystemConfig = namespaceDefinition(sdcStorybookOptions)
+      const namespaces = toNamespaces(sdcStorybookOptions)
       const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
-      const imports = generateImports(dirname(id), designSystemConfig)
+      const imports = generateImports(dirname(id), namespaces)
       const previewsStories = {
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
       }
       storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer ?? [])
 
-      const storiesImports = dynamicImports(previewsStories, designSystemConfig)
+      const storiesImports = dynamicImports(previewsStories, namespaces)
       const metadata = componentMetadata(id, content)
 
       const argTypes: ArgTypes = {

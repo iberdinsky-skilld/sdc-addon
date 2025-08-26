@@ -50,7 +50,7 @@ export const toAttributes = (attrs: any): string => {
       .join(' ')
   )
 }
-export const namespaceDefinition = (
+export const toNamespaces = (
   namespaceDefinition: NamespaceDefinition
 ): Namespaces => {
   return new Namespaces(namespaceDefinition)

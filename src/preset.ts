@@ -14,7 +14,7 @@ import { type JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import fetch from 'node-fetch'
 import { logger } from './logger.ts'
-import { namespaceDefinition } from './utils.ts'
+import { toNamespaces } from './utils.ts'
 
 // Load external definitions (local or remote)
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
@@ -149,7 +149,7 @@ export async function viteFinal(
     ],
     resolve: {
       alias: [
-        ...namespaceDefinition(options.sdcStorybookOptions).toViteAlias(),
+        ...toNamespaces(options.sdcStorybookOptions).toViteAlias(),
         ...[
           {
             find: new RegExp(`${namespace}:(.*)`), // Use namespace from options
