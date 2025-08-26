@@ -22,7 +22,7 @@ import {
   convertToKebabCase,
   getProjectName,
   resolveComponentPath,
-  namespaceHelper,
+  namespaceDefinition,
   Namespaces,
 } from './utils.ts'
 
@@ -147,7 +147,7 @@ export default ({
     if (!id.endsWith('component.yml')) return
 
     try {
-      const designSystemConfig = namespaceHelper(sdcStorybookOptions)
+      const designSystemConfig = namespaceDefinition(sdcStorybookOptions)
       const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
       const imports = generateImports(dirname(id), designSystemConfig)
       const previewsStories = {

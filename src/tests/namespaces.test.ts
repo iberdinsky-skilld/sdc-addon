@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { namespaceHelper } from '../utils.ts'
+import { namespaceDefinition } from '../utils.ts'
 describe('pathToNamespace', () => {
   test.each([
     ['/root/ds-a/components/component-a', '@ds-a/component-a'],
@@ -9,7 +9,7 @@ describe('pathToNamespace', () => {
       '@ds-b/component-a/sub-component-b',
     ],
   ])('pathToNamespace(%s) -> expected: %s', (path, expected: string) => {
-    const namespaces = namespaceHelper({
+    const namespaces = namespaceDefinition({
       namespace: '',
       namespaces: {
         'ds-a': '/root/ds-a',

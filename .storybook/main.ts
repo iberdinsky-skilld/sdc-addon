@@ -14,7 +14,7 @@ class TwigSafeArray<T> extends Array<T> {
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
   namespaces: {
-    'parent-ds': resolve('./sub-ds'),
+    'parent-ds': resolve('./parent-ds'),
   },
   twigLib: 'twig', // Switch here to twing
   storyNodesRenderer: [
@@ -144,7 +144,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
 const config: StorybookConfig = {
   stories: [
     '../components/**/*.component.yml',
-    '../sub-ds/components/**/*.component.yml',
+    '../parent-ds/components/**/*.component.yml',
     '../stories/*.stories.js',
   ],
   addons: [
@@ -156,13 +156,13 @@ const config: StorybookConfig = {
         vitePluginTwigDrupalOptions: {
           namespaces: {
             umami: join(cwd(), './components'),
-            'parent-ds': join(cwd(), 'sub-ds/components'),
+            'parent-ds': join(cwd(), 'parent-ds/components'),
           },
         },
         vitePluginTwingDrupalOptions: {
           namespaces: {
             umami: [join(cwd(), './components')],
-            'parent-ds': [join(cwd(), 'sub-ds/components')],
+            'parent-ds': [join(cwd(), 'parent-ds/components')],
           },
         },
       },
