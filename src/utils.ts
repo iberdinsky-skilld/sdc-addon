@@ -60,7 +60,7 @@ export class Namespaces {
   private stripTrailingSlash = (p: string) => p.replace(/\/+$/g, '')
 
   constructor(namespaceDefinition: NamespaceDefinition) {
-    this.namespaces = namespaceDefinition.namespaces
+    this.namespaces = namespaceDefinition.namespaces ?? {}
     this.namespaces[namespaceDefinition.namespace] = process.cwd()
   }
 
