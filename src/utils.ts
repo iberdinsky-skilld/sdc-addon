@@ -53,7 +53,7 @@ export const toAttributes = (attrs: any): string => {
 export const toNamespaces = (
   namespaceDefinition: NamespaceDefinition
 ): Namespaces => {
-  return new Namespaces(namespaceDefinition)
+  return new Namespaces(namespaceDefinition ?? {})
 }
 export class Namespaces {
   private namespaces?: Record<string, string>
