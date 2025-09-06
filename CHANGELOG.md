@@ -36,6 +36,25 @@
 
 ---
 
+# v0.9.4 (Sat Sep 06 2025)
+
+#### 🐛 Bug Fix
+
+- SDC Story format renderer [#65](https://github.com/iberdinsky-skilld/sdc-addon/pull/65) ([@christianwiedemann](https://github.com/christianwiedemann))
+
+#### ⚠️ Pushed to `main`
+
+- Removed slots types ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Revert package-lock ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Fix workflow ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+
+---
+
 # v0.9.3 (Thu Aug 14 2025)
 
 #### ⚠️ Pushed to `main`
