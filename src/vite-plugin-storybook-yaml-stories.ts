@@ -12,6 +12,7 @@ import type {
 import argsGenerator from './argsGenerator.ts'
 import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'
+import { storyNodeRenderer } from './storyNodeRender.ts'
 import componentMetadata from './componentMetadata.ts'
 import type { Component, SDCSchema, SDCStorybookOptions } from './sdc'
 import { type JSONSchemaFakerOptions } from 'json-schema-faker'
@@ -53,22 +54,27 @@ const generateImports = (directory: string): string =>
 const dynamicImports = (stories: Component[]): string => {
   const imports = new Set<string>()
 
+  const importComponent = (item: Component) => {
+    const [namespace, componentName] = item.component.split(':')
+    const resolvedPath = resolveComponentPath(namespace, componentName)
+    const kebabCaseName = convertToKebabCase(item.component)
+    if (resolvedPath) {
+      imports.add(`import * as ${kebabCaseName} from '${resolvedPath}';`)
+    }
+  }
   const extractComponentImports = (args: Record<string, any>) => {
     Object.values(args).forEach((value) => {
       if (Array.isArray(value)) {
         value.forEach((item) => {
           if (item.type === 'component') {
-            const [namespace, componentName] = item.component.split(':')
-            const resolvedPath = resolveComponentPath(namespace, componentName)
-            const kebabCaseName = convertToKebabCase(item.component)
-            if (resolvedPath) {
-              imports.add(
-                `import * as ${kebabCaseName} from '${resolvedPath}';`
-              )
-            }
+            importComponent(item)
           }
+          extractComponentImports(value)
         })
       } else if (value && typeof value === 'object') {
+        if (value.type === 'component') {
+          importComponent(value)
+        }
         extractComponentImports(value)
       }
     })
@@ -132,7 +138,7 @@ export default ({
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
       }
-
+      storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer ?? [])
       const storiesImports = dynamicImports(previewsStories)
       const metadata = componentMetadata(id, content)
 
@@ -188,7 +194,6 @@ export const Basic = {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
 };
-
 ${stories}
       `
     } catch (error) {

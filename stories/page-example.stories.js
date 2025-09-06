@@ -22,7 +22,7 @@ export default {
       ${header.component({ ...HeaderPreview.args })}
       ${banner.component({ ...BannerPreview.args })}
       ${paragraph.component({
-        content: () => `
+        content: () => `  
           ${breadcrumbs.component({
             items: [
               {
