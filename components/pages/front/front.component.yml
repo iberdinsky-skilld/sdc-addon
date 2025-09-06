@@ -15,7 +15,6 @@ props:
 
 slots:
   content:
-    type: object
     title: Content
 
 thirdPartySettings:

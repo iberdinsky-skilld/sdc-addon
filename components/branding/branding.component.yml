@@ -32,10 +32,10 @@ props:
 
 slots:
   site_name:
-    type: string
+    title: Site name
     examples:
       - SDC Storybook
   site_slogan:
-    type: string
+    title: Site slogan
     examples:
       - '*.component.yml to stories'

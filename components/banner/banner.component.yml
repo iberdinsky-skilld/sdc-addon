@@ -53,5 +53,6 @@ thirdPartySettings:
               component: 'umami:read-more'
               slots:
                 text: Learn More
+              props:
                 extra_classes:
                   - banner__link

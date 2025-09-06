@@ -22,7 +22,7 @@ describe('generateStorybookArgs', () => {
   it('should generate arguments from slots', () => {
     const content: SDCSchema = {
       slots: {
-        slot1: { type: 'string' },
+        slot1: { title: 'slot1' },
       },
       $defs: {},
       name: '',
@@ -41,7 +41,7 @@ describe('generateStorybookArgs', () => {
         },
       },
       slots: {
-        slot1: { type: 'string' },
+        slot1: { title: 'slot1' },
       },
       $defs: {},
       name: '',

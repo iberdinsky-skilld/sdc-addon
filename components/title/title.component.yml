@@ -37,8 +37,10 @@ props:
 
 slots:
   title_prefix:
-    type: object
     title: Title prefix
+    examples:
+      - ''
   title_suffix:
-    type: object
     title: Title suffix
+    examples:
+      - ''

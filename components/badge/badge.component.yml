@@ -25,7 +25,6 @@ props:
         - difficulty
 slots:
   text:
-    type: string
-    description: Text
+    title: Badge Text
     examples:
       - Badge Label

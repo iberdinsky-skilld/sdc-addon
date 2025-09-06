@@ -18,12 +18,10 @@ props:
       format: iri-reference
 slots:
   a11y:
-    type: string
     title: Read More screen reader text
     examples:
       - Accesible name
   text:
-    type: string
     title: Read More text
     examples:
       - Read more
