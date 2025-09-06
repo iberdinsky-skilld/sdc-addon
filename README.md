@@ -280,7 +280,7 @@ This means you can create independent stories for your components by simply addi
 ```yaml
 # components/slider/slider.badges.story.yml
 name: Badges
-props:
+slots:
   slides:
     - type: component
       component: 'umami:badge'
@@ -338,7 +338,11 @@ export const Basic = {}
 
 ## Configuration Options
 
-In addition to the standard configuration options, you can also specify customDefs and externalDefs to provide additional schema definitions. These options are optional and can be used to extend or override the default definitions.
+- **vitePluginTwigDrupalOptions**: Options for [vite-plugin-twig-drupal](https://github.com/larowlan/vite-plugin-twig-drupal) (Twig.js). Use when `twigLib` is set to `'twig'`.
+- **vitePluginTwingDrupalOptions**: Options for [vite-plugin-twing-drupal](https://github.com/christianwiedemann/vite-plugin-twing-drupal) (Twing). Use when `twigLib` is set to `'twing'`.
+- **customDefs**: An object with custom JSON schema definitions for your components.
+- **externalDefs**: An array of URLs or local file paths to external schema definition files.
+- **validate**: A URL or path to a JSON schema for validating your SDC components.
 
 ### Twig.js with `vitePluginTwigDrupalOptions`
 
