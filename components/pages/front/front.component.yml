@@ -16,6 +16,8 @@ props:
 slots:
   content:
     title: Content
+    examples:
+      - Default content
 
 thirdPartySettings:
   sdcStorybook:
@@ -25,42 +27,34 @@ thirdPartySettings:
           content:
             - type: component
               component: 'umami:header'
+              story: preview
             - type: component
               component: 'umami:banner'
               story: preview
             - type: component
               component: 'umami:paragraph'
+              props:
+                label: This is example of custom content using different types of slot items.
               slots:
                 content:
+                  - type: element
+                    tag: 'i'
+                    value: '<span>This is output of type: element.</span>'
+                    attributes:
+                      class: 'custom-class'
                   - type: image
-                    uri: 'https://placehold.co/600x400'
+                    uri: 'https://placehold.co/600x400?text=This+is+an+image+component'
                     attributes:
-                      class: 'w-full'
-                  - type: html_tag
-                    tag: 'h2'
-                    value: '<div>type: html_tag. Markup</div>'
-                    attributes:
-                      class: 'w-full'
+                      class: 'custom-class'
 
             - type: component
               component: 'umami:paragraph'
               slots:
                 content:
                   - type: component
-                    component: umami:breadcrumbs
-                    props:
-                      items:
-                        - title: 'Home'
-                          url: '#'
-                        - title: 'Sweet'
-                          url: '#'
-                        - title: 'Home'
-            - type: component
-              component: 'umami:paragraph'
-              slots:
-                content:
-                  - type: component
                     component: umami:slider
+                    props:
+                      sliderType: naked
                     slots:
                       slides:
                         - type: component

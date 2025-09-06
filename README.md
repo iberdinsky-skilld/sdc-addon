@@ -9,14 +9,14 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Overview](#overview)
 - [Storybook Example Live](#storybook-example-live)
 - [Features of the Addon](#features-of-the-addon)
-- [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
-- [Setting Default Values](#setting-default-values)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
+- [Setting Default Values](#setting-default-values)
+- [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Dependencies](#dependencies)
 - [Known Issues](#known-issues)
 - [UI Patterns](#ui-patterns)
@@ -43,49 +43,7 @@ The SDC Storybook Addon simplifies the integration of Drupal Single Directory Co
 - **JSON Schema Support**: Supports JSON Schema for props and slots, enabling the generation of mock data for missing values and ensuring data consistency.
 - **Drupal Behavior Embedding**: Allows you to directly embed Drupal behaviors like `Drupal.attachBehaviors()` into Storybook previews, ensuring components behave similarly to their Drupal counterparts.
 - **Custom and External Schema Definitions**: Supports custom and external JSON schema definitions to validate components based on Drupal-specific configurations (e.g., UI Patterns, Experience Builder).
-
-## Why Choose SDC Storybook Over Alternatives?
-
-While solutions like [SDC Styleguide](https://www.drupal.org/project/sdc_styleguide) and [Drupal Storybook](https://www.drupal.org/project/storybook) are valuable, the SDC Storybook addon offers distinct advantages:
-
-### 1. Component Independence and Modularity
-
-- Following the **BEM (Block Element Modifier)** methodology, a component should work independently across environments.
-- The functionality of your component must not depend on the **Drupal version**, or the active **Drupal theme** — it should be portable to **any** system.
-
-### 2. No Complex Drupal Setup Required
-
-- No need to install or configure Drupal dependencies for component development.
-- Work faster by developing frontend components in Storybook without running a heavy Drupal instance.
-
-### 3. Simplifies DevOps and CI/CD Pipelines
-
-- Since components are isolated, **testing and deployments** are simplified.
-- You can **avoid Drupal-specific configuration** in CI pipelines, leading to more efficient and maintainable workflows.
-
-### 4. Scalability and Flexibility with Faker.js and JSON Schema
-
-- Tools like **Faker.js** let you generate test data for components without needing real content.
-- **JSON Schema** defines component data clearly and consistently, helping maintain data integrity.
-
-### 5. Industry-Standard Tool for Frontend Development
-
-- **Storybook is widely adopted** in frontend development, which makes onboarding easier, even for developers unfamiliar with Drupal.
-- JSON Schema enables work on components without deep Drupal knowledge, opening the project to a wider developer base.
-
-### 6. Drupal-Specific Behavior Embedded in Components
-
-- Embed **Drupal behaviors** (like `Drupal.attachBehaviors()`) directly into Storybook previews, ensuring consistent component behavior between Storybook and production.
-- Supports `drupalSettings` and `once.js`, so components in Storybook behave identically to their Drupal counterparts.
-
-### 7. Twig.js, Twing, and Drupal Twig
-
-While using Drupal to render components offers tighter integration, there are strong reasons to use Twig.js or Twing in many scenarios:
-
-- Many components **don’t need full Drupal logic**. Basic components (buttons, cards, lists) rely on simple HTML and CSS, not on complex template logic. For such components, Twig.js or Twing provide sufficient rendering without the need for full Drupal preprocessing.
-- **Twig.js** works well for most frontend-focused use cases.
-- **Twing** is a modern, actively maintained Twig implementation for Node.js that offers better compatibility with Drupal's Twig features and syntax.
-- Styling and behavior mismatches can be managed separately in the Drupal implementation phase.
+- **Default and Custom Story Rendering**: Use `type: component` to nest components, `type: element` for HTML markup, and `type: image` for images within stories. Or create your own custom renderers.
 
 ## Quickstart Guide
 
@@ -134,9 +92,7 @@ While using Drupal to render components offers tighter integration, there are st
 ## Configuration
 
 To configure the addon, update `.storybook/main.js` as shown below:
-You can use this plugin either with [Twig.js](https://github.com/twigjs/twig.js) or [Twing.js](https://twing.nightlycommit.com/).
-
-#### [Twig.js](https://github.com/twigjs/twig.js)
+You can use this plugin either with [Twig.js](https://github.com/twigjs/twig.js) or [Twing.js](https://twing.nightlycommit.com/) by setting the `twigLib` option to `'twig'` or `'twing'` in your configuration. Only one of vitePluginTwigDrupalOptions or vitePluginTwingDrupalOptions should be active, depending on your twigLib setting.
 
 ```js
 import { join } from 'node:path' // 1. Add dependencies.
@@ -149,14 +105,24 @@ const config = {
       name: 'storybook-addon-sdc', // 3. Configure addon.
       options: {
         sdcStorybookOptions: {
+          twigLib: 'twig', // 'twig' for Twig.js or 'twing' for Twing.
           namespace: 'umami', // Your namespace.
         },
+
+        // vite-plugin-twig-drupal options. Comment if using Twing.
         vitePluginTwigDrupalOptions: {
-          // vite-plugin-twig-drupal options.
           namespaces: {
             umami: join(cwd(), './components'), // Your namespace and path to components.
           },
         },
+
+        // vite-plugin-twing-drupal options. Uncomment if using Twing.
+        // vitePluginTwingDrupalOptions: {
+        //   namespaces: {
+        //     umami: [join(cwd(), './components')],
+        //   },
+        // },
+
         jsonSchemaFakerOptions: {}, // json-schema-faker options.
       },
     },
@@ -170,87 +136,6 @@ const config = {
 }
 export default config
 ```
-
-#### [Twing.js](https://twing.nightlycommit.com/)
-
-```js
-import { join } from 'node:path' // 1. Add dependencies.
-import { cwd } from 'node:process'
-
-const config = {
-  stories: ['../components/**/*.component.yml'], // 2. Set components glob.
-  addons: [
-    {
-      name: 'storybook-addon-sdc', // 3. Configure addon.
-      options: {
-        sdcStorybookOptions: {
-          twigLib: 'twing',
-          namespace: 'umami', // Your namespace.
-        },
-        vitePluginTwingDrupalOptions: {
-          namespaces: {
-            umami: [join(cwd(), './components')],
-          },
-          // (Optional) With twing hooks you can adjust twing environment.
-          hooks: join(cwd(), '.storybook/twing-hooks.js'),
-        },
-        jsonSchemaFakerOptions: {}, // json-schema-faker options.
-      },
-    },
-    // Any other addons.
-    '@chromatic-com/storybook',
-  ],
-  framework: {
-    name: '@storybook/html-vite',
-    options: {},
-  },
-}
-export default config
-```
-
-Sample twing hook file. See [twing.js documentation](https://twing.nightlycommit.com/) for more infos.
-
-```js
-import { createSynchronousFunction } from 'twing'
-
-/**
- * Simple test function.
- */
-function testFunction() {
-  return 'IT WORKS!'
-}
-
-export function initEnvironment(twingEnvironment, config = {}) {
-  const func = createSynchronousFunction('testFunction', testFunction, [])
-  twingEnvironment.addFunction(func)
-}
-```
-
-## Setting Default Values
-
-For `json-schema-faker` to generate reliable data, use `default` or `examples` in your SDC schema:
-
-```yaml
-props:
-  type: object
-  properties:
-    html_tag:
-      type: string
-      enum:
-        - article
-        - div
-      default: article
-slots:
-  content:
-    title: Content
-    examples:
-      - Hello! I'm card content
-```
-
-Refer to:
-
-- [Drupal SDC Documentation](https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml)
-- [JSON Schema Documentation](https://json-schema.org/understanding-json-schema/reference/annotations)
 
 ## Creating Experimental Stories
 
@@ -302,50 +187,87 @@ The addon dynamically renders the components and stories as defined:
 
 [![Stories](https://i.gyazo.com/7212a3f44052ebde34b59a1555d96afe.png)](https://gyazo.com/7212a3f44052ebde34b59a1555d96afe)
 
-### Supported Types
+## Core and custom story node types
 
-#### `component`
+Plugin supports 3 core story node types: `component`, `element`, and `image`.
 
 Use `component` to nest other components within your story.
 
 ```yaml
 type: component
 component: 'umami:badge'
-props:
-  icon: serves
-slots:
-  text:
-    type: component
-    component: 'umami:title'
 ```
 
----
-
-#### `html_tag`
-
-Use `html_tag` to embed HTML markup within a specific tag.
+Use `element` to embed HTML markup within a specific tag.
 
 ```yaml
-type: html_tag
-value: 'Markup'
+type: element
+value: 'Hello World!'
 attributes:
-  class: class-1
+  class: custom-class
 ```
-
----
-
-#### `image`
 
 Use `image` to embed images into your story.
 
 ```yaml
 type: image
-uri: 'Markup'
+uri: https://placehold.co/1200x400
 attributes:
-  class: class-1
+  class: custom-class
 ```
 
----
+Example of using `element` and `image` in a story:
+
+```yaml
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      preview:
+        slots:
+          content:
+            # Result:
+            # <h2 class="custom-class"><span>Hello</span></h2>
+            - type: element
+              tag: 'h2'
+              value: '<span>Hello</span>'
+              attributes:
+                class: 'custom-class'
+
+            # Result:
+            # <img class="custom-class" src="https://placehold.co/600x400" />
+            - type: image
+              uri: 'https://placehold.co/600x400'
+              attributes:
+                class: 'custom-class'
+```
+
+### You can add custom renderers for additional `story` node types.
+
+For example, to render a custom `icon` type:
+
+```yaml
+- type: icon
+  icon: arrow
+```
+
+Add the following to your `sdcStorybookOptions`:
+
+```js
+sdcStorybookOptions: {
+  ...
+  storyNodesRenderer: [
+    {
+      appliesTo: item => item?.type === 'icon',
+      render: item =>
+        JSON.stringify(
+          `<svg class="icon" aria-hidden="true"><use xlink:href="#${item.icon}"></use></svg>`
+        ),
+      priority: -4,
+    },
+  ],
+  ...
+}
+```
 
 ## Support for Single Story Files (`*.story.yml`)
 
@@ -365,10 +287,7 @@ props:
       props:
         icon: timer
       slots:
-        text:
-          type: html_tag
-          tag: span
-          value: Test
+        text: Hello
     - type: component
       component: 'umami:badge'
       props:
@@ -383,42 +302,13 @@ props:
         text: Ciao
 ```
 
-## Extending SDC Story Rendering
-
-You can add custom renderers for additional `story` node types.
-For example, to render a custom `icon` type:
-
-```yaml
-- type: icon
-  icon: arrow
-```
-
-Add the following to your `sdcStorybookOptions`:
-
-```ts
-const sdcStorybookOptions: SDCStorybookOptions = {
-  ...
-  storyNodesRenderer: [
-    {
-      appliesTo: item => item?.type === 'icon',
-      render: item =>
-        Json.toString(
-          `<svg class="icon" aria-hidden="true"><use xlink:href="#${item.icon}"></use></svg>`
-        ),
-      priority: -4,
-    },
-  ],
-  ...
-}
-```
-
 ### Why stories experimental?
 
 The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1lrV2gYlqmqD2pybTql6_H1dByWIKB5xQFcQ/edit?tab=t.0#heading=h.3949vjfiqczr) what format the YAML stories should be.
 
 ## Regular storybook
 
-All storybook functions work as usual and you can import SDC YAML into `.stories.js`
+All Storybook functions work as usual, and you can import SDC YAML into `.stories.js` files.
 
 [example](https://github.com/iberdinsky-skilld/sdc-addon/blob/main/stories/page-example.stories.js)
 
@@ -449,6 +339,63 @@ export const Basic = {}
 ## Configuration Options
 
 In addition to the standard configuration options, you can also specify customDefs and externalDefs to provide additional schema definitions. These options are optional and can be used to extend or override the default definitions.
+
+### Twig.js with `vitePluginTwigDrupalOptions`
+
+It is possible to pass options to the underlying `vite-plugin-twig-drupal` plugin. See [vite-plugin-twig-drupal](https://github.com/larowlan/vite-plugin-twig-drupal/blob/main/README.md#installation)
+
+```js
+vitePluginTwigDrupalOptions: {
+  namespaces: {
+    umami: join(cwd(), './components'), // Your namespace and path to components.
+  },
+  functions: {
+    // You can add custom functions - each is a function that is passed the active Twig instance and should call
+    // e.g. extendFunction to register a function
+    reverse: (twigInstance) => twigInstance.extendFunction("reverse", () => (text) => text.split(' ').reverse().join(' ')),
+    // e.g. extendFilter to register a filter
+    clean_unique_id: (twigInstance) => twigInstance.extendFilter("clean_unique_id", () => (text) => text.split(' ').reverse().join(' ')),
+  },
+  globalContext: {
+    // Global variables that should be present in all templates.
+    active_theme: 'my_super_theme',
+    is_front_page: false,
+  },
+},
+```
+
+### Twing with `vitePluginTwingDrupalOptions`
+
+It is possible to pass options to the underlying `vite-plugin-twing-drupal` plugin. See [Twing documentation](https://twing.nightlycommit.com/) for more information.
+
+```js
+vitePluginTwingDrupalOptions: {
+  namespaces: {
+    umami: [join(cwd(), './components')],
+  },
+  // (Optional) With twing hooks you can adjust twing environment.
+  hooks: join(cwd(), '.storybook/twing-hooks.js'),
+},
+```
+
+Sample twing hook file.
+
+```js
+// .storybook/twing-hooks.js
+import { createSynchronousFunction } from 'twing'
+
+/**
+ * Simple test function.
+ */
+function testFunction() {
+  return 'IT WORKS!'
+}
+
+export function initEnvironment(twingEnvironment, config = {}) {
+  const func = createSynchronousFunction('testFunction', testFunction, [])
+  twingEnvironment.addFunction(func)
+}
+```
 
 ### `customDefs`
 
@@ -525,11 +472,80 @@ const config = {
 }
 ```
 
+## Setting Default Values
+
+For `json-schema-faker` to generate reliable data, use `default` or `examples` in your SDC schema:
+
+```yaml
+props:
+  type: object
+  properties:
+    html_tag:
+      type: string
+      enum:
+        - article
+        - div
+      default: article
+slots:
+  content:
+    title: Content
+    examples:
+      - Hello! I'm card content
+```
+
+Refer to:
+
+- [Drupal SDC Documentation](https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml)
+- [JSON Schema Documentation](https://json-schema.org/understanding-json-schema/reference/annotations)
+
+## Why Choose SDC Storybook Over Alternatives?
+
+While solutions like [SDC Styleguide](https://www.drupal.org/project/sdc_styleguide) and [Drupal Storybook](https://www.drupal.org/project/storybook) are valuable, the SDC Storybook addon offers distinct advantages:
+
+### 1. Component Independence and Modularity
+
+- Following the **BEM (Block Element Modifier)** methodology, a component should work independently across environments.
+- The functionality of your component must not depend on the **Drupal version**, or the active **Drupal theme** — it should be portable to **any** system.
+
+### 2. No Complex Drupal Setup Required
+
+- No need to install or configure Drupal dependencies for component development.
+- Work faster by developing frontend components in Storybook without running a heavy Drupal instance.
+
+### 3. Simplifies DevOps and CI/CD Pipelines
+
+- Since components are isolated, **testing and deployments** are simplified.
+- You can **avoid Drupal-specific configuration** in CI pipelines, leading to more efficient and maintainable workflows.
+
+### 4. Scalability and Flexibility with Faker.js and JSON Schema
+
+- Tools like **Faker.js** let you generate test data for components without needing real content.
+- **JSON Schema** defines component data clearly and consistently, helping maintain data integrity.
+
+### 5. Industry-Standard Tool for Frontend Development
+
+- **Storybook is widely adopted** in frontend development, which makes onboarding easier, even for developers unfamiliar with Drupal.
+- JSON Schema enables working on components without deep Drupal knowledge, opening the project to a wider developer base.
+
+### 6. Drupal-Specific Behavior Embedded in Components
+
+- Embed **Drupal behaviors** (like `Drupal.attachBehaviors()`) directly into Storybook previews, ensuring consistent component behavior between Storybook and production.
+- Supports `drupalSettings` and `once.js`, so components in Storybook behave identically to their Drupal counterparts.
+
+### 7. Twig.js, Twing, and Drupal Twig
+
+While using Drupal to render components offers tighter integration, there are strong reasons to use Twig.js or Twing in many scenarios:
+
+- Many components **don’t need full Drupal logic**. Basic components (buttons, cards, lists) rely on simple HTML and CSS, not on complex template logic. For such components, Twig.js or Twing provide sufficient rendering without the need for full Drupal preprocessing.
+- **Twig.js** works well for most frontend-focused use cases.
+- **Twing** is a modern, actively maintained Twig implementation for Node.js that offers better compatibility with Drupal's Twig features and syntax.
+- Styling and behavior mismatches can be managed separately in the Drupal implementation phase.
+
 ## Dependencies
 
 - [vite-plugin-twig-drupal](https://github.com/larowlan/vite-plugin-twig-drupal): Loads Twig with Drupal functions in twig.js.
 - [vite-plugin-twing-drupal](https://github.com/christianwiedemann/vite-plugin-twing-drupal): Loads Twig with Drupal functions in Twing.
-- [json-schema-faker](https://github.com/json-schema-faker/json-schema-faker): Generates mock data for missing props and
+- [json-schema-faker](https://github.com/json-schema-faker/json-schema-faker): Generates mock data for missing props and slots.
 - [JSON Schema validator](https://www.npmjs.com/package/jsonschema)
 
 ## Known Issues
@@ -538,5 +554,5 @@ const config = {
 
 ## UI Patterns
 
-- Variants partially supported ([Issue 3390712](https://www.drupal.org/project/drupal/issues/3390712)).
+- Variants are partially supported ([Issue 3390712](https://www.drupal.org/project/drupal/issues/3390712)).
 - Custom Twig filters and functions are not supported ([UI Patterns TwigExtension](https://git.drupalcode.org/project/ui_patterns/-/blob/8.x-1.x/src/Template/TwigExtension.php)).

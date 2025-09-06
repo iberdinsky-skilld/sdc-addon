@@ -57,3 +57,8 @@ thirdPartySettings:
                   - umami-card__read-more
               slots:
                 text: Learn More
+                icon:
+                  type: icon
+                  icon: 'arrow-long'
+                  attributes:
+                    class: read-more__icon

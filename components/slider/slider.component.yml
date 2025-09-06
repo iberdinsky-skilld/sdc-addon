@@ -22,6 +22,7 @@ props:
 slots:
   slides:
     title: Slider Items
+    type: array
     examples:
       - ['slide 1', 'slide 2', 'slide 3', 'slide 4']
 libraryOverrides:

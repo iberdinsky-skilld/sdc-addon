@@ -20,6 +20,26 @@ const sdcStorybookOptions: SDCStorybookOptions = {
       render: (item) => `'SAMPLE'`,
       priority: -4,
     },
+    {
+      appliesTo: (item) => item?.type === 'icon',
+      render: (item) => {
+        const attrs = item.attributes
+          ? ' ' +
+            Object.entries(item.attributes)
+              .map(([key, value]) => {
+                if (Array.isArray(value)) {
+                  return `${key}="${value.join(' ')}"`
+                }
+                return `${key}="${value}"`
+              })
+              .join(' ')
+          : ''
+        return JSON.stringify(
+          `<svg${attrs} aria-hidden="true"><use xlink:href="#${item.icon}"></use></svg>`
+        )
+      },
+      priority: -4,
+    },
   ],
   customDefs: {
     'ui-patterns://attributes': {

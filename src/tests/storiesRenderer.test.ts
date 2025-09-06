@@ -39,10 +39,10 @@ describe('storiesRenderer', () => {
       },
       '"<img src=\\"https://placehold.co/600x400\\" class=\\"class-1 class-2\\">"',
     ],
-    [{ type: 'html_tag', value: 'sample' }, '"<div> sample </div>"'],
+    [{ type: 'element', value: 'sample' }, '"<div> sample </div>"'],
     [
       {
-        type: 'html_tag',
+        type: 'element',
         value: 'sample',
         tag: 'span',
         attributes: { class: 'class-1' },

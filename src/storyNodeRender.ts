@@ -52,14 +52,14 @@ const renderImage = (item: any): string => {
   )
 }
 
-// Generate type=html_tag
-const renderHtmlTag = (item: any): string => {
+// Generate type=element
+const renderElement = (item: any): string => {
   return JSON.stringify(
     `<${item.tag ?? 'div'}${toAttributes(item.attributes)}> ${item.value} </${item.tag ?? 'div'}>`
   )
 }
 
-// Generate type=html_tag
+// Generate type=markup
 const renderMarkup = (item: any): string => {
   return JSON.stringify(`${item.markup}`)
 }
@@ -76,9 +76,8 @@ const defaultStoryNodes: StoryNodeRenderer[] = [
     priority: -1,
   },
   {
-    appliesTo: (item) =>
-      item?.type === 'html_tag' || item?.theme === 'html_tag',
-    render: (item) => renderHtmlTag(item),
+    appliesTo: (item) => item?.type === 'element' || item?.theme === 'element',
+    render: (item) => renderElement(item),
     priority: -2,
   },
   {

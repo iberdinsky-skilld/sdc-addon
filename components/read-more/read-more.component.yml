@@ -17,6 +17,13 @@ props:
       title: Read More url
       format: iri-reference
 slots:
+  icon:
+    title: Icon
+    description: SVG icon to display after the text.
+    examples:
+      - <svg class="read-more__icon" aria-hidden="true">
+        <use xlink:href="#icon-arrow"></use>
+        </svg>
   a11y:
     title: Read More screen reader text
     examples:
@@ -25,3 +32,19 @@ slots:
     title: Read More text
     examples:
       - Read more
+
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      arrowLong:
+        props:
+          url: '#'
+          extra_classes:
+            - umami-read-more--arrow-long
+        slots:
+          text: Learn More
+          icon:
+            type: icon
+            icon: 'arrow-long'
+            attributes:
+              class: read-more__icon
