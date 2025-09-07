@@ -26,6 +26,9 @@ thirdPartySettings:
         slots:
           content:
             - type: component
+              component: 'parent-ds:other'
+
+            - type: component
               component: 'umami:header'
               story: preview
             - type: component

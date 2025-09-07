@@ -1,4 +1,4 @@
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { cwd } from 'node:process'
 import type { StorybookConfig } from '@storybook/html-vite'
 import type { SDCStorybookOptions } from '../src/sdc'
@@ -13,7 +13,10 @@ class TwigSafeArray<T> extends Array<T> {
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
-  twigLib: 'twing', // Switch here to twing
+  namespaces: {
+    'parent-ds': resolve('./parent-ds'),
+  },
+  twigLib: 'twig', // Switch here to twing
   storyNodesRenderer: [
     {
       appliesTo: (item) => item?.type === 'sample',
@@ -131,6 +134,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
       enum: [],
     },
   },
+
   externalDefs: [
     'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.4.3/drupal-defs/uiPatternsSchema.yml',
     join(cwd(), './drupal-defs/uiPatternsSchema.yml'),
@@ -138,7 +142,11 @@ const sdcStorybookOptions: SDCStorybookOptions = {
 }
 
 const config: StorybookConfig = {
-  stories: ['../components/**/*.component.yml', '../stories/*.stories.js'],
+  stories: [
+    '../components/**/*.component.yml',
+    '../parent-ds/components/**/*.component.yml',
+    '../stories/*.stories.js',
+  ],
   addons: [
     '@storybook/addon-links',
     {
@@ -148,11 +156,13 @@ const config: StorybookConfig = {
         vitePluginTwigDrupalOptions: {
           namespaces: {
             umami: join(cwd(), './components'),
+            'parent-ds': join(cwd(), 'parent-ds/components'),
           },
         },
         vitePluginTwingDrupalOptions: {
           namespaces: {
             umami: [join(cwd(), './components')],
+            'parent-ds': [join(cwd(), 'parent-ds/components')],
           },
         },
       },
