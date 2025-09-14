@@ -1,6 +1,6 @@
 import { readdirSync, existsSync } from 'fs'
 import { join, resolve, sep, relative } from 'path'
-import { NamespaceDefinition } from './sdc'
+import { NamespaceDefinition } from './sdc.ts'
 import type { Alias } from 'vite'
 
 export const capitalize = (str: string) => str[0].toUpperCase() + str.slice(1)
