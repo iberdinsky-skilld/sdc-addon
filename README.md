@@ -129,26 +129,37 @@ export default config
 
 - **Custom Namespace**: If you want to use a custom namespace or explicitly set the namespace, you can specify it in the plugin configuration:
 
-```js
-sdcStorybookOptions: {
-  ...
-  namespace: 'umami',
-},
-```
+  ```js
+  sdcStorybookOptions: {
+    ...
+    namespace: 'umami',
+  },
+  ```
 
 - **Multiple Namespaces**: The most useful feature is the ability to use multiple namespaces.
   This allows you to use components from other directories (parent or sibling).
   These directories must also contain a `components` directory with SDC components.
 
-```js
-import { resolve } from 'node:path'
-sdcStorybookOptions: {
-  namespaces: {
-    'parent-namespace': resolve('../parent-namespace'),
-    'grandparent-namespace': resolve('../../grandparent-namespace'),
+  ```js
+  import { resolve } from 'node:path'
+  sdcStorybookOptions: {
+    namespaces: {
+      'parent-namespace': resolve('../parent-namespace'),
+      'grandparent-namespace': resolve('../../grandparent-namespace'),
+    },
   },
-},
-```
+  ```
+
+  Due to the specifics of the indexer implementation, you also need to duplicate the component paths in the `stories` array:
+
+  ```js
+  stories: [
+    '../components/**/*.component.yml',
+    '../../parent-namespace/components/**/*.component.yml',
+    '../../../grandparent-namespace/components/**/*.component.yml',
+  ],
+  ```
+
 
 ## Creating Experimental Stories
 
