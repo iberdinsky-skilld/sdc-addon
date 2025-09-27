@@ -94,7 +94,7 @@ The SDC Storybook Addon simplifies the integration of Drupal Single Directory Co
 ## Configuration
 
 To configure the addon, update `.storybook/main.js` as shown below:
-You can use this plugin either with [Twig.js](https://github.com/twigjs/twig.js) or [Twing.js](https://twing.nightlycommit.com/) by setting the `twigLib` option to `'twig'` or `'twing'` in your configuration. Only one of vitePluginTwigDrupalOptions or vitePluginTwingDrupalOptions should be active, depending on your twigLib setting.
+You can use this plugin either with [Twig.js](https://github.com/twigjs/twig.js) or [Twing.js](https://twing.nightlycommit.com/) by setting the `twigLib` option to `'twig'` or `'twing'` in your configuration.
 
 ```js
 import { join } from 'node:path' // 1. Add dependencies.
