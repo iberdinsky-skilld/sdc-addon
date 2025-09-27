@@ -1,5 +1,5 @@
 import type { ArgTypes, InputType } from 'storybook/internal/types'
-import type { SDCSchema } from './sdc'
+import type { SDCSchema } from './sdc.d.ts'
 
 const schemaToArgtypes = (prop: Record<string, any>): InputType => ({
   ...prop,

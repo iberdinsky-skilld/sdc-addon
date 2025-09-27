@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname, extname } from 'path'
 import { globSync } from 'glob'
+import { logger } from './logger.ts'
 
 import type {
   Args,
@@ -14,17 +15,16 @@ import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'
 import { storyNodeRenderer } from './storyNodeRender.ts'
 import componentMetadata from './componentMetadata.ts'
-import { Component, SDCSchema, SDCStorybookOptions } from './sdc'
-import { type JSONSchemaFakerOptions } from 'json-schema-faker'
+import type { Component, SDCSchema, SDCStorybookOptions } from './sdc.d.ts'
+import type { JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
+import { convertToKebabCase } from './utils.ts'
 import {
-  convertToKebabCase,
+  Namespaces,
   getProjectName,
   resolveComponentPath,
-  toNamespaces,
-  Namespaces,
-} from './utils.ts'
+} from './namespaces.ts'
 
 // Helper to read and validate SDC YAML files
 const readSDC = (
@@ -51,7 +51,7 @@ const generateImports = (directory: string, namespaces: Namespaces): string =>
     .map((file) => {
       const filePath = `./${file}`
       const namespace = namespaces.pathToNamespace(directory)
-      console.log('Generating imports', filePath, directory)
+      logger.info(`IMPORT ASSET ${directory}/${file}`)
       return extname(file) === '.twig'
         ? `import COMPONENT from '${namespace}/${file}';`
         : `import '${filePath}';`
@@ -135,6 +135,7 @@ export default ({
   jsonSchemaFakerOptions = {} as JSONSchemaFakerOptions,
   sdcStorybookOptions = {} as SDCStorybookOptions,
   globalDefs = {} as JSONSchema4,
+  namespaces = {} as Namespaces,
 }) => ({
   name: 'vite-plugin-storybook-yaml-stories',
   async load(id: string) {
@@ -147,7 +148,6 @@ export default ({
     if (!id.endsWith('component.yml')) return
 
     try {
-      const namespaces = toNamespaces(sdcStorybookOptions)
       const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
       const imports = generateImports(dirname(id), namespaces)
       const previewsStories = {
@@ -175,7 +175,7 @@ export default ({
         defaultAttributes: [
           [
             'data-component-id',
-            `${sdcStorybookOptions?.namespace}:${basename(id, '.component.yml')}`,
+            `${namespaces.pathToNamespace(dirname(id), true)}`,
           ],
         ],
         componentMetadata: metadata,
@@ -214,7 +214,7 @@ export const Basic = {
 ${stories}
       `
     } catch (error) {
-      console.error(`Error loading component YAML file: ${id}`, error)
+      logger.error(`Error loading component YAML file: ${id}, ${error}`)
       throw error
     }
   },
@@ -233,7 +233,7 @@ export const yamlStoriesIndexer: Indexer = {
 
       return createStoryIndex(fileName, baseTitle, mergedStories)
     } catch (error) {
-      console.error(`Error creating index for YAML file: ${fileName}`, error)
+      logger.error(`Error creating index for YAML file: ${fileName}, ${error}`)
       throw error
     }
   },

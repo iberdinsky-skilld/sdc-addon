@@ -2,14 +2,14 @@
 $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
 
 # The human readable name.
-name: Other
+name: Parent Banner
 
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
 status: experimental
 
-# Schema for the props. We support www.json-schema.org. Learn more about the
-# syntax there.
-props:
-  # Props are always an object with keys. Each key is a variable in your
-  # component template.
-  type: object
+slots:
+  content:
+    title: Content
+    description: The main content of the banner.
+    examples:
+      - 'Parent Banner Content'

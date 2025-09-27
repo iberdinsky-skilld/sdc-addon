@@ -1,5 +1,6 @@
-import { dirname, relative } from 'path'
-import type { SDCSchema } from './sdc'
+import { dirname, relative } from 'node:path'
+import type { SDCSchema } from './sdc.d.ts'
+import { cwd } from 'node:process'
 
 export interface ComponentMetadata {
   path: string
@@ -11,7 +12,7 @@ export interface ComponentMetadata {
 
 export default (id: string, content: SDCSchema): ComponentMetadata => {
   return {
-    path: relative(process.cwd(), dirname(id)),
+    path: relative(cwd(), dirname(id)),
     machineName: id,
     status: content.status || 'stable',
     name: content.name,

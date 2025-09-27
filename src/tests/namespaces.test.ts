@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { toNamespaces } from '../utils.ts'
+import { toNamespaces } from '../namespaces.ts'
 describe('pathToNamespace', () => {
   test.each([
     ['/root/ds-a/components/component-a', '@ds-a/component-a'],

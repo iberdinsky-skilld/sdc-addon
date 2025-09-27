@@ -1,5 +1,5 @@
 import { capitalize, convertToKebabCase, toAttributes } from './utils.ts'
-import type { Component, StoryNodeRenderer } from './sdc'
+import type { Component, StoryNodeRenderer } from './sdc.d.ts'
 
 // Helper to generate argument strings (for props or slots)
 export const generateArgs = (

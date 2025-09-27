@@ -1,0 +1,46 @@
+# This is so your IDE knows about the syntax for fixes and autocomplete.
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+
+# The human readable name.
+name: 'Addon Features Examples'
+
+# Status can be: "experimental", "stable", "deprecated", "obsolete".
+status: experimental
+
+slots:
+  content:
+    title: Content
+    examples:
+      - 'default content'
+
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      preview:
+        slots:
+          content:
+            - type: component
+              component: 'parent-namespace:banner'
+              slots:
+                content:
+                  - type: component
+                    component: 'umami:title'
+                    props:
+                      label: Hello! I am a current namespace title component inside a banner component from parent namespace.
+                      html_tag: h2
+
+            - type: component
+              component: 'umami:paragraph'
+              props:
+                label: This is example of custom content using different types of slot items.
+              slots:
+                content:
+                  - type: element
+                    tag: 'i'
+                    value: '<span>This is output of type: element.</span>'
+                    attributes:
+                      class: 'custom-class'
+                  - type: image
+                    uri: 'https://placehold.co/600x400?text=This+is+an+image+component'
+                    attributes:
+                      class: 'custom-class'
