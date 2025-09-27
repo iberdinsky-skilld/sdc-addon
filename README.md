@@ -11,9 +11,9 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Features of the Addon](#features-of-the-addon)
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
-- [Namespaces](#namespaces)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
+- [Namespaces](#namespaces)
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
 - [Setting Default Values](#setting-default-values)
@@ -121,45 +121,6 @@ const config = {
 }
 export default config
 ```
-
-## Namespaces
-
-- **Default Namespace**: The addon works out of the box without requiring namespace configuration and will use the current directory name as the default namespace, mirroring the behavior of a Drupal theme or module.
-  For example, if your `package.json` is in the `my-theme` directory, the default namespace will be `my-theme`, and this namespace will be linked to the `./components` directory.
-
-- **Custom Namespace**: If you want to use a custom namespace or explicitly set the namespace, you can specify it in the plugin configuration:
-
-  ```js
-  sdcStorybookOptions: {
-    ...
-    namespace: 'umami',
-  },
-  ```
-
-- **Multiple Namespaces**: The most useful feature is the ability to use multiple namespaces.
-  This allows you to use components from other directories (parent or sibling).
-  These directories must also contain a `components` directory with SDC components.
-
-  ```js
-  import { resolve } from 'node:path'
-  sdcStorybookOptions: {
-    namespaces: {
-      'parent-namespace': resolve('../parent-namespace'),
-      'grandparent-namespace': resolve('../../grandparent-namespace'),
-    },
-  },
-  ```
-
-  Due to the specifics of the indexer implementation, you also need to duplicate the component paths in the `stories` array:
-
-  ```js
-  stories: [
-    '../components/**/*.component.yml',
-    '../../parent-namespace/components/**/*.component.yml',
-    '../../../grandparent-namespace/components/**/*.component.yml',
-  ],
-  ```
-
 
 ## Creating Experimental Stories
 
@@ -329,6 +290,61 @@ slots:
 ### Why stories experimental?
 
 The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1lrV2gYlqmqD2pybTql6_H1dByWIKB5xQFcQ/edit?tab=t.0#heading=h.3949vjfiqczr) what format the YAML stories should be.
+
+## Namespaces
+
+Namespace logic mirrors the behavior of Drupal themes and modules. This means your namespaces can be used:
+
+In Twig as `namespace:component`:
+
+```twig
+{% include 'umami:title' %}
+```
+
+And in story definitions within YAML files:
+
+```yaml
+- type: component
+  component: 'umami:title'
+```
+
+### Namespace definitions:
+
+- **Default Namespace**: The addon works out of the box without requiring namespace configuration and will use the current directory name as the default namespace, mirroring the behavior of a Drupal theme or module.
+  For example, if your `package.json` is in the `my-theme` directory, the default namespace will be `my-theme`, and this namespace will be linked to the `./components` directory.
+
+- **Custom Namespace**: If you want to use a custom namespace or explicitly set the namespace, you can specify it in the plugin configuration:
+
+  ```js
+  sdcStorybookOptions: {
+    ...
+    namespace: 'umami',
+  },
+  ```
+
+- **Multiple Namespaces**: The most powerful feature is the ability to use multiple namespaces.
+  This allows you to use components from other directories (parent or sibling).
+  These directories must also contain a `/components` directory with SDC components.
+
+  ```js
+  import { resolve } from 'node:path'
+  sdcStorybookOptions: {
+    namespaces: {
+      'parent-namespace': resolve('../parent-namespace'),
+      'grandparent-namespace': resolve('../../grandparent-namespace'),
+    },
+  },
+  ```
+
+  Due to the specifics of the indexer implementation, you also need to duplicate the component paths in the `stories` array:
+
+  ```js
+  stories: [
+    '../components/**/*.component.yml',
+    '../../parent-namespace/components/**/*.component.yml',
+    '../../../grandparent-namespace/components/**/*.component.yml',
+  ],
+  ```
 
 ## Regular storybook
 
