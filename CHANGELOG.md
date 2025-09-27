@@ -6,6 +6,26 @@
 
 #### ⚠️ Pushed to `main`
 
+- Bump version (iberdinsky@skilld.cloud)
+- Remove autoreleaser ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- README update ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 3
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
+# v0.9.7 (Sat Sep 27 2025)
+
+#### 🐛 Bug Fix
+
+- Support multiple namespaces (base theme) [#68](https://github.com/iberdinsky-skilld/sdc-addon/pull/68) ([@christianwiedemann](https://github.com/christianwiedemann) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
 - Remove autoreleaser ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
 - README update ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
 
