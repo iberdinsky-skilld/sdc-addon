@@ -1,7 +1,7 @@
 import { JSONSchemaFaker } from 'json-schema-faker'
 import type { JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { Args } from 'storybook/internal/types'
-import type { SDCSchema, SlotDefinition } from './sdc'
+import type { SDCSchema, SlotDefinition } from './sdc.d.ts'
 
 // Helper to generate argument strings (for props, slots, or variants)
 const generateArgs = (
@@ -38,10 +38,6 @@ export default function generateStorybookArgs(
 ): Args {
   // Configure JSON Schema Faker options
   JSONSchemaFaker.option({
-    ignoreMissingRefs: true,
-    failOnInvalidTypes: false,
-    useExamplesValue: true,
-    useDefaultValue: true,
     ...jsonSchemaFakerOptions,
   })
 

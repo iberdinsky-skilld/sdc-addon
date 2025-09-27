@@ -4,136 +4,44 @@ import YamlStoriesPlugin, {
 import { mergeConfig } from 'vite'
 import type { UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
-import { resolve } from 'path'
-import { existsSync, readFileSync } from 'node:fs'
-import { parse } from 'yaml'
-import { sync } from 'glob'
 import type { StorybookConfig } from '@storybook/html-vite'
-import type { SDCStorybookOptions } from './sdc'
-import { type JSONSchemaFakerOptions } from 'json-schema-faker'
-import type { JSONSchema4 } from 'json-schema'
-import fetch from 'node-fetch'
-import { logger } from './logger.ts'
-
-// Load external definitions (local or remote)
-async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
-  try {
-    if (defPath.startsWith('http://') || defPath.startsWith('https://')) {
-      const response = await fetch(defPath)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${defPath}: ${response.statusText}`)
-      }
-      const content = await response.text()
-      return parse(content)
-    } else {
-      const content = readFileSync(defPath, 'utf8')
-      return parse(content)
-    }
-  } catch (error) {
-    logger.error(`Error loading external definition from ${defPath}: ${error}`)
-    throw error
-  }
-}
-
-// Isolated utility to fetch component directories
-function getComponentDirectories(): string[] {
-  return sync('./components/**/*.component.yml')
-}
-
-// Resolve component paths dynamically
-function resolveComponentPath(
-  namespace: string,
-  component: string
-): string | undefined {
-  const componentDirectories = getComponentDirectories()
-  const possiblePaths = componentDirectories.map((dir) =>
-    resolve(`${dir}/${component}/${component}.component.yml`)
-  )
-
-  const resolvedPath = possiblePaths.find((path) => existsSync(path))
-  if (!resolvedPath) {
-    logger.error(
-      `Component ${component} could not be resolved in namespace ${namespace}`
-    )
-  }
-  return resolvedPath
-}
-
-// Default options for SDC Storybook
-const defaultOptions: SDCStorybookOptions = {
-  validate: false,
-  twigLib: 'twig',
-  // validate:
-  //   'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
-}
-
-// Helper to load and merge definitions
-async function loadAndMergeDefinitions(
-  externalDefs: string[] | undefined,
-  customDefs: Record<string, any> | undefined
-): Promise<JSONSchema4> {
-  const globalDefs: JSONSchema4 = {}
-
-  // Load external definitions
-  if (externalDefs) {
-    await Promise.all(
-      externalDefs.map(async (defPath) => {
-        const def = await loadExternalDef(defPath)
-        Object.entries(def).forEach(([component, schema]) => {
-          globalDefs[component] = schema
-        })
-      })
-    )
-  }
-
-  // Merge custom definitions
-  if (customDefs) {
-    Object.entries(customDefs).forEach(([component, schema]) => {
-      globalDefs[component] = schema
-    })
-  }
-
-  if (Object.keys(globalDefs).length > 0) {
-    logger.info(
-      `Registering custom definitions: ${Object.keys(globalDefs).join(', ')}`
-    )
-  }
-
-  return globalDefs
-}
+import type { SDCAddonOptions } from './sdc.d.ts'
+import { toNamespaces } from './namespaces.ts'
+import { loadAndMergeDefinitions } from './definitions.ts'
+import { DEFAULT_ADDON_OPTIONS } from './constants.ts'
 
 // Main function to merge Vite configuration
-export async function viteFinal(
-  config: UserConfig,
-  options: {
-    sdcStorybookOptions: SDCStorybookOptions
-    vitePluginTwingDrupalOptions: {
-      namespaces?: {}
-      include: '/\.twig(\?.*)?$/'
-      hooks?: ''
-    }
-    vitePluginTwigDrupalOptions: {
-      namespaces?: {}
-      functions?: {}
-      globalContext: {}
-    }
-    jsonSchemaFakerOptions: JSONSchemaFakerOptions
-  }
-) {
-  options.sdcStorybookOptions = {
-    ...defaultOptions,
-    ...options.sdcStorybookOptions,
+export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
+  options = {
+    ...DEFAULT_ADDON_OPTIONS,
+    ...options,
   }
 
-  const { namespace, customDefs, externalDefs } = options.sdcStorybookOptions
-  const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
+  const {
+    sdcStorybookOptions,
+    vitePluginTwigDrupalOptions,
+    vitePluginTwingDrupalOptions,
+  } = options
+  const { customDefs, externalDefs } = sdcStorybookOptions
   const { nodePolyfills } = await import('vite-plugin-node-polyfills')
 
+  const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
+  const namespaces = toNamespaces(sdcStorybookOptions)
+
   let twigPlugin = null
-  if (options.sdcStorybookOptions.twigLib === 'twing') {
+
+  if (sdcStorybookOptions.twigLib === 'twing') {
+    options.vitePluginTwingDrupalOptions = {
+      ...vitePluginTwingDrupalOptions,
+      namespaces: { ...namespaces.toTwingNamespaces() },
+    }
     const { default: twing } = await import('vite-plugin-twing-drupal')
     twigPlugin = twing(options.vitePluginTwingDrupalOptions)
-  } else if (options.sdcStorybookOptions.twigLib === 'twig') {
+  } else if (sdcStorybookOptions.twigLib === 'twig') {
+    options.vitePluginTwigDrupalOptions = {
+      ...vitePluginTwigDrupalOptions,
+      namespaces: { ...namespaces.toTwigJsNamespaces() },
+    }
     const { default: twig } = await import('vite-plugin-twig-drupal')
     twigPlugin = twig(options.vitePluginTwigDrupalOptions)
   }
@@ -144,21 +52,10 @@ export async function viteFinal(
         include: ['buffer', 'stream', 'path'],
       }),
       ...(twigPlugin ? [twigPlugin] : []),
-      YamlStoriesPlugin({ ...options, globalDefs }),
+      YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
     ],
     resolve: {
-      alias: [
-        {
-          find: new RegExp(`${namespace}:(.*)`), // Use namespace from options
-          replacement: (match: string, component: string) => {
-            const resolvedPath = resolveComponentPath(namespace, component)
-            if (!resolvedPath) {
-              throw new Error(`Component ${component} could not be resolved.`)
-            }
-            return resolvedPath
-          },
-        },
-      ],
+      alias: [...namespaces.toViteAlias()],
     },
   })
 }

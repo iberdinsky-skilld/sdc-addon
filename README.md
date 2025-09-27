@@ -11,6 +11,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Features of the Addon](#features-of-the-addon)
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
+- [Namespaces](#namespaces)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Regular Storybook](#regular-storybook)
@@ -44,6 +45,7 @@ The SDC Storybook Addon simplifies the integration of Drupal Single Directory Co
 - **Drupal Behavior Embedding**: Allows you to directly embed Drupal behaviors like `Drupal.attachBehaviors()` into Storybook previews, ensuring components behave similarly to their Drupal counterparts.
 - **Custom and External Schema Definitions**: Supports custom and external JSON schema definitions to validate components based on Drupal-specific configurations (e.g., UI Patterns, Experience Builder).
 - **Default and Custom Story Rendering**: Use `type: component` to nest components, `type: element` for HTML markup, and `type: image` for images within stories. Or create your own custom renderers.
+- **Namespaces**: Supports multiple namespaces, allowing you to use components from different(parent/sibling) directories or packages.
 
 ## Quickstart Guide
 
@@ -106,24 +108,7 @@ const config = {
       options: {
         sdcStorybookOptions: {
           twigLib: 'twig', // 'twig' for Twig.js or 'twing' for Twing.
-          namespace: 'umami', // Your namespace.
         },
-
-        // vite-plugin-twig-drupal options. Comment if using Twing.
-        vitePluginTwigDrupalOptions: {
-          namespaces: {
-            umami: join(cwd(), './components'), // Your namespace and path to components.
-          },
-        },
-
-        // vite-plugin-twing-drupal options. Uncomment if using Twing.
-        // vitePluginTwingDrupalOptions: {
-        //   namespaces: {
-        //     umami: [join(cwd(), './components')],
-        //   },
-        // },
-
-        jsonSchemaFakerOptions: {}, // json-schema-faker options.
       },
     },
     // Any other addons.
@@ -135,6 +120,34 @@ const config = {
   },
 }
 export default config
+```
+
+## Namespaces
+
+- **Default Namespace**: The addon works out of the box without requiring namespace configuration and will use the current directory name as the default namespace, mirroring the behavior of a Drupal theme or module.
+  For example, if your `package.json` is in the `my-theme` directory, the default namespace will be `my-theme`, and this namespace will be linked to the `./components` directory.
+
+- **Custom Namespace**: If you want to use a custom namespace or explicitly set the namespace, you can specify it in the plugin configuration:
+
+```js
+sdcStorybookOptions: {
+  ...
+  namespace: 'umami',
+},
+```
+
+- **Multiple Namespaces**: The most useful feature is the ability to use multiple namespaces.
+  This allows you to use components from other directories (parent or sibling).
+  These directories must also contain a `components` directory with SDC components.
+
+```js
+import { resolve } from 'node:path'
+sdcStorybookOptions: {
+  namespaces: {
+    'parent-namespace': resolve('../parent-namespace'),
+    'grandparent-namespace': resolve('../../grandparent-namespace'),
+  },
+},
 ```
 
 ## Creating Experimental Stories
@@ -350,9 +363,6 @@ It is possible to pass options to the underlying `vite-plugin-twig-drupal` plugi
 
 ```js
 vitePluginTwigDrupalOptions: {
-  namespaces: {
-    umami: join(cwd(), './components'), // Your namespace and path to components.
-  },
   functions: {
     // You can add custom functions - each is a function that is passed the active Twig instance and should call
     // e.g. extendFunction to register a function
@@ -374,9 +384,6 @@ It is possible to pass options to the underlying `vite-plugin-twing-drupal` plug
 
 ```js
 vitePluginTwingDrupalOptions: {
-  namespaces: {
-    umami: [join(cwd(), './components')],
-  },
   // (Optional) With twing hooks you can adjust twing environment.
   hooks: join(cwd(), '.storybook/twing-hooks.js'),
 },

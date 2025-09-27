@@ -15,6 +15,8 @@ import card, {
   Preview as CardPreview,
 } from '../components/card/card.component.yml'
 
+import parentBanner from '../parent-namespace/components/banner/banner.component.yml'
+
 export default {
   title: 'Page with imported SDC',
   render: () => {
@@ -65,6 +67,7 @@ export default {
           ${accordion.component({ content: 'Accordion content 2', title: 'Accordion 2', name: 'acc' })}
         `,
       })}
+      ${parentBanner.component({ content: 'Banner from parent namespace' })}
 
     `
   },

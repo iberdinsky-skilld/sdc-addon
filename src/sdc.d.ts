@@ -1,4 +1,6 @@
-import { JSONSchema4 } from 'json-schema'
+import type { JSONSchema4 } from 'json-schema'
+import type { JSONSchemaFakerOptions } from 'json-schema-faker'
+
 export interface SDCSchema {
   $schema?: string
   $defs?: JSONSchema4
@@ -63,9 +65,12 @@ interface LibraryDefinition {
 interface ThirdPartySettings {
   [key: string]: Record<string, any>
 }
-
-export interface SDCStorybookOptions {
+export interface NamespaceDefinition {
   namespace?: string
+  namespaces?: Record<string, string>
+}
+
+export interface SDCStorybookOptions extends NamespaceDefinition {
   experimentalVariants?: boolean
   storyNodesRenderer?: StoryNodeRenderer[]
   twigLib?: 'twing' | 'twig'
@@ -88,4 +93,25 @@ export interface Component {
   props?: JSONSchema4
   slots?: SlotDefinition
   story?: string
+}
+
+export interface TwigPluginOptions {}
+
+export interface VitePluginTwingDrupalOptions extends TwigPluginOptions {
+  namespaces?: Record<string, string[]>
+  include?: string
+  hooks?: string
+}
+
+export interface VitePluginTwigDrupalOptions extends TwigPluginOptions {
+  namespaces?: Record<string, string>
+  functions?: {}
+  globalContext?: {}
+}
+
+export interface SDCAddonOptions {
+  sdcStorybookOptions: SDCStorybookOptions
+  vitePluginTwingDrupalOptions?: VitePluginTwingDrupalOptions
+  vitePluginTwigDrupalOptions?: VitePluginTwigDrupalOptions
+  jsonSchemaFakerOptions?: JSONSchemaFakerOptions
 }

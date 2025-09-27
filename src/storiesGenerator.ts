@@ -1,4 +1,4 @@
-import type { Component, SDCSchema } from './sdc.ts'
+import type { Component } from './sdc.d.ts'
 import { capitalize } from './utils.ts'
 import { generateArgs } from './storyNodeRender.ts'
 

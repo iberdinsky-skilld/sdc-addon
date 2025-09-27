@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import generateStorybookArgs from '../argsGenerator'
-import { SDCSchema } from '../sdc'
+import type { SDCSchema } from '../sdc.d.ts'
 
 describe('generateStorybookArgs', () => {
   it('should generate arguments from properties', () => {

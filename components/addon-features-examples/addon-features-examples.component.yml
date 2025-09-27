@@ -2,22 +2,16 @@
 $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
 
 # The human readable name.
-name: 'Page: Front'
+name: 'Addon Features Examples'
 
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
 status: experimental
-
-# Schema for the props. We support www.json-schema.org. Learn more about the
-# syntax there.
-props:
-  type: object
-  properties: {}
 
 slots:
   content:
     title: Content
     examples:
-      - Default content
+      - 'default content'
 
 thirdPartySettings:
   sdcStorybook:
@@ -26,11 +20,15 @@ thirdPartySettings:
         slots:
           content:
             - type: component
-              component: 'umami:header'
-              story: preview
-            - type: component
-              component: 'umami:banner'
-              story: preview
+              component: 'parent-namespace:banner'
+              slots:
+                content:
+                  - type: component
+                    component: 'umami:title'
+                    props:
+                      label: Hello! I am a current namespace title component inside a banner component from parent namespace.
+                      html_tag: h2
+
             - type: component
               component: 'umami:paragraph'
               props:
@@ -46,23 +44,3 @@ thirdPartySettings:
                     uri: 'https://placehold.co/600x400?text=This+is+an+image+component'
                     attributes:
                       class: 'custom-class'
-
-            - type: component
-              component: 'umami:paragraph'
-              slots:
-                content:
-                  - type: component
-                    component: umami:slider
-                    props:
-                      sliderType: naked
-                    slots:
-                      slides:
-                        - type: component
-                          component: umami:card
-                          story: preview
-                        - type: component
-                          component: umami:card
-                          story: preview
-                        - type: component
-                          component: umami:card
-                          story: preview
