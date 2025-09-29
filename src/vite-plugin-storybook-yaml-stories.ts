@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
-import { join, basename, dirname, extname } from 'path'
+import { join, basename, dirname, extname, relative, sep } from 'path'
 import { globSync } from 'glob'
 import { logger } from './logger.ts'
 
@@ -19,7 +19,7 @@ import type { Component, SDCSchema, SDCStorybookOptions } from './sdc.d.ts'
 import type { JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
-import { convertToKebabCase } from './utils.ts'
+import { capitalize, convertToKebabCase } from './utils.ts'
 import {
   Namespaces,
   getProjectName,
@@ -226,7 +226,29 @@ export const yamlStoriesIndexer: Indexer = {
   createIndex: async (fileName, { makeTitle }) => {
     try {
       const content = readSDC(fileName)
-      const baseTitle = makeTitle(`${getProjectName(fileName)}/${content.name}`)
+
+      // When group is available in component definition we use this for
+      // grouping.
+      let group = content.group
+
+      if (!group) {
+        // Alternatively use folder hierarchy relative to ./components.
+        const relativePath = relative(
+          process.cwd(),
+          dirname(fileName)
+        )
+        const parts = relativePath.split(sep).filter(Boolean)
+
+        if (parts.length > 2) {
+          group = parts[1];
+        } else {
+          // Or fallback to SDC if subfolders aren't used.
+          group = 'SDC'
+        }
+      }
+
+      const baseTitle = makeTitle(`${getProjectName(fileName)}/${capitalize(group)}/${content.name}`)
+
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
