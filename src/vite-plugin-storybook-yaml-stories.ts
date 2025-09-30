@@ -185,7 +185,7 @@ export default ({
 
       }
 
-      const basicArgs = { ...argsGenerator(content, jsonSchemaFakerOptions), ...args }
+      const basicArgs = { ...args, ...argsGenerator(content, jsonSchemaFakerOptions) }
 
       const stories = previewsStories ? storiesGenerator(previewsStories) : ''
 
