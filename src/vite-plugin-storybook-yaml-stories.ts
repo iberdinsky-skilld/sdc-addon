@@ -105,17 +105,19 @@ const dynamicImports = (
 const createStoryIndex = (
   fileName: string,
   baseTitle: string,
-  stories: Record<string, any>
+  stories: Record<string, any>,
+  disableBasicStory: boolean
 ): IndexInput[] => {
-  const storiesIndex: IndexInput[] = [
-    {
+  const storiesIndex: IndexInput[] = [];
+
+  if (disableBasicStory === false) {
+    storiesIndex.push ({
       type: 'story',
       importPath: fileName,
       exportName: 'Basic',
       title: baseTitle,
-    },
-  ]
-
+    });
+  }
   if (stories) {
     Object.keys(stories).forEach((storyKey) => {
       storiesIndex.push({
@@ -228,10 +230,11 @@ export const yamlStoriesIndexer: Indexer = {
       const content = readSDC(fileName)
       const baseTitle = makeTitle(`${getProjectName(fileName)}/${content.name}`)
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
+      const disableBasicStory = content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false;
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
 
-      return createStoryIndex(fileName, baseTitle, mergedStories)
+      return createStoryIndex(fileName, baseTitle, mergedStories, disableBasicStory)
     } catch (error) {
       logger.error(`Error creating index for YAML file: ${fileName}, ${error}`)
       throw error
