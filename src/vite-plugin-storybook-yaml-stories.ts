@@ -19,7 +19,7 @@ import type { Component, SDCSchema, SDCStorybookOptions } from './sdc.d.ts'
 import type { JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
-import { capitalize, convertToKebabCase } from './utils.ts'
+import { capitalize, convertToKebabCase, deriveGroupFromPath } from './utils.ts'
 import {
   Namespaces,
   getProjectName,
@@ -220,6 +220,7 @@ ${stories}
   },
 })
 
+
 // Indexer for YAML-based Storybook stories
 export const yamlStoriesIndexer: Indexer = {
   test: /component\.yml$/,
@@ -227,27 +228,12 @@ export const yamlStoriesIndexer: Indexer = {
     try {
       const content = readSDC(fileName)
 
-      // When group is available in component definition we use this for
-      // grouping.
-      let group = content.group
+      // Group set via metadata wins; else derive from path; else 'SDC'
+      const group = content.group || deriveGroupFromPath(fileName)
 
-      if (!group) {
-        // Alternatively use folder hierarchy relative to ./components.
-        const relativePath = relative(
-          process.cwd(),
-          dirname(fileName)
-        )
-        const parts = relativePath.split(sep).filter(Boolean)
-
-        if (parts.length > 2) {
-          group = parts[1];
-        } else {
-          // Or fallback to SDC if subfolders aren't used.
-          group = 'SDC'
-        }
-      }
-
-      const baseTitle = makeTitle(`${getProjectName(fileName)}/${capitalize(group)}/${content.name}`)
+      const baseTitle = makeTitle(
+        `${getProjectName(fileName)}/${capitalize(group)}/${content.name}`
+      )
 
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
       const storiesContent = loadStoryFilesSync(fileName)
