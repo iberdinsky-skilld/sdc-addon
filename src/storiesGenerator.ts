@@ -8,6 +8,7 @@ export default (stories: Component[]): string =>
       ([storyKey, { props = {}, slots = {}, variants = {} }]) => `
 export const ${capitalize(storyKey)} = {
   args: {
+    ...Basic.baseArgs,
     ${generateArgs(props, false)}
     ${generateArgs(slots, true)}
     ${generateVariants(variants)}

@@ -206,6 +206,7 @@ export default {
 };
 
 export const Basic = {
+  baseArgs: ${JSON.stringify(args, null, 2)}, 
   args: ${JSON.stringify(basicArgs, null, 2)},
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);

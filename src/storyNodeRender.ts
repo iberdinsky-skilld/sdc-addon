@@ -42,7 +42,7 @@ const renderComponent = (item: Component): string => {
   const storyArgs = item.story
     ? `...${kebabCaseName}.${capitalize(item.story)}.args`
     : '...{}'
-  return `${kebabCaseName}.default.component({${storyArgs}, ${componentProps}})`
+  return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.baseArgs, ${storyArgs}, ${componentProps}})`
 }
 
 // Render theme=image
