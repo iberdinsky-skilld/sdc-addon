@@ -4,6 +4,7 @@ $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schema
 # The human readable name.
 name: 'Addon Features Examples'
 
+description: 'Addon Features description'
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
 status: experimental
 
@@ -16,8 +17,13 @@ slots:
 thirdPartySettings:
   sdcStorybook:
     disableBasicStory: true
+    parameters:
+      tags:
+        - autodocs
     stories:
       preview:
+        name: Preview Example
+        description: 'Addon Features preview description'
         slots:
           content:
             - type: component

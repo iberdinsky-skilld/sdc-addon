@@ -54,6 +54,7 @@ const config: StorybookConfig = {
   ],
   addons: [
     '@storybook/addon-links',
+    '@storybook/addon-docs',
     {
       name: join(cwd(), 'src/preset.ts'),
       options: {

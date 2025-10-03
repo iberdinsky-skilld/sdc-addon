@@ -205,6 +205,7 @@ class TwigSafeArray extends Array {
 
 export default {
   component: COMPONENT,
+  parameters:  {...${JSON.stringify(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, null, 2)}, ...{docs: {description: {component: ${JSON.stringify(content.description, null, 2)}}}}},
   argTypes: ${JSON.stringify(argTypes, null, 2)},
   args: ${JSON.stringify(args, null, 2)},
 };
@@ -212,6 +213,7 @@ export default {
 export const Basic = {
   baseArgs: ${JSON.stringify(args, null, 2)}, 
   args: ${JSON.stringify(basicArgs, null, 2)},
+  
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },

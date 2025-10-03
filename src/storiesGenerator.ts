@@ -5,8 +5,10 @@ import { generateArgs } from './storyNodeRender.ts'
 export default (stories: Component[]): string =>
   Object.entries(stories)
     .map(
-      ([storyKey, { props = {}, slots = {}, variants = {} }]) => `
+      ([storyKey, { props = {}, slots = {}, variants = {}, description = '', name  = undefined }]) => `
 export const ${capitalize(storyKey)} = {
+  parameters: {docs: {description: {story: ${JSON.stringify(description, null, 2)}}}},
+  name: ${JSON.stringify(name ?? capitalize(storyKey), null, 2)},
   args: {
     ...Basic.baseArgs,
     ${generateArgs(props, false)}
