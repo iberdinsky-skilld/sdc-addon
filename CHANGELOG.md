@@ -1,3 +1,15 @@
+# v0.12.3 (Sun Oct 05 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Format and specs update ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.11.2 (Sun Oct 05 2025)
 
 #### 🐛 Bug Fix
