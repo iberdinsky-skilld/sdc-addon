@@ -182,10 +182,12 @@ export default ({
         ...(content.variants && {
           variant: Object.keys(content.variants)[0],
         }),
-
       }
 
-      const basicArgs = { ...args, ...argsGenerator(content, jsonSchemaFakerOptions) }
+      const basicArgs = {
+        ...args,
+        ...argsGenerator(content, jsonSchemaFakerOptions),
+      }
 
       const stories = previewsStories ? storiesGenerator(previewsStories) : ''
 

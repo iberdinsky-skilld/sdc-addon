@@ -1,13 +1,13 @@
 import type { SDCAddonOptions } from './sdc.d.ts'
 
 export const DEFAULT_ADDON_OPTIONS: {
-  sdcStorybookOptions: { twigLib: string; validate: boolean };
-  vitePluginTwingDrupalOptions: { include: RegExp };
-  vitePluginTwigDrupalOptions: {};
+  sdcStorybookOptions: { twigLib: string; validate: boolean }
+  vitePluginTwingDrupalOptions: { include: RegExp }
+  vitePluginTwigDrupalOptions: {}
   jsonSchemaFakerOptions: {
-    ignoreMissingRefs: boolean;
-    failOnInvalidTypes: boolean;
-    useExamplesValue: boolean;
+    ignoreMissingRefs: boolean
+    failOnInvalidTypes: boolean
+    useExamplesValue: boolean
     useDefaultValue: boolean
   }
 } = {
