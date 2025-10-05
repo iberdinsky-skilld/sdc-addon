@@ -1,3 +1,16 @@
+# v0.11.2 (Sun Oct 05 2025)
+
+#### 🐛 Bug Fix
+
+- Add disableBasicStory functionality [#78](https://github.com/iberdinsky-skilld/sdc-addon/pull/78) ([@christianwiedemann](https://github.com/christianwiedemann) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+
+---
+
 # v0.10.2 (Sun Oct 05 2025)
 
 #### 🐛 Bug Fix
