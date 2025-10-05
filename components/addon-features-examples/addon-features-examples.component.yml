@@ -16,10 +16,8 @@ slots:
 
 thirdPartySettings:
   sdcStorybook:
-    disableBasicStory: true
-    parameters:
-      tags:
-        - autodocs
+    tags:
+      - autodocs
     stories:
       preview:
         name: Preview Example

@@ -12,6 +12,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
 - [Creating Experimental Stories](#creating-experimental-stories)
+- [Docs Addon](#docs-addon)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Namespaces](#namespaces)
 - [Regular Storybook](#regular-storybook)
@@ -254,6 +255,9 @@ sdcStorybookOptions: {
   ...
 }
 ```
+## Docs addon?
+The storybook docs addon works out of the box.
+
 
 ## Support for Single Story Files (`*.story.yml`)
 

@@ -106,18 +106,18 @@ const createStoryIndex = (
   fileName: string,
   baseTitle: string,
   stories: Record<string, any>,
-  disableBasicStory: boolean
+  tags: string[]
 ): IndexInput[] => {
-  const storiesIndex: IndexInput[] = []
-
-  if (disableBasicStory === false) {
-    storiesIndex.push({
+  const storiesIndex: IndexInput[] = [
+    {
       type: 'story',
       importPath: fileName,
       exportName: 'Basic',
       title: baseTitle,
-    })
-  }
+      tags
+    },
+  ]
+
   if (stories) {
     Object.keys(stories).forEach((storyKey) => {
       storiesIndex.push({
@@ -125,6 +125,7 @@ const createStoryIndex = (
         importPath: fileName,
         exportName: storyKey,
         title: baseTitle,
+        tags
       })
     })
   }
@@ -184,12 +185,10 @@ export default ({
         ...(content.variants && {
           variant: Object.keys(content.variants)[0],
         }),
-      }
-
-      const basicArgs = {
-        ...args,
         ...argsGenerator(content, jsonSchemaFakerOptions),
       }
+
+      const basicArgs = { ...args }
 
       const stories = previewsStories ? storiesGenerator(previewsStories) : ''
 
@@ -211,7 +210,7 @@ export default {
 };
 
 export const Basic = {
-  baseArgs: ${JSON.stringify(args, null, 2)}, 
+  
   args: ${JSON.stringify(basicArgs, null, 2)},
   
   play: async ({ canvasElement }) => {
@@ -235,17 +234,10 @@ export const yamlStoriesIndexer: Indexer = {
       const content = readSDC(fileName)
       const baseTitle = makeTitle(`${getProjectName(fileName)}/${content.name}`)
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
-      const disableBasicStory =
-        content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
-
-      return createStoryIndex(
-        fileName,
-        baseTitle,
-        mergedStories,
-        disableBasicStory
-      )
+      const tags = content?.thirdPartySettings?.sdcStorybook?.tags ?? [];
+      return createStoryIndex(fileName, baseTitle, mergedStories, tags)
     } catch (error) {
       logger.error(`Error creating index for YAML file: ${fileName}, ${error}`)
       throw error

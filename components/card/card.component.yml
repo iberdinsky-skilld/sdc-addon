@@ -37,7 +37,8 @@ slots:
 
 thirdPartySettings:
   sdcStorybook:
-    disableBasicStory: true
+    parameters:
+      layout: 'centered'
     stories:
       preview:
         props:
