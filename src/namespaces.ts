@@ -60,14 +60,16 @@ export class Namespaces {
   public toViteAlias(): Alias[] {
     const aliases: Alias[] = []
 
-    Object.keys(this.namespaces).forEach((namespace) => {
+    Object.entries(this.namespaces).forEach(([namespace, path]) => {
+      const hasComponents = existsSync(join(path, 'components'))
       aliases.push({
         find: '@' + namespace,
         replacement: normalizePath(
-          resolve(this.namespaces[namespace], 'components')
+          hasComponents ? join(path, 'components') : path
         ),
       })
     })
+
     logger.info(`REGISTER VITE ALIASES: ${JSON.stringify(aliases)}`)
     return aliases
   }
@@ -75,7 +77,13 @@ export class Namespaces {
   public toTwigJsNamespaces(): VitePluginTwigDrupalOptions['namespaces'] {
     let namespaces: VitePluginTwigDrupalOptions['namespaces'] = {}
     for (const [ns, path] of Object.entries(this.namespaces)) {
-      namespaces[ns] = join(path, 'components')
+      const componentsPath = join(path, 'components')
+      if (existsSync(componentsPath)) {
+        namespaces[ns] = componentsPath
+      } else {
+        // Allow non-components namespaces.
+        namespaces[ns] = path
+      }
     }
     return namespaces
   }
@@ -83,7 +91,13 @@ export class Namespaces {
   public toTwingNamespaces(): VitePluginTwingDrupalOptions['namespaces'] {
     let namespaces: VitePluginTwingDrupalOptions['namespaces'] = {}
     for (const [ns, path] of Object.entries(this.namespaces)) {
-      namespaces[ns] = [join(path, 'components')]
+      const componentsPath = join(path, 'components')
+      if (existsSync(componentsPath)) {
+        namespaces[ns] = [componentsPath]
+      } else {
+        // Allow non-components namespaces.
+        namespaces[ns] = [path]
+      }
     }
     return namespaces
   }
@@ -109,6 +123,7 @@ export class Namespaces {
     }
     return bestNs
   }
+
   public pathToNamespace(
     fsPath: string,
     makeComponentIdFormat = false
@@ -123,25 +138,31 @@ export class Namespaces {
     const rootPath = resolve(this.namespaces[ns]) // z.B. "/root/ds-a"
     const componentsDir = join(rootPath, 'components')
 
-    const isExact = fsPath === componentsDir
-    const isChild = fsPath.startsWith(componentsDir + sep)
-    if (!isExact && !isChild) {
-      throw new Error(
-        `Could not find 'components' folder in path: ${fsPath}, namespace: ${ns} (${Object.values(this.namespaces).join(', ')})`
-      )
+    if (existsSync(componentsDir)) {
+      // Standard Drupal 'components' structure
+      const isExact = fsPath === componentsDir
+      const isChild = fsPath.startsWith(componentsDir + sep)
+      if (!isExact && !isChild) {
+        throw new Error(
+          `Could not find 'components' folder in path: ${fsPath}, namespace: ${ns} (${Object.values(this.namespaces).join(', ')})`
+        )
+      }
+
+      let rel = relative(componentsDir, fsPath) // z.B. "component-a/sub-component-b"
+
+      if (sep !== '/') {
+        rel = rel.split(sep).join('/')
+      }
+
+      if (makeComponentIdFormat) {
+        return `${ns}:${rel}`
+      }
+
+      return `@${ns}/${rel}`
     }
 
-    let rel = relative(componentsDir, fsPath) // z.B. "component-a/sub-component-b"
-
-    if (sep !== '/') {
-      rel = rel.split(sep).join('/')
-    }
-
-    if (makeComponentIdFormat) {
-      return `${ns}:${rel}`
-    }
-
-    return `@${ns}/${rel}`
+    // Custom namespace (icons, utilities, etc.)
+    return `@${ns}`
   }
 }
 
