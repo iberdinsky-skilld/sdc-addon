@@ -17,6 +17,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
 - [Setting Default Values](#setting-default-values)
+- [Disable Basic Story](#disable-basic-story)
 - [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Dependencies](#dependencies)
 - [Known Issues](#known-issues)
@@ -346,6 +347,23 @@ And in story definitions within YAML files:
   ],
   ```
 
+- **Non Component Namespaces**: If you want to use components from a directory that does not follow the SDC structure (i.e., does not have a `components` directory), you can define a namespace that points directly to that directory. For example, if you have an `assets` directory with SVG icons:
+
+  ```js
+  sdcStorybookOptions: {
+    namespaces: {
+      'assets': join(cwd(), './assets'),
+    },
+  },
+  ```
+
+  In this case, the addon will look for components directly in the specified directory.
+  And you can use them in twig and stories as usual:
+
+  ```twig
+  {% include '@assets/icons/example.svg' %}
+  ```
+
 ## Regular storybook
 
 All Storybook functions work as usual, and you can import SDC YAML into `.stories.js` files.
@@ -535,6 +553,17 @@ Refer to:
 
 - [Drupal SDC Documentation](https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml)
 - [JSON Schema Documentation](https://json-schema.org/understanding-json-schema/reference/annotations)
+
+## Disable Basic Story
+
+By default the addon generates a `Basic` story for each component using default props and slots. This is useful for quickly previewing components, but if you prefer to create your own stories exclusively, you can disable this feature.
+To disable the automatic generation of the `Basic` story, set `disableBasicStory: true` in your component YAML:
+
+```yaml
+thirdPartySettings:
+  sdcStorybook:
+    disableBasicStory: true
+```
 
 ## Why Choose SDC Storybook Over Alternatives?
 

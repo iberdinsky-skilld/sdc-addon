@@ -7,7 +7,7 @@ import { CUSTOM_TEST_DEFS } from './ui-patterns-definitions.js'
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
   namespaces: {
-    'assets': join(cwd(), './assets'),
+    assets: join(cwd(), './assets'),
     'parent-namespace': resolve('./parent-namespace'),
   },
   twigLib: 'twig', // Switch here to twing
