@@ -1,3 +1,24 @@
+# v0.10.2 (Sun Oct 05 2025)
+
+#### 🐛 Bug Fix
+
+- Update namespace handling to allow non-components based namespaces. [#80](https://github.com/iberdinsky-skilld/sdc-addon/pull/80) ([@lukewhitmore](https://github.com/lukewhitmore) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- fix faker configuration for story stories [#77](https://github.com/iberdinsky-skilld/sdc-addon/pull/77) ([@christianwiedemann](https://github.com/christianwiedemann) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
+- Bump version (iberdinsky@skilld.cloud)
+- Update readme ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 4
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+- Luke Whitmore ([@lukewhitmore](https://github.com/lukewhitmore))
+
+---
+
 # v0.9.7 (Sat Sep 27 2025)
 
 #### 🐛 Bug Fix
