@@ -108,15 +108,15 @@ const createStoryIndex = (
   stories: Record<string, any>,
   disableBasicStory: boolean
 ): IndexInput[] => {
-  const storiesIndex: IndexInput[] = [];
+  const storiesIndex: IndexInput[] = []
 
   if (disableBasicStory === false) {
-    storiesIndex.push ({
+    storiesIndex.push({
       type: 'story',
       importPath: fileName,
       exportName: 'Basic',
       title: baseTitle,
-    });
+    })
   }
   if (stories) {
     Object.keys(stories).forEach((storyKey) => {
@@ -230,11 +230,17 @@ export const yamlStoriesIndexer: Indexer = {
       const content = readSDC(fileName)
       const baseTitle = makeTitle(`${getProjectName(fileName)}/${content.name}`)
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
-      const disableBasicStory = content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false;
+      const disableBasicStory =
+        content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
 
-      return createStoryIndex(fileName, baseTitle, mergedStories, disableBasicStory)
+      return createStoryIndex(
+        fileName,
+        baseTitle,
+        mergedStories,
+        disableBasicStory
+      )
     } catch (error) {
       logger.error(`Error creating index for YAML file: ${fileName}, ${error}`)
       throw error

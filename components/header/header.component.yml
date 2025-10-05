@@ -45,6 +45,7 @@ libraryOverrides:
 
 thirdPartySettings:
   sdcStorybook:
+    disableBasicStory: true
     stories:
       preview:
         slots:
