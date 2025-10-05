@@ -15,7 +15,7 @@ import card, {
   Preview as CardPreview,
 } from '../components/card/card.component.yml'
 
-import parentBanner from '../parent-namespace/components/banner/banner.component.yml'
+import parentBanner from '@parent-namespace/banner/banner.component.yml'
 
 export default {
   title: 'Page with imported SDC',
