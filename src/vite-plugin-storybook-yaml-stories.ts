@@ -106,17 +106,20 @@ const createStoryIndex = (
   fileName: string,
   baseTitle: string,
   stories: Record<string, any>,
+  disableBasicStory: boolean,
   tags: string[]
 ): IndexInput[] => {
-  const storiesIndex: IndexInput[] = [
-    {
+  const storiesIndex: IndexInput[] = []
+  if (disableBasicStory === false) {
+    storiesIndex.push({
       type: 'story',
       importPath: fileName,
       exportName: 'Basic',
       title: baseTitle,
       tags
-    },
-  ]
+    })
+  }
+
 
   if (stories) {
     Object.keys(stories).forEach((storyKey) => {
@@ -212,7 +215,7 @@ export default {
 export const Basic = {
   
   args: ${JSON.stringify(basicArgs, null, 2)},
-  
+  baseArgs: ${JSON.stringify(args, null, 2)}, 
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
@@ -237,7 +240,9 @@ export const yamlStoriesIndexer: Indexer = {
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
       const tags = content?.thirdPartySettings?.sdcStorybook?.tags ?? [];
-      return createStoryIndex(fileName, baseTitle, mergedStories, tags)
+      const disableBasicStory =
+        content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false
+      return createStoryIndex(fileName, baseTitle, mergedStories, disableBasicStory, tags)
     } catch (error) {
       logger.error(`Error creating index for YAML file: ${fileName}, ${error}`)
       throw error
