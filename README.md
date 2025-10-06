@@ -12,13 +12,12 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
 - [Creating Experimental Stories](#creating-experimental-stories)
-- [Docs Addon](#docs-addon)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Namespaces](#namespaces)
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
 - [Setting Default Values](#setting-default-values)
-- [Disable Basic Story](#disable-basic-story)
+- [Story Configuration via thirdPartySettings.sdcStorybook](#story-configuration-via-thirdpartysettingssdcstorybook)
 - [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Dependencies](#dependencies)
 - [Known Issues](#known-issues)
@@ -558,16 +557,55 @@ Refer to:
 - [Drupal SDC Documentation](https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml)
 - [JSON Schema Documentation](https://json-schema.org/understanding-json-schema/reference/annotations)
 
-## Disable Basic Story
+## Story Configuration via `thirdPartySettings.sdcStorybook`
 
-By default the addon generates a `Basic` story for each component using default props and slots. This is useful for quickly previewing components, but if you prefer to create your own stories exclusively, you can disable this feature.
-To disable the automatic generation of the `Basic` story, set `disableBasicStory: true` in your component YAML:
+The **sdc-addon** now supports configuring how stories are generated from your `component.yml` file.  
+You can use the new key `thirdPartySettings.sdcStorybook` to define Storybook-specific settings and control which stories are created.
+
+### Example
 
 ```yaml
 thirdPartySettings:
   sdcStorybook:
+    tags:
+      - autodocs
     disableBasicStory: true
+    parameters:
+      layout: 'centered'
+    stories:
+      preview:
+        args:
+          variant: 'default'
+        parameters:
+          backgrounds:
+            default: 'light'
 ```
+
+### Option Reference
+
+Below is a list of all available configuration options for `thirdPartySettings.sdcStorybook`:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `tags` | `array` | Optional. Adds additional [Storybook tags](https://storybook.js.org/docs/writing-docs/autodocs) (e.g. `autodocs`). |
+| `disableBasicStory` | `boolean` | When set to `true`, disables the automatically generated “Basic” story. |
+| `parameters` | `object` | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories. |
+| `stories` | `object` | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `args`, `parameters`, and other Storybook options. |
+
+### Example: Custom Preview Story
+
+```yaml
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      preview:
+        args:
+          variant: 'compact'
+        parameters:
+          layout: 'padded'
+```
+
+This configuration creates an additional story named **Preview**, rendered using the provided `args` and `parameters`.
 
 ## Why Choose SDC Storybook Over Alternatives?
 
