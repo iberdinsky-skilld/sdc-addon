@@ -57,6 +57,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
     optimizeDeps: {
       exclude: [
         'vite-plugin-twig-drupal',
+        'vite-plugin-twing-drupal',
       ],
     },
     resolve: {

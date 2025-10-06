@@ -10,7 +10,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
     assets: join(cwd(), './assets'),
     'parent-namespace': resolve('./parent-namespace'),
   },
-  twigLib: 'twig', // Switch here to twing
+  twigLib: 'twing', // Switch here to twing
   storyNodesRenderer: [
     {
       appliesTo: (item) => item?.type === 'sample',
