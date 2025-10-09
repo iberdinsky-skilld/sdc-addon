@@ -254,9 +254,10 @@ sdcStorybookOptions: {
   ...
 }
 ```
-## Docs addon?
-The storybook docs addon works out of the box.
 
+## Docs addon?
+
+The storybook docs addon works out of the box.
 
 ## Support for Single Story Files (`*.story.yml`)
 
@@ -585,12 +586,12 @@ thirdPartySettings:
 
 Below is a list of all available configuration options for `thirdPartySettings.sdcStorybook`:
 
-| Key | Type | Description |
-|-----|------|-------------|
-| `tags` | `array` | Optional. Adds additional [Storybook tags](https://storybook.js.org/docs/writing-docs/autodocs) (e.g. `autodocs`). |
-| `disableBasicStory` | `boolean` | When set to `true`, disables the automatically generated “Basic” story. |
-| `parameters` | `object` | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories. |
-| `stories` | `object` | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `args`, `parameters`, and other Storybook options. |
+| Key                 | Type      | Description                                                                                                                                                                        |
+| ------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tags`              | `array`   | Optional. Adds additional [Storybook tags](https://storybook.js.org/docs/writing-docs/autodocs) (e.g. `autodocs`).                                                                 |
+| `disableBasicStory` | `boolean` | When set to `true`, disables the automatically generated “Basic” story.                                                                                                            |
+| `parameters`        | `object`  | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories.                                                          |
+| `stories`           | `object`  | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `args`, `parameters`, and other Storybook options. |
 
 ### Example: Custom Preview Story
 

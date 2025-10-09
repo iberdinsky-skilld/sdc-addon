@@ -55,10 +55,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
     ],
     optimizeDeps: {
-      exclude: [
-        'vite-plugin-twig-drupal',
-        'vite-plugin-twing-drupal',
-      ],
+      exclude: ['vite-plugin-twig-drupal', 'vite-plugin-twing-drupal'],
     },
     resolve: {
       alias: [...namespaces.toViteAlias()],
