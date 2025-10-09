@@ -1,3 +1,22 @@
+# v0.13.3 (Thu Oct 09 2025)
+
+#### 🐛 Bug Fix
+
+- Storybook docs-addon integration [#83](https://github.com/iberdinsky-skilld/sdc-addon/pull/83) ([@christianwiedemann](https://github.com/christianwiedemann) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
+- Bump (iberdinsky@skilld.cloud)
+- Format fix (iberdinsky@skilld.cloud)
+
+#### Authors: 3
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.12.4 (Thu Oct 09 2025)
 
 #### 🐛 Bug Fix
