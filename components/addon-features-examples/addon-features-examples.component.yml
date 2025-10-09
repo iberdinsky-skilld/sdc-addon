@@ -4,6 +4,8 @@ $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schema
 # The human readable name.
 name: 'Addon Features Examples'
 
+group: 'Addon'
+
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
 status: experimental
 

@@ -18,7 +18,7 @@ import card, {
 import parentBanner from '@parent-namespace/banner/banner.component.yml'
 
 export default {
-  title: 'Page with imported SDC',
+  title: 'Storybook/Page with imported SDC',
   render: () => {
     return `
       ${header.component({ ...HeaderPreview.args })}

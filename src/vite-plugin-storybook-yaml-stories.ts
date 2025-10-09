@@ -225,7 +225,6 @@ ${stories}
   },
 })
 
-
 // Indexer for YAML-based Storybook stories
 export const yamlStoriesIndexer: Indexer = {
   test: /component\.yml$/,
