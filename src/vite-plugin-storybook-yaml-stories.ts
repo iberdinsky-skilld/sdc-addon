@@ -106,18 +106,21 @@ const createStoryIndex = (
   fileName: string,
   baseTitle: string,
   stories: Record<string, any>,
-  disableBasicStory: boolean
+  disableBasicStory: boolean,
+  tags: string[]
 ): IndexInput[] => {
   const storiesIndex: IndexInput[] = []
-
   if (disableBasicStory === false) {
     storiesIndex.push({
       type: 'story',
       importPath: fileName,
       exportName: 'Basic',
       title: baseTitle,
+      tags
     })
   }
+
+
   if (stories) {
     Object.keys(stories).forEach((storyKey) => {
       storiesIndex.push({
@@ -125,6 +128,7 @@ const createStoryIndex = (
         importPath: fileName,
         exportName: storyKey,
         title: baseTitle,
+        tags
       })
     })
   }
@@ -184,12 +188,10 @@ export default ({
         ...(content.variants && {
           variant: Object.keys(content.variants)[0],
         }),
-      }
-
-      const basicArgs = {
-        ...args,
         ...argsGenerator(content, jsonSchemaFakerOptions),
       }
+
+      const basicArgs = { ...args }
 
       const stories = previewsStories ? storiesGenerator(previewsStories) : ''
 
@@ -205,13 +207,15 @@ class TwigSafeArray extends Array {
 
 export default {
   component: COMPONENT,
+  parameters:  {...${JSON.stringify(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, null, 2)}, ...{docs: {description: {component: ${JSON.stringify(content.description, null, 2)}}}}},
   argTypes: ${JSON.stringify(argTypes, null, 2)},
   args: ${JSON.stringify(args, null, 2)},
 };
 
 export const Basic = {
-  baseArgs: ${JSON.stringify(args, null, 2)}, 
+  
   args: ${JSON.stringify(basicArgs, null, 2)},
+  baseArgs: ${JSON.stringify(args, null, 2)}, 
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
@@ -240,17 +244,12 @@ export const yamlStoriesIndexer: Indexer = {
       )
 
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
-      const disableBasicStory =
-        content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
-
-      return createStoryIndex(
-        fileName,
-        baseTitle,
-        mergedStories,
-        disableBasicStory
-      )
+      const tags = content?.thirdPartySettings?.sdcStorybook?.tags ?? [];
+      const disableBasicStory =
+        content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false
+      return createStoryIndex(fileName, baseTitle, mergedStories, disableBasicStory, tags)
     } catch (error) {
       logger.error(`Error creating index for YAML file: ${fileName}, ${error}`)
       throw error

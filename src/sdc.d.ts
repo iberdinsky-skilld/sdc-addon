@@ -89,6 +89,8 @@ export type StoryNodeRenderer = {
 
 export interface Component {
   variants?: JSONSchema4
+  name?: string
+  description: string
   component: string
   props?: JSONSchema4
   slots?: SlotDefinition

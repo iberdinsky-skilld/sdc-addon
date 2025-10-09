@@ -1,4 +1,5 @@
 name: Badges
+description: Nice Badge Story
 slots:
   slides:
     - type: component
