@@ -16,6 +16,6 @@ export default (id: string, content: SDCSchema): ComponentMetadata => {
     machineName: id,
     status: content.status || 'stable',
     name: content.name,
-    group: content.group || 'All Components',
+    group: content.group,
   }
 }
