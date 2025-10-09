@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
-import { join, basename, dirname, extname } from 'path'
+import { join, basename, dirname, extname, relative, sep } from 'path'
 import { globSync } from 'glob'
 import { logger } from './logger.ts'
 
@@ -19,7 +19,7 @@ import type { Component, SDCSchema, SDCStorybookOptions } from './sdc.d.ts'
 import type { JSONSchemaFakerOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
-import { convertToKebabCase } from './utils.ts'
+import { capitalize, convertToKebabCase, deriveGroupFromPath } from './utils.ts'
 import {
   Namespaces,
   getProjectName,
@@ -235,7 +235,14 @@ export const yamlStoriesIndexer: Indexer = {
   createIndex: async (fileName, { makeTitle }) => {
     try {
       const content = readSDC(fileName)
-      const baseTitle = makeTitle(`${getProjectName(fileName)}/${content.name}`)
+
+      // Group set via metadata wins; else derive from path; else 'SDC'
+      const group = content.group || deriveGroupFromPath(fileName)
+
+      const baseTitle = makeTitle(
+        `${getProjectName(fileName)}/${capitalize(group)}/${content.name}`
+      )
+
       const stories = content.thirdPartySettings?.sdcStorybook?.stories
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
