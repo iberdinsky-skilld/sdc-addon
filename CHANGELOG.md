@@ -1,3 +1,21 @@
+# v0.12.4 (Thu Oct 09 2025)
+
+#### 🐛 Bug Fix
+
+- Feature/story grouping [#75](https://github.com/iberdinsky-skilld/sdc-addon/pull/75) ([@lukewhitmore](https://github.com/lukewhitmore))
+
+#### ⚠️ Pushed to `main`
+
+- Bump (iberdinsky@skilld.cloud)
+- Group addon preview (iberdinsky@skilld.cloud)
+
+#### Authors: 2
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+- Luke Whitmore ([@lukewhitmore](https://github.com/lukewhitmore))
+
+---
+
 # v0.12.3 (Sun Oct 05 2025)
 
 #### ⚠️ Pushed to `main`
