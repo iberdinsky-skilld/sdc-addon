@@ -14,6 +14,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Namespaces](#namespaces)
+- [Advanced Grouping and Nesting](#advanced-grouping-and-nesting)
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
 - [Setting Default Values](#setting-default-values)
@@ -368,6 +369,34 @@ And in story definitions within YAML files:
   {% include '@assets/icons/example.svg' %}
   ```
 
+## Advanced Grouping and Nesting
+
+By default, the addon organizes all SDC stories under a single **SDC** [Folder](https://storybook.js.org/docs/writing-stories/naming-components-and-hierarchy#structure-and-hierarchy) at the Storybook root.
+
+### Grouping by SDC Properties
+
+If your SDC component includes a [group property](https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components/annotated-example-componentyml), such as `group: Navigation`, the addon will automatically create a corresponding folder in Storybook and place the component’s stories within it.
+
+**Note:** The `group` property has higher priority over directory structure when determining story placement.
+
+### Directory-Based Nesting
+
+When your SDC components has nesting structure in the filesystem, the addon will replicate this structure in Storybook. For example, the following atomic directory structure:
+
+```
+components/
+  atoms/
+    button/
+      button.component.yml
+    icon/
+      icon.component.yml
+  molecules/
+    card/
+      card.component.yml
+```
+
+will result in nested folders in Storybook, mirroring the organization of your components.
+
 ## Regular storybook
 
 All Storybook functions work as usual, and you can import SDC YAML into `.stories.js` files.
@@ -560,7 +589,7 @@ Refer to:
 
 ## Story Configuration via `thirdPartySettings.sdcStorybook`
 
-The **sdc-addon** now supports configuring how stories are generated from your `component.yml` file.  
+The **sdc-addon** now supports configuring how stories are generated from your `component.yml` file.
 You can use the new key `thirdPartySettings.sdcStorybook` to define Storybook-specific settings and control which stories are created.
 
 ### Example
