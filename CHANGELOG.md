@@ -1,3 +1,15 @@
+# v0.14.2 (Fri Oct 10 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Update readme (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.13.3 (Thu Oct 09 2025)
 
 #### 🐛 Bug Fix
