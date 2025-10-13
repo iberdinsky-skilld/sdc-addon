@@ -1,0 +1,101 @@
+name: "CBD default"
+description: "This is a starter kit CBD component. It contains standard slots and props type definitions."
+group: "CBD"
+status: "experimental"
+links:
+  - "https://cbd.manager.com"
+slots:
+  title:
+    title: Title
+    description: "Text for heading"
+    examples:
+      - "A starterkit kit CBD component"
+  top:
+    title: Top
+    description: "Top content"
+    examples:
+      - "This is a boilerplate by ui suite CBD module"
+  content:
+    title: Content
+    description: "Main content"
+    examples:
+      - '<img src="https://dummyimage.com/280x150/35997b/fff" alt="Image">'
+  bottom:
+    title: Bottom
+    description: "Bottom content"
+  label:
+    title: Label
+    description: "Expect text label"
+  icon:
+    title: Icon
+    description: "Expect svg icon"
+props:
+  type: object
+  properties:
+    extra_classes:
+      type: array
+      items:
+        type: string
+      examples:
+        - 'my-class'
+    margin_top:
+      title: "Margin top"
+      $ref: "ui-patterns://enum"
+      enum:
+        - mb-8
+        - mb-16
+        - mb-24
+        - mb-32
+        - mb-40
+        - mb-48
+        - mb-56
+        - mb-64
+      examples:
+        - 'mb-8'
+    component_id:
+      title: "Component ID"
+      type: string
+      $ref: 'ui-patterns://identifier'
+    heading_level:
+      title: "Heading level"
+      $ref: "ui-patterns://enum"
+      enum:
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+      "meta:enum":
+        2: "h2 (Default)"
+        3: h3
+        4: h4
+        5: h5
+        6: h6
+    url:
+      title: "URL"
+      description: "An url string for the link"
+      type: string
+      format: uri
+    external:
+      title: "External url"
+      description: "Set to True to add a target _blank attribute to the link"
+      type: boolean
+    color:
+      title: "Color"
+      description: "A list of available colors"
+      $ref: "ui-patterns://enum"
+      enum:
+        - primary
+        - secondary
+        - tertiary
+        - black
+        - white
+      examples:
+        - secondary
+    bg_color:
+      title: "Background color style"
+      description: "Expect a free background color used as inline style. Must be a value accepted by background-color css property"
+      type: string
+thirdPartySettings:
+  sdcStorybook:
+    disableBasicStory: true
