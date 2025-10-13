@@ -95,6 +95,7 @@ export interface Component {
   props?: JSONSchema4
   slots?: SlotDefinition
   story?: string
+  library_wrapper?: string
 }
 
 export interface TwigPluginOptions {}
