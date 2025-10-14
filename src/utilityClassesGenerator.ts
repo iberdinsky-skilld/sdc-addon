@@ -30,12 +30,40 @@ export function parseUtilityClassesYaml(filePath: string): UtilityClassesConfig 
 }
 
 /**
- * Generates a story template for a utility class group
+ * Generate demo content without hardcoded group checks; allow YAML to override via preview_content
  */
-export function generateUtilityClassStory(
-  groupKey: string,
-  definition: UtilityClassDefinition
-): string {
+export function generateDemoContent(definition: any, className: string, label?: string): string {
+  if (typeof definition?.preview_content === 'string') {
+    return definition.preview_content
+  }
+  return label || 'Demo'
+}
+
+/**
+ * Generate preview HTML for each option
+ */
+export function generatePreviewHtml(definition: any, className: string, label: string, previewedWith: string[] = []): string {
+  const previewClasses = previewedWith.join(' ')
+  const combinedClasses = `${className} ${previewClasses}`.trim()
+  const demoContent = generateDemoContent(definition, className, label)
+  
+  return `
+    <div class="utility-item">
+      <div class="utility-label">
+        <code>${className}</code>
+      </div>
+      <div class="utility-preview">
+        <div class="${combinedClasses}">
+          ${demoContent}
+        </div>
+      </div>
+    </div>`
+}
+
+/**
+ * Generates a story template for a utility class group (generic version)
+ */
+export function generateStory(namespace: string, groupKey: string, definition: any): string {
   const { category, label, description, options, previewed_with = [], links = [] } = definition
   
   // Skip disabled utility classes
@@ -43,70 +71,25 @@ export function generateUtilityClassStory(
     return ''
   }
 
-  const storyName = capitalize(groupKey.replace(/_/g, ' '))
   const storyKey = groupKey
-  
-  // Generate the preview HTML for each option
-  const generatePreviewHtml = (className: string, label: string): string => {
-    const previewClasses = previewed_with.join(' ')
-    const combinedClasses = `${className} ${previewClasses}`.trim()
-    
-    return `
-      <div class="utility-preview-item">
-        <div class="utility-preview-label">
-          <code>${className}</code>
-          <span class="utility-preview-description">${label}</span>
-        </div>
-        <div class="utility-preview-demo">
-          <div class="${combinedClasses}">
-            ${generateDemoContent(groupKey, className)}
-          </div>
-        </div>
-      </div>`
-  }
-
-  // Generate demo content based on utility type
-  const generateDemoContent = (groupKey: string, className: string): string => {
-    if (groupKey.includes('font_size') || groupKey.includes('typography')) {
-      return 'Sample text to demonstrate typography'
-    }
-    if (groupKey.includes('margin') || groupKey.includes('padding')) {
-      return 'Content with spacing'
-    }
-    if (groupKey.includes('border')) {
-      return 'Border demo'
-    }
-    if (groupKey.includes('rounded')) {
-      return 'Rounded corners'
-    }
-    if (groupKey.includes('line_clamp')) {
-      return 'This is a long text that will be clamped to demonstrate the line clamp utility. It should show how the text gets truncated when it exceeds the specified number of lines.'
-    }
-    if (groupKey.includes('coverlink')) {
-      return '<a href="#" class="' + className + '">Cover link demo</a>'
-    }
-    return 'Demo content'
-  }
 
   // Generate all option previews
   const optionPreviews = Object.entries(options)
-    .map(([className, label]) => generatePreviewHtml(className, label))
+    .map(([className, optionLabel]) => generatePreviewHtml(definition, className as string, optionLabel as string, previewed_with))
     .join('\n')
 
   // Generate links section if available
   const linksSection = links.length > 0 
     ? `
-      <div class="utility-links">
-        <h4>Related Links:</h4>
-        <ul>
-          ${links.map(link => `<li><a href="${link}" target="_blank" rel="noopener">${link}</a></li>`).join('')}
-        </ul>
-      </div>`
+          <h4>Related Links:</h4>
+          <ul>
+            ${links.map((link: string) => `<li><a href="${link}" target="_blank" rel="noopener">${link}</a></li>`).join('')}
+          </ul>`
     : ''
 
   return `
 export const ${storyKey} = {
-  title: 'Utility Classes/${category}/${label}',
+  title: '${namespace}/Utility Classes/${category}/${label}',
   parameters: {
     docs: {
       description: {
@@ -116,13 +99,11 @@ export const ${storyKey} = {
   },
   render: () => {
     return \`
-      <div class="utility-classes-demo">
-        <div class="utility-classes-header">
-          <h2>${label}</h2>
-          ${description ? `<p class="utility-classes-description">${description}</p>` : ''}
-          ${linksSection}
-        </div>
-        <div class="utility-classes-grid">
+      <div class="utility-demo">
+        <h2>${label}</h2>
+        ${description ? `<p>${description}</p>` : ''}
+        ${linksSection}
+        <div class="utility-grid">
           ${optionPreviews}
         </div>
       </div>
@@ -135,7 +116,17 @@ export const ${storyKey} = {
 }
 
 /**
- * Generates the complete stories file content for utility classes
+ * Generates a story template for a utility class group (legacy version for backward compatibility)
+ */
+export function generateUtilityClassStory(
+  groupKey: string,
+  definition: UtilityClassDefinition
+): string {
+  return generateStory('Utility Classes', groupKey, definition)
+}
+
+/**
+ * Generates the complete stories file content for utility classes (legacy function)
  */
 export function generateUtilityClassesStories(config: UtilityClassesConfig): string {
   const stories = Object.entries(config)
@@ -166,135 +157,91 @@ export default {
  */
 export function generateUtilityClassesCSS(): string {
   return `
-/* Utility Classes Demo Styles */
-.utility-classes-demo {
-  max-width: 100%;
+/* Utility Classes Demo Styles - Using Storybook-compatible classes */
+.utility-demo {
+  /* Use Storybook's docs container styling */
   padding: 1rem;
 }
 
-.utility-classes-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.utility-classes-header h2 {
-  margin: 0 0 0.5rem 0;
-  color: #1f2937;
-}
-
-.utility-classes-description {
+.utility-demo h2 {
   margin: 0 0 1rem 0;
-  color: #6b7280;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  padding-bottom: 0.5rem;
+}
+
+.utility-demo p {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-secondary, #6b7280);
   font-size: 0.875rem;
 }
 
-.utility-links {
-  margin-top: 1rem;
-}
-
-.utility-links h4 {
-  margin: 0 0 0.5rem 0;
+.utility-demo h4 {
+  margin: 1rem 0 0.5rem 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text, #374151);
 }
 
-.utility-links ul {
+.utility-demo ul {
   margin: 0;
   padding-left: 1.5rem;
 }
 
-.utility-links li {
+.utility-demo li {
   margin-bottom: 0.25rem;
 }
 
-.utility-links a {
-  color: #3b82f6;
+.utility-demo a {
+  color: var(--color-primary, #3b82f6);
   text-decoration: none;
   font-size: 0.875rem;
 }
 
-.utility-links a:hover {
+.utility-demo a:hover {
   text-decoration: underline;
 }
 
-.utility-classes-grid {
+/* Use CSS Grid with CSS custom properties for better Storybook integration */
+.utility-grid {
   display: grid;
   gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-.utility-preview-item {
-  border: 1px solid #e5e7eb;
+.utility-item {
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 0.5rem;
   padding: 1rem;
-  background: #ffffff;
+  background: var(--color-background, #ffffff);
 }
 
-.utility-preview-label {
+.utility-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border-subtle, #f3f4f6);
 }
 
-.utility-preview-label code {
-  background: #f3f4f6;
+.utility-label code {
+  background: var(--color-background-subtle, #f3f4f6);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: var(--font-family-mono, 'Monaco', 'Menlo', 'Ubuntu Mono', monospace);
   font-size: 0.75rem;
-  color: #dc2626;
+  color: var(--color-error, #dc2626);
   font-weight: 600;
 }
 
-.utility-preview-description {
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
 
-.utility-preview-demo {
+.utility-preview {
   min-height: 2rem;
   display: flex;
   align-items: center;
   padding: 0.5rem;
-  background: #f9fafb;
+  background: var(--color-background-subtle, #f9fafb);
   border-radius: 0.25rem;
-}
-
-/* Specific utility class demo styles */
-.utility-preview-demo .line-clamp-1,
-.utility-preview-demo .line-clamp-2,
-.utility-preview-demo .line-clamp-3,
-.utility-preview-demo .line-clamp-4,
-.utility-preview-demo .line-clamp-5 {
-  max-width: 200px;
-}
-
-.utility-preview-demo .coverlink,
-.utility-preview-demo .coverlink-over {
-  position: relative;
-  display: block;
-  padding: 0.5rem;
-  background: #3b82f6;
-  color: white;
-  text-decoration: none;
-  border-radius: 0.25rem;
-}
-
-.utility-preview-demo .coverlink:hover,
-.utility-preview-demo .coverlink-over:hover {
-  background: #2563eb;
-}
-
-/* Responsive adjustments */
-@media (min-width: 768px) {
-  .utility-classes-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
 }
 `
 }

@@ -1,131 +1,87 @@
 
-/* Utility Classes Demo Styles */
-.utility-classes-demo {
-  max-width: 100%;
+/* Utility Classes Demo Styles - Using Storybook-compatible classes */
+.utility-demo {
+  /* Use Storybook's docs container styling */
   padding: 1rem;
 }
 
-.utility-classes-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.utility-classes-header h2 {
-  margin: 0 0 0.5rem 0;
-  color: #1f2937;
-}
-
-.utility-classes-description {
+.utility-demo h2 {
   margin: 0 0 1rem 0;
-  color: #6b7280;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  padding-bottom: 0.5rem;
+}
+
+.utility-demo p {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-secondary, #6b7280);
   font-size: 0.875rem;
 }
 
-.utility-links {
-  margin-top: 1rem;
-}
-
-.utility-links h4 {
-  margin: 0 0 0.5rem 0;
+.utility-demo h4 {
+  margin: 1rem 0 0.5rem 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text, #374151);
 }
 
-.utility-links ul {
+.utility-demo ul {
   margin: 0;
   padding-left: 1.5rem;
 }
 
-.utility-links li {
+.utility-demo li {
   margin-bottom: 0.25rem;
 }
 
-.utility-links a {
-  color: #3b82f6;
+.utility-demo a {
+  color: var(--color-primary, #3b82f6);
   text-decoration: none;
   font-size: 0.875rem;
 }
 
-.utility-links a:hover {
+.utility-demo a:hover {
   text-decoration: underline;
 }
 
-.utility-classes-grid {
+/* Use CSS Grid with CSS custom properties for better Storybook integration */
+.utility-grid {
   display: grid;
   gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-.utility-preview-item {
-  border: 1px solid #e5e7eb;
+.utility-item {
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 0.5rem;
   padding: 1rem;
-  background: #ffffff;
+  background: var(--color-background, #ffffff);
 }
 
-.utility-preview-label {
+.utility-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border-subtle, #f3f4f6);
 }
 
-.utility-preview-label code {
-  background: #f3f4f6;
+.utility-label code {
+  background: var(--color-background-subtle, #f3f4f6);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: var(--font-family-mono, 'Monaco', 'Menlo', 'Ubuntu Mono', monospace);
   font-size: 0.75rem;
-  color: #dc2626;
+  color: var(--color-error, #dc2626);
   font-weight: 600;
 }
 
-.utility-preview-description {
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
 
-.utility-preview-demo {
+.utility-preview {
   min-height: 2rem;
   display: flex;
   align-items: center;
   padding: 0.5rem;
-  background: #f9fafb;
+  background: var(--color-background-subtle, #f9fafb);
   border-radius: 0.25rem;
-}
-
-/* Specific utility class demo styles */
-.utility-preview-demo .line-clamp-1,
-.utility-preview-demo .line-clamp-2,
-.utility-preview-demo .line-clamp-3,
-.utility-preview-demo .line-clamp-4,
-.utility-preview-demo .line-clamp-5 {
-  max-width: 200px;
-}
-
-.utility-preview-demo .coverlink,
-.utility-preview-demo .coverlink-over {
-  position: relative;
-  display: block;
-  padding: 0.5rem;
-  background: #3b82f6;
-  color: white;
-  text-decoration: none;
-  border-radius: 0.25rem;
-}
-
-.utility-preview-demo .coverlink:hover,
-.utility-preview-demo .coverlink-over:hover {
-  background: #2563eb;
-}
-
-/* Responsive adjustments */
-@media (min-width: 768px) {
-  .utility-classes-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
 }
