@@ -1,3 +1,21 @@
+# v0.14.3 (Tue Oct 14 2025)
+
+#### 🐛 Bug Fix
+
+- Add library_wrapper ui_pattern story feature [#88](https://github.com/iberdinsky-skilld/sdc-addon/pull/88) ([@Fred-Boulanger](https://github.com/Fred-Boulanger) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
+- Bump (iberdinsky@skilld.cloud)
+
+#### Authors: 3
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- fredb ([@Fred-Boulanger](https://github.com/Fred-Boulanger))
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.14.2 (Fri Oct 10 2025)
 
 #### ⚠️ Pushed to `main`
