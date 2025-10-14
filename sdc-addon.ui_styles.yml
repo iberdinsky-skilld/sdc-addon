@@ -1,0 +1,114 @@
+################################################################################
+# UI Styles file pattern
+################################################################################
+
+rounded:
+  category: "Rounded"
+  label: "Rounded"
+  options:
+    "rounded-sm": "sm"
+    "rounded": "default"
+    "rounded-md": "md"
+    "rounded-lg": "lg"
+    "rounded-xl": "xl"
+    "rounded-2xl": "2xl"
+    "rounded-3xl": "3xl"
+    "rounded-none": "none"
+    "rounded-tr-3xl rounded-bl-3xl": "theme"
+  previewed_with:
+    - inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4
+
+margin_top:
+  category: "Spacing"
+  label: "Margin top"
+  options:
+    "mt-xs": xs
+    "mt-xs md:mt-sm": sm
+    "mt-xs md:mt-md": md
+    "mt-xs md:mt-md lg:mt-lg": lg
+    "mt-xs md:mt-md lg:mt-xl": xl
+    "mt-xs md:mt-md lg:mt-2xl": 2xl
+
+  previewed_with:
+    - bg-neutral-content
+
+margin_bottom:
+  category: "Spacing"
+  label: "Margin bottom"
+  options:
+    "mb-xs": xs
+    "mb-xs md:mb-sm": sm
+    "mb-xs md:mb-md": md
+    "mb-xs md:mb-md lg:mb-lg": lg
+    "mb-xs md:mb-md lg:mb-xl": xl
+    "mb-xs md:mb-md lg:mb-2xl": 2xl
+
+  previewed_with:
+    - bg-neutral-content
+
+margin_start:
+  enabled: false
+  category: "Spacing"
+  label: "Margin start"
+  options:
+    "ms-xs": xs
+    "ms-xs md:ms-sm": sm
+    "ms-xs md:ms-md": md
+    "ms-xs md:ms-md lg:ms-lg": lg
+    "ms-xs md:ms-md lg:ms-xl": xl
+    "ms-xs md:ms-md lg:ms-2xl": 2xl
+
+  previewed_with:
+    - bg-neutral-content
+
+margin_end:
+  enabled: false
+  category: "Spacing"
+  label: "Margin end"
+  options:
+    "me-xs": xs
+    "me-xs md:me-sm": sm
+    "me-xs md:me-md": md
+    "me-xs md:me-md lg:me-lg": lg
+    "me-xs md:me-md lg:me-xl": xl
+    "me-xs md:me-md lg:me-2xl": 2xl
+  previewed_with:
+    - bg-neutral-content
+
+gap:
+  category: "Spacing"
+  label: "Gap"
+  options:
+    "gap-between-xs": xs
+    "gap-between-xs md:gap-between-sm": sm
+    "gap-between-xs md:gap-between-md": md
+    "gap-between-xs md:gap-between-md gap-between-lg": lg
+    "gap-between-xs md:gap-between-md gap-between-xl": xl
+    "gap-between-xs md:gap-between-md lg:gap-between-2xl": 2xl
+  previewed_with:
+    - bg-neutral-content
+
+border_width:
+  category: "Borders"
+  label: "Border width"
+  options:
+    border-0: none
+    border: 1px
+    border-2: 2px
+    border-4: 4px
+    border-8: 8px
+
+border_style:
+  category: "Borders"
+  label: "Border style"
+  options:
+    border-solid: solid
+    border-dashed: dashed
+    border-dotted: dotted
+    border-double: double
+  previewed_with:
+    - border border-2
+
+thirdPartySettings:
+  sdcStorybook:
+    disableUtilityClasses: false

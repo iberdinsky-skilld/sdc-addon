@@ -34,7 +34,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "serve": "npx http-server ./storybook-static",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "generate:utility-stories": "node scripts/generate-utility-stories.mjs"
   },
   "dependencies": {
     "glob": "^11.0.1",

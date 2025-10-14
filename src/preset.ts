@@ -1,6 +1,7 @@
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
 } from './vite-plugin-storybook-yaml-stories.ts'
+import UtilityClassesPlugin from './vite-plugin-utility-classes.ts'
 import { mergeConfig } from 'vite'
 import type { UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
@@ -53,6 +54,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       }),
       ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
+      UtilityClassesPlugin(),
     ],
     optimizeDeps: {
       exclude: ['vite-plugin-twig-drupal', 'vite-plugin-twing-drupal'],
@@ -82,6 +84,7 @@ export const previewHead: StorybookConfig['previewHead'] = (head: string) => `
       word-wrap: normal;
     }
   </style>
+  <link rel="stylesheet" href="./stories/utility-classes.css">
   <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupalSettingsLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupal.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupal.init.js"></script>
