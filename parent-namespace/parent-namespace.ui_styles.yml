@@ -1,0 +1,63 @@
+################################################################################
+# UI Suite additional classes.
+################################################################################
+font_size:
+  category: "Typography"
+  label: "Font size"
+  description: "We use specifics size classes (with custom tokens) for a responsive typography display"
+  options:
+    title-2xl: Title 2XL
+    title-xl: Title XL
+    title-lg: Title LG
+    title-md: Title MD
+    title-sm: Title SM
+    title-xs: Title XS
+    body-xl: Body XL
+    body-lg: Body LG
+    body-md: Body MD
+    body-sm: Body SM
+    body-xs: Body XS
+    label-xl: Label XL
+    label-lg: Label LG
+    label-md: Label MD
+    label-sm: Label SM
+    label-xs: Label XS
+  previewed_with:
+    - mb-4
+
+line_clamp:
+  category: "Utility"
+  label: "Line Clamp"
+  description: "Utilities for clamping text to a specific number of lines."
+  links:
+    - "https://tailwindcss.com/docs/line-clamp"
+  options:
+    line-clamp-1: line-clamp-1
+    line-clamp-2: line-clamp-2
+    line-clamp-3: line-clamp-3
+    line-clamp-4: line-clamp-4
+    line-clamp-5: line-clamp-5
+  previewed_with:
+    - mb-4
+
+typography:
+  category: "Utility"
+  label: "Typography"
+  options:
+    prose: Formatted Text (prose)
+  previewed_with:
+    - mb-4
+
+font_family:
+  category: "Typography"
+  label: "Font family"
+  description: "You can control the typeface of text using the font family utilities."
+  links:
+    - "https://tailwindcss.com/docs/font-family#setting-the-font-family"
+  options:
+    font-mono: "Mono"
+    font-sans: "Sans"
+
+thirdPartySettings:
+  sdcStorybook:
+    disableUtilityClasses: false

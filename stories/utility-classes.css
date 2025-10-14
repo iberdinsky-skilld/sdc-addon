@@ -1,0 +1,87 @@
+
+/* Utility Classes Demo Styles - Using Storybook-compatible classes */
+.utility-demo {
+  /* Use Storybook's docs container styling */
+  padding: 1rem;
+}
+
+.utility-demo h2 {
+  margin: 0 0 1rem 0;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  padding-bottom: 0.5rem;
+}
+
+.utility-demo p {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-secondary, #6b7280);
+  font-size: 0.875rem;
+}
+
+.utility-demo h4 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #374151);
+}
+
+.utility-demo ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.utility-demo li {
+  margin-bottom: 0.25rem;
+}
+
+.utility-demo a {
+  color: var(--color-primary, #3b82f6);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.utility-demo a:hover {
+  text-decoration: underline;
+}
+
+/* Use CSS Grid with CSS custom properties for better Storybook integration */
+.utility-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.utility-item {
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: var(--color-background, #ffffff);
+}
+
+.utility-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border-subtle, #f3f4f6);
+}
+
+.utility-label code {
+  background: var(--color-background-subtle, #f3f4f6);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: var(--font-family-mono, 'Monaco', 'Menlo', 'Ubuntu Mono', monospace);
+  font-size: 0.75rem;
+  color: var(--color-error, #dc2626);
+  font-weight: 600;
+}
+
+
+.utility-preview {
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  background: var(--color-background-subtle, #f9fafb);
+  border-radius: 0.25rem;
+}

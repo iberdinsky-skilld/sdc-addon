@@ -1,0 +1,46 @@
+################################################################################
+# UI Styles file pattern
+################################################################################
+
+rounded:
+  category: "Rounded"
+  label: "Rounded"
+  options:
+    "rounded-sm": "sm"
+    "rounded": "default"
+    "rounded-md": "md"
+    "rounded-lg": "lg"
+    "rounded-xl": "xl"
+    "rounded-2xl": "2xl"
+    "rounded-3xl": "3xl"
+    "rounded-none": "none"
+    "rounded-tr-3xl rounded-bl-3xl": "theme"
+  previewed_with:
+    - inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4
+
+border_width:
+  category: "Borders"
+  label: "Border width"
+  options:
+    border-0: none
+    border: 1px
+    border-2: 2px
+    border-4: 4px
+    border-8: 8px
+
+border_style:
+  category: "Borders"
+  label: "Border style"
+  options:
+    border-solid: solid
+    border-dashed: dashed
+    border-dotted: dotted
+    border-double: double
+  previewed_with:
+    - border border-2
+
+thirdPartySettings:
+  sdcStorybook:
+    tags:
+     - autodocs
+    disableUtilityClasses: false
