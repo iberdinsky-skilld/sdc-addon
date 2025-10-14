@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import yaml from 'yaml'
-import { capitalize } from './utils.js'
+import { capitalize } from './utils.ts'
 
 export interface UtilityClassDefinition {
   category: string

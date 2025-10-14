@@ -39,7 +39,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-sm inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -51,7 +51,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-md inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-lg inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -87,7 +87,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-xl inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-2xl inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -111,7 +111,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-3xl inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-none inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -135,7 +135,7 @@ export const rounded = {
             </div>
             <div class="utility-preview-demo">
               <div class="rounded-tr-3xl rounded-bl-3xl inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4">
-                Rounded corners
+                Demo
               </div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export const margin_top = {
             </div>
             <div class="utility-preview-demo">
               <div class="mt-xs bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -187,7 +187,7 @@ export const margin_top = {
             </div>
             <div class="utility-preview-demo">
               <div class="mt-xs md:mt-sm bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -199,7 +199,7 @@ export const margin_top = {
             </div>
             <div class="utility-preview-demo">
               <div class="mt-xs md:mt-md bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -211,7 +211,7 @@ export const margin_top = {
             </div>
             <div class="utility-preview-demo">
               <div class="mt-xs md:mt-md lg:mt-lg bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -223,7 +223,7 @@ export const margin_top = {
             </div>
             <div class="utility-preview-demo">
               <div class="mt-xs md:mt-md lg:mt-xl bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -235,7 +235,7 @@ export const margin_top = {
             </div>
             <div class="utility-preview-demo">
               <div class="mt-xs md:mt-md lg:mt-2xl bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -275,7 +275,7 @@ export const margin_bottom = {
             </div>
             <div class="utility-preview-demo">
               <div class="mb-xs bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -287,7 +287,7 @@ export const margin_bottom = {
             </div>
             <div class="utility-preview-demo">
               <div class="mb-xs md:mb-sm bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -299,7 +299,7 @@ export const margin_bottom = {
             </div>
             <div class="utility-preview-demo">
               <div class="mb-xs md:mb-md bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -311,7 +311,7 @@ export const margin_bottom = {
             </div>
             <div class="utility-preview-demo">
               <div class="mb-xs md:mb-md lg:mb-lg bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -323,7 +323,7 @@ export const margin_bottom = {
             </div>
             <div class="utility-preview-demo">
               <div class="mb-xs md:mb-md lg:mb-xl bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -335,7 +335,7 @@ export const margin_bottom = {
             </div>
             <div class="utility-preview-demo">
               <div class="mb-xs md:mb-md lg:mb-2xl bg-neutral-content">
-                Content with spacing
+                Demo
               </div>
             </div>
           </div>
@@ -375,7 +375,7 @@ export const gap = {
             </div>
             <div class="utility-preview-demo">
               <div class="gap-between-xs bg-neutral-content">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
@@ -387,7 +387,7 @@ export const gap = {
             </div>
             <div class="utility-preview-demo">
               <div class="gap-between-xs md:gap-between-sm bg-neutral-content">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
@@ -399,7 +399,7 @@ export const gap = {
             </div>
             <div class="utility-preview-demo">
               <div class="gap-between-xs md:gap-between-md bg-neutral-content">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
@@ -411,7 +411,7 @@ export const gap = {
             </div>
             <div class="utility-preview-demo">
               <div class="gap-between-xs md:gap-between-md gap-between-lg bg-neutral-content">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
@@ -423,7 +423,7 @@ export const gap = {
             </div>
             <div class="utility-preview-demo">
               <div class="gap-between-xs md:gap-between-md gap-between-xl bg-neutral-content">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
@@ -435,7 +435,7 @@ export const gap = {
             </div>
             <div class="utility-preview-demo">
               <div class="gap-between-xs md:gap-between-md lg:gap-between-2xl bg-neutral-content">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
@@ -475,7 +475,7 @@ export const border_width = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-0">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -487,7 +487,7 @@ export const border_width = {
             </div>
             <div class="utility-preview-demo">
               <div class="border">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -499,7 +499,7 @@ export const border_width = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-2">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -511,7 +511,7 @@ export const border_width = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-4">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -523,7 +523,7 @@ export const border_width = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-8">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -563,7 +563,7 @@ export const border_style = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-solid border border-2">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -575,7 +575,7 @@ export const border_style = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-dashed border border-2">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -587,7 +587,7 @@ export const border_style = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-dotted border border-2">
-                Border demo
+                Demo
               </div>
             </div>
           </div>
@@ -599,7 +599,7 @@ export const border_style = {
             </div>
             <div class="utility-preview-demo">
               <div class="border-double border border-2">
-                Border demo
+                Demo
               </div>
             </div>
           </div>

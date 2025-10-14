@@ -39,7 +39,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="title-2xl mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -51,7 +51,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="title-xl mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="title-lg mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="title-md mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -87,7 +87,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="title-sm mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="title-xs mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -111,7 +111,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="body-xl mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="body-lg mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -135,7 +135,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="body-md mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -147,7 +147,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="body-sm mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -159,7 +159,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="body-xs mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -171,7 +171,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="label-xl mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -183,7 +183,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="label-lg mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -195,7 +195,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="label-md mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -207,7 +207,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="label-sm mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -219,7 +219,7 @@ export const font_size = {
             </div>
             <div class="utility-preview-demo">
               <div class="label-xs mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -265,7 +265,7 @@ export const line_clamp = {
             </div>
             <div class="utility-preview-demo">
               <div class="line-clamp-1 mb-4">
-                This is a long text that will be clamped to demonstrate the line clamp utility. It should show how the text gets truncated when it exceeds the specified number of lines.
+                Demo
               </div>
             </div>
           </div>
@@ -277,7 +277,7 @@ export const line_clamp = {
             </div>
             <div class="utility-preview-demo">
               <div class="line-clamp-2 mb-4">
-                This is a long text that will be clamped to demonstrate the line clamp utility. It should show how the text gets truncated when it exceeds the specified number of lines.
+                Demo
               </div>
             </div>
           </div>
@@ -289,7 +289,7 @@ export const line_clamp = {
             </div>
             <div class="utility-preview-demo">
               <div class="line-clamp-3 mb-4">
-                This is a long text that will be clamped to demonstrate the line clamp utility. It should show how the text gets truncated when it exceeds the specified number of lines.
+                Demo
               </div>
             </div>
           </div>
@@ -301,7 +301,7 @@ export const line_clamp = {
             </div>
             <div class="utility-preview-demo">
               <div class="line-clamp-4 mb-4">
-                This is a long text that will be clamped to demonstrate the line clamp utility. It should show how the text gets truncated when it exceeds the specified number of lines.
+                Demo
               </div>
             </div>
           </div>
@@ -313,7 +313,7 @@ export const line_clamp = {
             </div>
             <div class="utility-preview-demo">
               <div class="line-clamp-5 mb-4">
-                This is a long text that will be clamped to demonstrate the line clamp utility. It should show how the text gets truncated when it exceeds the specified number of lines.
+                Demo
               </div>
             </div>
           </div>
@@ -353,7 +353,7 @@ export const typography = {
             </div>
             <div class="utility-preview-demo">
               <div class="prose mb-4">
-                Sample text to demonstrate typography
+                Demo
               </div>
             </div>
           </div>
@@ -399,7 +399,7 @@ export const font_family = {
             </div>
             <div class="utility-preview-demo">
               <div class="font-mono">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
@@ -411,7 +411,7 @@ export const font_family = {
             </div>
             <div class="utility-preview-demo">
               <div class="font-sans">
-                Demo content
+                Demo
               </div>
             </div>
           </div>
