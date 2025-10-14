@@ -153,6 +153,86 @@ export default {
 }
 
 /**
+ * Generate base story structure (common to both autodocs and individual stories)
+ */
+export function generateBaseStoryStructure(comment: string, additionalContent: string, yamlPath: string, namespace: string): string {
+  return [
+    comment,
+    `// Generated from ${yamlPath}`,
+    '',
+    'export default {',
+    `  title: '${namespace}/Utility Classes',`,
+    '  parameters: {',
+    '    docs: {',
+    '      description: {',
+    `        story: 'Utility classes documentation generated from ${yamlPath}'`,
+    '      }',
+    '    }',
+    '  }',
+    '}',
+    '',
+    additionalContent,
+  ].join('\n')
+}
+
+/**
+ * Generate autodocs content for all utilities
+ */
+export function generateAutodocsContent(utilities: [string, any][]): string {
+  const allUtilityPreviews = utilities
+    .map(([groupKey, definition]) => {
+      const { category, label, description, options, previewed_with = [], links = [] } = definition
+      
+      if (definition.enabled === false) return ''
+
+      const optionPreviews = Object.entries(options)
+        .map(([className, optionLabel]) => generatePreviewHtml(definition, className as string, optionLabel as string, previewed_with))
+        .join('\n')
+
+      const linksSection = links.length > 0 
+        ? `
+          <h4>Related Links:</h4>
+          <ul>
+            ${links.map((link: string) => `<li><a href="${link}" target="_blank" rel="noopener">${link}</a></li>`).join('')}
+          </ul>`
+        : ''
+
+      return `
+        <div class="utility-demo">
+          <h2>${label}</h2>
+          ${description ? `<p>${description}</p>` : ''}
+          ${linksSection}
+          <div class="utility-grid">
+            ${optionPreviews}
+          </div>
+        </div>`
+    })
+    .filter(Boolean)
+    .join('\n\n')
+
+  return [
+    'export const Docs = {',
+    `  tags: ['autodocs'],`,
+    '  render: () => {',
+    '    return `',
+    allUtilityPreviews,
+    '    `',
+    '  }',
+    '}',
+  ].join('\n')
+}
+
+/**
+ * Generate individual stories content
+ */
+export function generateIndividualStoriesContent(utilities: [string, any][], namespace: string): string {
+  return utilities
+    .map(([groupKey, definition]) => generateStory(namespace, groupKey as string, definition))
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+/**
  * Generates CSS styles for the utility classes demo
  */
 export function generateUtilityClassesCSS(): string {

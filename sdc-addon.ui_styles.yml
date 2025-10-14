@@ -18,81 +18,6 @@ rounded:
   previewed_with:
     - inline-flex items-center justify-center text-center w-[200px] h-[200px] bg-secondary text-white m-4
 
-margin_top:
-  category: "Spacing"
-  label: "Margin top"
-  description: "Margin top for different screen sizes"
-  options:
-    "mt-xs": xs
-    "mt-xs md:mt-sm": sm
-    "mt-xs md:mt-md": md
-    "mt-xs md:mt-md lg:mt-lg": lg
-    "mt-xs md:mt-md lg:mt-xl": xl
-    "mt-xs md:mt-md lg:mt-2xl": 2xl
-
-  previewed_with:
-    - bg-neutral-content
-
-margin_bottom:
-  category: "Spacing"
-  label: "Margin bottom"
-  description: "Margin bottom for different screen sizes"
-  options:
-    "mb-xs": xs
-    "mb-xs md:mb-sm": sm
-    "mb-xs md:mb-md": md
-    "mb-xs md:mb-md lg:mb-lg": lg
-    "mb-xs md:mb-md lg:mb-xl": xl
-    "mb-xs md:mb-md lg:mb-2xl": 2xl
-
-  previewed_with:
-    - bg-neutral-content
-
-margin_start:
-  enabled: false
-  category: "Spacing"
-  label: "Margin start"
-  description: "Margin start for different screen sizes"
-  options:
-    "ms-xs": xs
-    "ms-xs md:ms-sm": sm
-    "ms-xs md:ms-md": md
-    "ms-xs md:ms-md lg:ms-lg": lg
-    "ms-xs md:ms-md lg:ms-xl": xl
-    "ms-xs md:ms-md lg:ms-2xl": 2xl
-
-  previewed_with:
-    - bg-neutral-content
-
-margin_end:
-  enabled: false
-  category: "Spacing"
-  label: "Margin end"
-  description: "Margin end for different screen sizes"
-  options:
-    "me-xs": xs
-    "me-xs md:me-sm": sm
-    "me-xs md:me-md": md
-    "me-xs md:me-md lg:me-lg": lg
-    "me-xs md:me-md lg:me-xl": xl
-    "me-xs md:me-md lg:me-2xl": 2xl
-  previewed_with:
-    - bg-neutral-content
-
-gap:
-  category: "Spacing"
-  label: "Gap"
-  description: "Gap for different screen sizes"
-  options:
-    "gap-between-xs": xs
-    "gap-between-xs md:gap-between-sm": sm
-    "gap-between-xs md:gap-between-md": md
-    "gap-between-xs md:gap-between-md gap-between-lg": lg
-    "gap-between-xs md:gap-between-md gap-between-xl": xl
-    "gap-between-xs md:gap-between-md lg:gap-between-2xl": 2xl
-  previewed_with:
-    - bg-neutral-content
-
 border_width:
   category: "Borders"
   label: "Border width"
@@ -116,4 +41,6 @@ border_style:
 
 thirdPartySettings:
   sdcStorybook:
+    tags:
+     - autodocs
     disableUtilityClasses: false

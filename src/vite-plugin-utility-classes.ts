@@ -3,7 +3,14 @@ import { join, dirname, extname } from 'path'
 import { parse as parseYaml } from 'yaml'
 import { globSync } from 'glob'
 import { logger } from './logger.ts'
-import { generateUtilityClassesCSS, generateStory } from './utilityClassesGenerator.ts'
+import { 
+  generateUtilityClassesCSS, 
+  generateStory, 
+  generatePreviewHtml,
+  generateBaseStoryStructure,
+  generateAutodocsContent,
+  generateIndividualStoriesContent
+} from './utilityClassesGenerator.ts'
 
 // Helper function to capitalize strings
 const capitalize = (str: string) => str[0].toUpperCase() + str.slice(1)
@@ -125,26 +132,34 @@ export default (options: { yamlPath?: string; outputDir?: string } = {}) => ({
         }
 
         const namespace = deriveNamespaceFromPath(rootDir, yamlPath)
-        const stories = utilities
-          .map(([groupKey, definition]) => generateStory(namespace, groupKey as string, definition))
-          .filter(Boolean)
-          .join('\n\n')
 
-        const storiesContent = `// Auto-generated utility classes stories
-// Generated from ${yamlPath}
+        // Global autodocs tags from thirdPartySettings per YAML file
+        const tps = (config as any)?.thirdPartySettings || {}
+        const sdcStorybook = tps?.sdcStorybook || {}
+        const globalTags: string[] = Array.isArray(sdcStorybook?.tags) ? sdcStorybook.tags : []
+        const hasAutodocs = globalTags.includes('autodocs')
 
-export default {
-  title: '${namespace}/Utility Classes',
-  parameters: {
-    docs: {
-      description: {
-        story: 'Utility classes documentation generated from ${yamlPath}'
-      }
-    }
-  }
-}
+        let storiesContent: string
 
-${stories}`
+        if (hasAutodocs) {
+          // Generate simple docs definition without individual stories
+          const docsContent = generateAutodocsContent(utilities)
+          storiesContent = generateBaseStoryStructure(
+            '// Auto-generated utility classes documentation', 
+            docsContent, 
+            yamlPath, 
+            namespace
+          )
+        } else {
+          // Generate individual stories (original behavior)
+          const stories = generateIndividualStoriesContent(utilities, namespace)
+          storiesContent = generateBaseStoryStructure(
+            '// Auto-generated utility classes stories', 
+            stories, 
+            yamlPath, 
+            namespace
+          )
+        }
 
         const storiesPath = join(outputDir, `utility-classes.${namespace}.stories.js`)
         writeFileSync(storiesPath, storiesContent, 'utf8')
