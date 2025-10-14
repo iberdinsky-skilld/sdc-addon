@@ -44,38 +44,8 @@ npm run generate:utility-stories
 
 ### YAML Structure
 
-The generator expects a YAML file with the following structure:
-
-```yaml
-utility_group_name:
-  category: "Category Name"
-  label: "Display Label"
-  description: "Optional description"
-  links:
-    - "https://example.com/docs"
-  options:
-    class-name: "Display Name"
-    another-class: "Another Display Name"
-  previewed_with:
-    - "additional-class-1"
-    - "additional-class-2"
-  enabled: true  # Optional, defaults to true
-```
-
-### Example YAML Entry
-
-```yaml
-font_size_dt:
-  category: "Typography DT"
-  label: "Font size"
-  description: "We use specifics size classes (with custom tokens) for a responsive typography display"
-  options:
-    title-2xl: Title 2XL
-    title-xl: Title XL
-    title-lg: Title LG
-  previewed_with:
-    - mb-4
-```
+The generator expects a YAML file with the ui_styles module pattern
+https://www.drupal.org/project/ui_styles
 
 ## Generated Stories Structure
 
