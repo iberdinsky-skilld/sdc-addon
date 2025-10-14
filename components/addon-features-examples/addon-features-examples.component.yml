@@ -26,6 +26,11 @@ thirdPartySettings:
       preview:
         name: Preview Example
         description: 'Addon Features preview description'
+        library_wrapper: '
+          <fieldset>
+          <legend>UI PATTERNS library_wrapper</legend>
+          {{ _story }}
+          </fieldset>'
         slots:
           content:
             - type: component

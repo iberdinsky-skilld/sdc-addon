@@ -19,10 +19,10 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Configuration Options](#configuration-options)
 - [Setting Default Values](#setting-default-values)
 - [Story Configuration via thirdPartySettings.sdcStorybook](#story-configuration-via-thirdpartysettingssdcstorybook)
+- [UI Patterns](#ui-patterns)
 - [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
 - [Dependencies](#dependencies)
 - [Known Issues](#known-issues)
-- [UI Patterns](#ui-patterns)
 
 ---
 
@@ -637,6 +637,14 @@ thirdPartySettings:
 
 This configuration creates an additional story named **Preview**, rendered using the provided `args` and `parameters`.
 
+## UI Patterns
+
+Addon supports UI Patterns `library_wrapper` [for wrapping stories](https://project.pages.drupalcode.org/ui_patterns/2-authors/1-stories-and-library/#library-wrappers) in a specific HTML structure.
+
+---
+
+- Custom Twig filters and functions are not supported ([UI Patterns TwigExtension](https://git.drupalcode.org/project/ui_patterns/-/blob/8.x-1.x/src/Template/TwigExtension.php)).
+
 ## Why Choose SDC Storybook Over Alternatives?
 
 While solutions like [SDC Styleguide](https://www.drupal.org/project/sdc_styleguide) and [Drupal Storybook](https://www.drupal.org/project/storybook) are valuable, the SDC Storybook addon offers distinct advantages:
@@ -690,8 +698,3 @@ While using Drupal to render components offers tighter integration, there are st
 ## Known Issues
 
 - The addon relies on [Experimental indexers](https://storybook.js.org/docs/api/main-config/main-config-indexers).
-
-## UI Patterns
-
-- Variants are partially supported ([Issue 3390712](https://www.drupal.org/project/drupal/issues/3390712)).
-- Custom Twig filters and functions are not supported ([UI Patterns TwigExtension](https://git.drupalcode.org/project/ui_patterns/-/blob/8.x-1.x/src/Template/TwigExtension.php)).
