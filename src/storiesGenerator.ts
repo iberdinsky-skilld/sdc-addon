@@ -25,16 +25,20 @@ export const ${capitalize(storyKey)} = {
     ${generateArgs(slots, true)}
     ${generateVariants(variants)}
   },
-  ${library_wrapper ? `decorators: [
-    (Story) => {
-      const wrapper = ${JSON.stringify(library_wrapper)};
-      if (!wrapper) return Story();
-      
-      // Replace {{ _story }} with the actual story component
-      const wrappedHtml = wrapper.replace('{{ _story }}', Story());
-      return wrappedHtml;
-    }
-  ],` : ''}
+  ${
+    library_wrapper
+      ? `decorators: [
+        (Story) => {
+          const wrapper = ${JSON.stringify(library_wrapper)};
+          if (!wrapper) return Story();
+
+          // Replace {{ _story }} with the actual story component
+          const wrappedHtml = wrapper.replace('{{ _story }}', Story());
+          return wrappedHtml;
+        }
+      ],`
+      : ''
+  }
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
