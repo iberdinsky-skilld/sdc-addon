@@ -1,7 +1,20 @@
+[data-theme="cyberpunk"] {
+  --color-primary: rgb(0, 255, 255);
+  --color-primary-content: rgb(0, 0, 0);
+}
+[data-theme="forest"] {
+  --color-primary: rgb(2, 39, 2);
+  --color-primary-content: rgb(255, 255, 255);
+}
+[data-theme="garden"] {
+  --color-primary: rgb(50, 205, 50);
+  --color-primary-content: rgb(0, 0, 0);
+}
 .umami-card {
   padding: 1rem;
-  border: 1px solid lightgray;
-  background-color: #fff;
+  border: 1px solid var(--color-primary-content, lightgray);
+  background-color: var(--color-primary, #fff );
+  color: var(--color-primary-content);
   border-radius: 0.5rem;
 }
 
