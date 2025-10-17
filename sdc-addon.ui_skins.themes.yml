@@ -1,0 +1,20 @@
+# No value because same as plugin ID.
+cyberpunk:
+  label: "Cyberpunk"
+  label_context: "color"
+  key: "data-theme"
+  target: body
+
+# No value because same as plugin ID.
+forest:
+  label: "Forest"
+  label_context: "color"
+  key: "data-theme"
+  target: html
+
+# No value because same as plugin ID.
+garden:
+  label: "Garden"
+  label_context: "color"
+  key: "data-theme"
+  target: html

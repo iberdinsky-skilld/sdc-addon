@@ -11,6 +11,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Features of the Addon](#features-of-the-addon)
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
+- [Automatic Theme Generation](#automatic-theme-generation)
 - [Creating Experimental Stories](#creating-experimental-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Namespaces](#namespaces)
@@ -644,6 +645,79 @@ Addon supports UI Patterns `library_wrapper` [for wrapping stories](https://proj
 ---
 
 - Custom Twig filters and functions are not supported ([UI Patterns TwigExtension](https://git.drupalcode.org/project/ui_patterns/-/blob/8.x-1.x/src/Template/TwigExtension.php)).
+
+## UI Skins
+
+The addon supports ui_skins yml definition and creates Storybook theme decorators and global types from `*.ui_skins.themes.yml` files. This allows you to easily switch between different data-themes in Storybook.
+
+### How it works
+
+The addon automatically scans for `*.ui_skins.themes.yml` files and generates a `data-themes.ts` file in your `.storybook` directory. This file contains theme decorators and global types that can be imported into your `preview.ts`.
+
+### Theme Configuration
+
+Create a `*.ui_skins.themes.yml` file in your project root with the following structure:
+
+```yaml
+# Theme configuration example
+cyberpunk:
+  label: "Cyberpunk"
+  label_context: "color"
+  key: "data-theme"
+  target: body
+
+forest:
+  label: "Forest"
+  label_context: "color"
+  key: "data-theme"
+  target: html
+
+garden:
+  label: "Garden"
+  label_context: "color"
+  key: "data-theme"
+  target: html
+```
+
+### Configuration Options
+
+See UI skins for options
+
+### Using Themes
+
+After the 'data-themes.ts' is generated, you can import them into your `.storybook/preview.ts`:
+
+```typescript
+import type { Preview } from '@storybook/html'
+import { themeDecorators, themeGlobalTypes } from './data-themes'
+
+export const decorators = [
+  ...themeDecorators, // Theme decorators
+  // Your other decorators
+]
+
+export const globalTypes = {
+  ...themeGlobalTypes, // Theme global types
+  // Your other global types
+}
+
+const preview: Preview = {
+  parameters: {
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/,
+      },
+    },
+  },
+}
+
+export default preview
+```
+
+### CSS Integration
+
+The data-themes work with CSS custom properties. You can define theme-specific styles in your component CSS. See card component for exemple
 
 ## Why Choose SDC Storybook Over Alternatives?
 

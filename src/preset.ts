@@ -1,6 +1,7 @@
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
 } from './vite-plugin-storybook-yaml-stories.ts'
+import vitePluginThemeGenerator from './vite-plugin-theme-generator.ts'
 import { mergeConfig } from 'vite'
 import type { UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
@@ -52,6 +53,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
         include: ['buffer', 'stream', 'path'],
       }),
       ...(twigPlugin ? [twigPlugin] : []),
+      vitePluginThemeGenerator(),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
     ],
     optimizeDeps: {
