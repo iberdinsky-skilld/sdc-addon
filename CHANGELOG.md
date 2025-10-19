@@ -1,3 +1,15 @@
+# v0.15.2 (Sun Oct 19 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Fix atomic import ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.14.3 (Tue Oct 14 2025)
 
 #### 🐛 Bug Fix
