@@ -25,17 +25,53 @@ export const getProjectName = (p: string): string => {
   return parts[i - 1]
 }
 
+const getAllSubdirectoriesRecursive = (baseDir: string): string[] => {
+  const result: string[] = []
+
+  const scan = (dir: string): void => {
+    try {
+      const entries = readdirSync(dir, { withFileTypes: true })
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const fullPath = join(dir, entry.name)
+          result.push(fullPath)
+          scan(fullPath)
+        }
+      }
+    } catch (error) {
+      // Ignore directory access errors
+    }
+  }
+
+  scan(baseDir)
+  return result
+}
+
 export const resolveComponentPath = (
   namespace: string,
   component: string,
   namespaces: Namespaces
 ): string | undefined => {
   const baseDir = namespaces.findPath(namespace)
-  const directories = [baseDir, ...getSubdirectories(baseDir)]
-  const possiblePaths = directories.map((dir) =>
-    join(dir, component, `${component}.component.yml`)
-  )
-  return possiblePaths.find(existsSync)
+  if (!baseDir) return undefined
+
+  const componentFileName = `${component}.component.yml`
+
+  const directPath = join(baseDir, 'components', component, componentFileName)
+  if (existsSync(directPath)) return directPath
+
+  const componentsDir = join(baseDir, 'components')
+  const directories = [
+    componentsDir,
+    ...getAllSubdirectoriesRecursive(componentsDir),
+  ]
+
+  for (const dir of directories) {
+    const possiblePath = join(dir, component, componentFileName)
+    if (existsSync(possiblePath)) return possiblePath
+  }
+
+  return undefined
 }
 
 export class Namespaces {
