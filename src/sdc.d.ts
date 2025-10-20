@@ -65,6 +65,13 @@ interface LibraryDefinition {
 interface ThirdPartySettings {
   [key: string]: Record<string, any>
 }
+
+interface SDCStorybookSettings {
+  tags?: string[]
+  disabledStories?: string[]
+  parameters?: Record<string, any>
+  stories?: Record<string, Component>
+}
 export interface NamespaceDefinition {
   namespace?: string
   namespaces?: Record<string, string>

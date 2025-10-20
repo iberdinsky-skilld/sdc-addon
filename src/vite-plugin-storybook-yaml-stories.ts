@@ -106,11 +106,16 @@ const createStoryIndex = (
   fileName: string,
   baseTitle: string,
   stories: Record<string, any>,
-  disableBasicStory: boolean,
+  disabledStories: string[],
   tags: string[]
 ): IndexInput[] => {
   const storiesIndex: IndexInput[] = []
-  if (disableBasicStory === false) {
+  
+  // Check if all stories are disabled
+  const isAllDisabled = disabledStories.includes('all')
+  
+  // Add Basic story if not disabled
+  if (!isAllDisabled && !disabledStories.includes('basic')) {
     storiesIndex.push({
       type: 'story',
       importPath: fileName,
@@ -120,15 +125,19 @@ const createStoryIndex = (
     })
   }
 
-  if (stories) {
+  // Add custom stories if not all disabled
+  if (stories && !isAllDisabled) {
     Object.keys(stories).forEach((storyKey) => {
-      storiesIndex.push({
-        type: 'story',
-        importPath: fileName,
-        exportName: storyKey,
-        title: baseTitle,
-        tags,
-      })
+      // Skip if this specific story is disabled
+      if (!disabledStories.includes(storyKey)) {
+        storiesIndex.push({
+          type: 'story',
+          importPath: fileName,
+          exportName: storyKey,
+          title: baseTitle,
+          tags,
+        })
+      }
     })
   }
 
@@ -246,13 +255,25 @@ export const yamlStoriesIndexer: Indexer = {
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
       const tags = content?.thirdPartySettings?.sdcStorybook?.tags ?? []
-      const disableBasicStory =
-        content.thirdPartySettings?.sdcStorybook?.disableBasicStory ?? false
+      
+      // Handle both old and new configuration formats
+      const oldDisableBasicStory = content.thirdPartySettings?.sdcStorybook?.disableBasicStory
+      const newDisabledStories = content.thirdPartySettings?.sdcStorybook?.disabledStories
+      
+      let disabledStories: string[] = []
+      
+      // Backward compatibility: convert old boolean to new array format
+      if (oldDisableBasicStory === true) {
+        disabledStories = ['basic']
+      } else if (newDisabledStories) {
+        disabledStories = newDisabledStories
+      }
+      
       return createStoryIndex(
         fileName,
         baseTitle,
         mergedStories,
-        disableBasicStory,
+        disabledStories,
         tags
       )
     } catch (error) {

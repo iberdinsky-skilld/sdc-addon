@@ -599,7 +599,8 @@ thirdPartySettings:
   sdcStorybook:
     tags:
       - autodocs
-    disableBasicStory: true
+    disabledStories:
+      - basic
     parameters:
       layout: 'centered'
     stories:
@@ -618,9 +619,26 @@ Below is a list of all available configuration options for `thirdPartySettings.s
 | Key                 | Type      | Description                                                                                                                                                                        |
 | ------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tags`              | `array`   | Optional. Adds additional [Storybook tags](https://storybook.js.org/docs/writing-docs/autodocs) (e.g. `autodocs`).                                                                 |
-| `disableBasicStory` | `boolean` | When set to `true`, disables the automatically generated “Basic” story.                                                                                                            |
+| `disabledStories`   | `array`   | Optional. Array of story names to disable. Supports `basic`, `preview`, or any custom story name. Use `all` to disable all stories. **Note:** `disableBasicStory` is deprecated in favor of `disabledStories: ['basic']`. |
 | `parameters`        | `object`  | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories.                                                          |
 | `stories`           | `object`  | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `args`, `parameters`, and other Storybook options. |
+
+### Disabled Stories Examples
+
+```yaml
+# Disable only the basic story
+disabledStories:
+  - basic
+
+# Disable basic and preview stories
+disabledStories:
+  - basic
+  - preview
+
+# Disable all stories
+disabledStories:
+  - all
+```
 
 ### Example: Custom Preview Story
 
