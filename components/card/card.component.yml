@@ -37,7 +37,8 @@ slots:
 
 thirdPartySettings:
   sdcStorybook:
-    disableBasicStory: true
+    disabledStories:
+      - basic
     parameters:
       layout: 'centered'
     stories:

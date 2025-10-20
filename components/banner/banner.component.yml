@@ -33,7 +33,8 @@ slots:
       - <img src="https://placehold.co/600x400"/>
 thirdPartySettings:
   sdcStorybook:
-    disableBasicStory: true
+    disabledStories:
+      - basic
     stories:
       preview:
         slots:

@@ -19,7 +19,8 @@ slots:
 
 thirdPartySettings:
   sdcStorybook:
-    disableBasicStory: true
+    disabledStories:
+      - basic
     tags:
       - autodocs
     stories:
