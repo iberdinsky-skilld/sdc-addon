@@ -79,6 +79,7 @@ export interface NamespaceDefinition {
 
 export interface SDCStorybookOptions extends NamespaceDefinition {
   experimentalVariants?: boolean
+  useBasicArgsForStories?: boolean
   storyNodesRenderer?: StoryNodeRenderer[]
   twigLib?: 'twing' | 'twig'
   customDefs?: {

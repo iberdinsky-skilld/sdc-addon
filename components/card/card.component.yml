@@ -12,6 +12,9 @@ status: experimental
 props:
   type: object
   properties:
+    sample:
+      type: string
+      title: Sample
     html_tag:
       type: string
       title: HTML tag for wrapper
