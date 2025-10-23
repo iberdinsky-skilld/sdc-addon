@@ -1,7 +1,11 @@
 import type { SDCAddonOptions } from './sdc.d.ts'
 
 export const DEFAULT_ADDON_OPTIONS: {
-  sdcStorybookOptions: { twigLib: string; validate: boolean }
+  sdcStorybookOptions: {
+    twigLib: string
+    validate: boolean
+    useBasicArgsForStories: boolean
+  }
   vitePluginTwingDrupalOptions: { include: RegExp }
   vitePluginTwigDrupalOptions: {}
   jsonSchemaFakerOptions: {
@@ -12,6 +16,7 @@ export const DEFAULT_ADDON_OPTIONS: {
   }
 } = {
   sdcStorybookOptions: {
+    useBasicArgsForStories: false,
     twigLib: 'twig',
     validate: false,
     // validate:
