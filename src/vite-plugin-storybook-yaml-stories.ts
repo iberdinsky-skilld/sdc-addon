@@ -262,6 +262,15 @@ export const yamlStoriesIndexer: Indexer = {
   },
 }
 
+// Sanitize story key to ensure it's a valid JavaScript identifier
+const sanitizeStoryKey = (key: string): string => {
+  // If key starts with a digit, prefix it with an underscore
+  if (/^\d/.test(key)) {
+    return `_${key}`
+  }
+  return key
+}
+
 // Load *.story.yml files.
 const loadStoryFilesSync = (fileName: string) => {
   const folderPath = dirname(fileName)
@@ -270,7 +279,8 @@ const loadStoryFilesSync = (fileName: string) => {
   return storyFiles.reduce(
     (acc, file) => {
       const content = readFileSync(file, 'utf8')
-      const key = basename(file).split('.')[1]
+      const rawKey = basename(file).split('.')[1]
+      const key = sanitizeStoryKey(rawKey)
       return {
         ...acc,
         [key]: parseYaml(content),
