@@ -1,3 +1,25 @@
+# v0.15.4 (Sat Nov 01 2025)
+
+#### 🐛 Bug Fix
+
+- add disabledStories feature [#97](https://github.com/iberdinsky-skilld/sdc-addon/pull/97) ([@Fred-Boulanger](https://github.com/Fred-Boulanger))
+- Fix/sanitize story key numeric prefix [#104](https://github.com/iberdinsky-skilld/sdc-addon/pull/104) ([@MarcLeLimantour](https://github.com/MarcLeLimantour) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- feat: Handle attributes in props for SDC components [#102](https://github.com/iberdinsky-skilld/sdc-addon/pull/102) ([@MarcLeLimantour](https://github.com/MarcLeLimantour))
+
+#### ⚠️ Pushed to `main`
+
+- Audit fix (iberdinsky@skilld.cloud)
+- Format fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 4
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- [@MarcLeLimantour](https://github.com/MarcLeLimantour)
+- fredb ([@Fred-Boulanger](https://github.com/Fred-Boulanger))
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.15.3 (Sun Oct 19 2025)
 
 #### ⚠️ Pushed to `main`
