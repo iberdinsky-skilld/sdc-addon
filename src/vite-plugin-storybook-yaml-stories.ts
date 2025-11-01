@@ -1,8 +1,9 @@
 import { readdirSync, readFileSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
-import { join, basename, dirname, extname, relative, sep } from 'path'
+import { join, basename, dirname, extname } from 'path'
 import { globSync } from 'glob'
 import { logger } from './logger.ts'
+import { sanitizeStoryKey } from './utils.ts'
 
 import type {
   Args,
@@ -212,9 +213,9 @@ export default {
 };
 
 export const Basic = {
-  
+
   args: ${JSON.stringify(basicArgs, null, 2)},
-  baseArgs: ${JSON.stringify(args, null, 2)}, 
+  baseArgs: ${JSON.stringify(args, null, 2)},
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
@@ -260,15 +261,6 @@ export const yamlStoriesIndexer: Indexer = {
       throw error
     }
   },
-}
-
-// Sanitize story key to ensure it's a valid JavaScript identifier
-const sanitizeStoryKey = (key: string): string => {
-  // If key starts with a digit, prefix it with an underscore
-  if (/^\d/.test(key)) {
-    return `_${key}`
-  }
-  return key
 }
 
 // Load *.story.yml files.
