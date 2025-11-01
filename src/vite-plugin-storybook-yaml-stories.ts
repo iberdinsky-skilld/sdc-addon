@@ -111,10 +111,10 @@ const createStoryIndex = (
   tags: string[]
 ): IndexInput[] => {
   const storiesIndex: IndexInput[] = []
-  
+
   // Check if all stories are disabled
   const isAllDisabled = disabledStories.includes('all')
-  
+
   // Add Basic story if not disabled
   if (!isAllDisabled && !disabledStories.includes('basic')) {
     storiesIndex.push({
@@ -256,20 +256,22 @@ export const yamlStoriesIndexer: Indexer = {
       const storiesContent = loadStoryFilesSync(fileName)
       const mergedStories = { ...stories, ...storiesContent }
       const tags = content?.thirdPartySettings?.sdcStorybook?.tags ?? []
-      
+
       // Handle both old and new configuration formats
-      const oldDisableBasicStory = content.thirdPartySettings?.sdcStorybook?.disableBasicStory
-      const newDisabledStories = content.thirdPartySettings?.sdcStorybook?.disabledStories
-      
+      const oldDisableBasicStory =
+        content.thirdPartySettings?.sdcStorybook?.disableBasicStory
+      const newDisabledStories =
+        content.thirdPartySettings?.sdcStorybook?.disabledStories
+
       let disabledStories: string[] = []
-      
+
       // Backward compatibility: convert old boolean to new array format
       if (oldDisableBasicStory === true) {
         disabledStories = ['basic']
       } else if (newDisabledStories) {
         disabledStories = newDisabledStories
       }
-      
+
       return createStoryIndex(
         fileName,
         baseTitle,
