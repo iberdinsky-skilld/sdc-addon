@@ -21,7 +21,7 @@ export const ${capitalize(storyKey)} = {
   name: ${JSON.stringify(name ?? capitalize(storyKey), null, 2)},
   args: {
     ...Basic.baseArgs,
-    ${generateArgs(props, false)}
+    ${processPropsAttributes(props)}
     ${generateArgs(slots, true)}
     ${generateVariants(variants)}
   },
@@ -57,4 +57,31 @@ const generateVariants = (
         `${variantKey}: ${JSON.stringify(variantValue.title)},`
     )
     .join('\n')
+}
+
+// Processes the 'attributes' prop to convert it to defaultAttributes array format
+const processPropsAttributes = (props: Record<string, any>): string => {
+  if (
+    !props ||
+    !props.attributes ||
+    Object.keys(props.attributes).length === 0
+  ) {
+    return generateArgs(props, false)
+  }
+
+  // Clone props without attributes
+  const { attributes, ...otherProps } = props
+  const propsArgs = generateArgs(otherProps, false)
+
+  // Convert attributes object to array-of-tuples format for Twig Attribute
+  // Same format as defaultAttributes: [['key', 'value'], ['key2', 'value2']]
+  const attributeEntries = Object.entries(attributes)
+    .map(([key, value]) => `['${key}', ${JSON.stringify(value)}]`)
+    .join(', ')
+
+  return (
+    propsArgs +
+    (propsArgs ? '\n' : '') +
+    `defaultAttributes: [...Basic.baseArgs.defaultAttributes || [], ${attributeEntries}],`
+  )
 }

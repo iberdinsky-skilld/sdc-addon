@@ -1,8 +1,9 @@
 import { readdirSync, readFileSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
-import { join, basename, dirname, extname, relative, sep } from 'path'
+import { join, basename, dirname, extname } from 'path'
 import { globSync } from 'glob'
 import { logger } from './logger.ts'
+import { sanitizeStoryKey } from './utils.ts'
 
 import type {
   Args,
@@ -212,9 +213,9 @@ export default {
 };
 
 export const Basic = {
-  
+
   args: ${JSON.stringify(basicArgs, null, 2)},
-  baseArgs: ${JSON.stringify(args, null, 2)}, 
+  baseArgs: ${JSON.stringify(args, null, 2)},
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
@@ -270,7 +271,8 @@ const loadStoryFilesSync = (fileName: string) => {
   return storyFiles.reduce(
     (acc, file) => {
       const content = readFileSync(file, 'utf8')
-      const key = basename(file).split('.')[1]
+      const rawKey = basename(file).split('.')[1]
+      const key = sanitizeStoryKey(rawKey)
       return {
         ...acc,
         [key]: parseYaml(content),

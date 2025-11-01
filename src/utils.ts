@@ -35,3 +35,12 @@ export const deriveGroupFromPath = (fileName: string) => {
 
   return 'SDC'
 }
+
+// Sanitize story key to ensure it's a valid JavaScript identifier
+export const sanitizeStoryKey = (key: string): string => {
+  // If key starts with a digit, prefix it with an underscore
+  if (/^\d/.test(key)) {
+    return `_${key}`
+  }
+  return key
+}
