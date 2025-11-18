@@ -16,7 +16,7 @@ export const DEFAULT_ADDON_OPTIONS: {
   }
 } = {
   sdcStorybookOptions: {
-    useBasicArgsForStories: false,
+    useBasicArgsForStories: true,
     twigLib: 'twig',
     validate: false,
     // validate:

@@ -12,17 +12,23 @@ import { DEFAULT_ADDON_OPTIONS } from './constants.ts'
 
 // Main function to merge Vite configuration
 export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
+
   options = {
     ...DEFAULT_ADDON_OPTIONS,
     ...options,
   }
+  options.sdcStorybookOptions = {
+    ...DEFAULT_ADDON_OPTIONS.sdcStorybookOptions,
+    ... options.sdcStorybookOptions,
 
+  }
   const {
     sdcStorybookOptions,
     vitePluginTwigDrupalOptions,
     vitePluginTwingDrupalOptions,
   } = options
   const { customDefs, externalDefs } = sdcStorybookOptions
+
   const { nodePolyfills } = await import('vite-plugin-node-polyfills')
 
   const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
