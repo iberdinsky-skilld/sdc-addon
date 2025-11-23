@@ -186,21 +186,25 @@ export default ({
         ...argTypesGenerator(content),
       }
 
-      const args: Args = {
+      const baseArgs: Args = {
         defaultAttributes: [
-          [
-            'data-component-id',
-            `${namespaces.pathToNamespace(dirname(id), true)}`,
-          ],
+          ['data-component-id', namespaces.pathToNamespace(dirname(id), true)],
         ],
         componentMetadata: metadata,
         ...(content.variants && {
           variant: Object.keys(content.variants)[0],
         }),
-        ...argsGenerator(content, jsonSchemaFakerOptions),
       }
 
-      const basicArgs = { ...args }
+      const generatedArgs = argsGenerator(content, jsonSchemaFakerOptions)
+
+      const args: Args = sdcStorybookOptions.useBasicArgsForStories
+        ? { ...baseArgs, ...generatedArgs }
+        : baseArgs
+
+      const basicArgs: Args = sdcStorybookOptions.useBasicArgsForStories
+        ? baseArgs
+        : { ...baseArgs, ...generatedArgs }
 
       const stories = previewsStories ? storiesGenerator(previewsStories) : ''
 

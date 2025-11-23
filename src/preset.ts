@@ -9,13 +9,11 @@ import type { SDCAddonOptions } from './sdc.d.ts'
 import { toNamespaces } from './namespaces.ts'
 import { loadAndMergeDefinitions } from './definitions.ts'
 import { DEFAULT_ADDON_OPTIONS } from './constants.ts'
+import { merge as lodashMerge } from 'lodash-es'
 
 // Main function to merge Vite configuration
 export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
-  options = {
-    ...DEFAULT_ADDON_OPTIONS,
-    ...options,
-  }
+  options = lodashMerge({}, DEFAULT_ADDON_OPTIONS, options)
 
   const {
     sdcStorybookOptions,
@@ -23,6 +21,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
     vitePluginTwingDrupalOptions,
   } = options
   const { customDefs, externalDefs } = sdcStorybookOptions
+
   const { nodePolyfills } = await import('vite-plugin-node-polyfills')
 
   const globalDefs = await loadAndMergeDefinitions(externalDefs, customDefs)
