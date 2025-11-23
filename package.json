@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@storybook/addon-docs": "^9.1.13",
-    "@storybook/addon-links": "^9.1.13",
+    "@storybook/addon-links": "^10.0.8",
     "@storybook/html-vite": "^9.1.13",
     "@types/json-schema": "^7.0.15",
     "@types/lodash-es": "^4.17.12",
