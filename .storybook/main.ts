@@ -11,7 +11,6 @@ const sdcStorybookOptions: SDCStorybookOptions = {
     'parent-namespace': resolve('./parent-namespace'),
   },
   twigLib: 'twig', // Switch here to twing
-  useBasicArgsForStories: false,
   storyNodesRenderer: [
     {
       appliesTo: (item) => item?.type === 'sample',

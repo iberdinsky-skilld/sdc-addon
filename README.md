@@ -434,6 +434,7 @@ export const Basic = {}
 - **customDefs**: An object with custom JSON schema definitions for your components.
 - **externalDefs**: An array of URLs or local file paths to external schema definition files.
 - **validate**: A URL or path to a JSON schema for validating your SDC components.
+- **useBasicArgsForStories**: Boolean. When `true` (default) generated stories inherit `...Basic.args` from the component; set to `false` to prevent automatic spreading of `Basic.args`.
 
 ### Twig.js with `vitePluginTwigDrupalOptions`
 
@@ -560,6 +561,16 @@ const config = {
   ],
 }
 ```
+
+### `useBasicArgsForStories`
+
+By default, when generating stories for your SDC components, the addon automatically spreads the `Basic.args` into each generated story. This behavior can be controlled using the `useBasicArgsForStories` option.
+
+```js
+useBasicArgsForStories: false,
+```
+
+When set to `false`, the generated stories will not inherit the `Basic.args`, allowing you to define story-specific arguments without the influence of the default `Basic` configuration.
 
 ## Setting Default Values
 
