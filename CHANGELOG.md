@@ -4,6 +4,24 @@
 
 - Stories are renderd wrong because generated args passed to the stories [#92](https://github.com/iberdinsky-skilld/sdc-addon/pull/92) ([@christianwiedemann](https://github.com/christianwiedemann) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
 
+#### ⚠️ Pushed to `main`
+
+- Bump version (iberdinsky@skilld.cloud)
+
+#### Authors: 3
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- Christian Wiedemann ([@christianwiedemann](https://github.com/christianwiedemann))
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
+# v0.16.2 (Sun Nov 23 2025)
+
+#### 🐛 Bug Fix
+
+- Stories are renderd wrong because generated args passed to the stories [#92](https://github.com/iberdinsky-skilld/sdc-addon/pull/92) ([@christianwiedemann](https://github.com/christianwiedemann) [@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
 #### Authors: 2
 
 - [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
