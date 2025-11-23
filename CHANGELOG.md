@@ -1,3 +1,15 @@
+# v0.17.2 (Sun Nov 23 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Storybook 10 support (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.16.2 (Sun Nov 23 2025)
 
 #### 🐛 Bug Fix
