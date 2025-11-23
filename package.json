@@ -64,7 +64,7 @@
     "prompts": "^2.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "storybook": "^9.1.13",
+    "storybook": "^10.0.8",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2",
     "vite": "^6.2.3",
