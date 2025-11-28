@@ -1,0 +1,55 @@
+{
+  "name": "@fredboulanger/ui-skins-storybook",
+  "version": "0.1.0",
+  "description": "Generate Storybook ui-skins configuration from *.ui_skins.themes.yml files",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "storybook",
+    "ui-skins",
+    "themes",
+    "yaml",
+    "components",
+    "drupal",
+    "sdc"
+  ],
+  "author": "fredboulanger",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fred-Boulanger/sdc-addon"
+  },
+  "bugs": {
+    "url": "https://github.com/Fred-Boulanger/sdc-addon/issues"
+  },
+  "homepage": "https://github.com/Fred-Boulanger/sdc-addon#readme",
+  "dependencies": {
+    "glob": "^10.0.0",
+    "yaml": "^2.0.0"
+  },
+  "peerDependencies": {
+    "storybook": "^8.0.0 || ^9.0.0",
+    "vite": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
