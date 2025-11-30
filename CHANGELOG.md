@@ -1,3 +1,15 @@
+# v0.18.2 (Sun Nov 30 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Fix for multiple twig files in component directory (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.17.2 (Sun Nov 23 2025)
 
 #### ⚠️ Pushed to `main`
