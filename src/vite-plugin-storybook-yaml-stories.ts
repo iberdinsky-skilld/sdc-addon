@@ -44,8 +44,10 @@ const readSDC = (
 }
 
 // Generate import statements for all assets in a directory
-const generateImports = (directory: string, namespaces: Namespaces): string =>
-  readdirSync(directory)
+const generateImports = (directory: string, namespaces: Namespaces): string => {
+  const componentName = basename(directory)
+
+  return readdirSync(directory)
     .filter((file) =>
       ['.css', '.js', '.mjs', '.twig', '.yml'].includes(extname(file))
     )
@@ -53,11 +55,24 @@ const generateImports = (directory: string, namespaces: Namespaces): string =>
       const filePath = `./${file}`
       const namespace = namespaces.pathToNamespace(directory)
       logger.info(`IMPORT ASSET ${directory}/${file}`)
-      return extname(file) === '.twig'
-        ? `import COMPONENT from '${namespace}/${file}';`
-        : `import '${filePath}';`
+
+      if (extname(file) === '.twig') {
+        const fileName = basename(file, '.twig')
+        // Import only the main component file (matching directory name)
+        // Skip variant files (containing ~ or other special chars)
+        if (fileName === componentName) {
+          return `import COMPONENT from '${namespace}/${file}';`
+        }
+        // Skip variant twig files but log them
+        logger.info(`Skipping variant template: ${file}`)
+        return ''
+      }
+
+      return `import '${filePath}';`
     })
+    .filter(Boolean) // Remove empty strings
     .join('\n')
+}
 
 // Dynamically generate component imports from story configurations
 const dynamicImports = (
