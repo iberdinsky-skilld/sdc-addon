@@ -1,3 +1,15 @@
+# v0.18.3 (Tue Dec 02 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Removed Glob dependency ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.18.2 (Sun Nov 30 2025)
 
 #### ⚠️ Pushed to `main`
