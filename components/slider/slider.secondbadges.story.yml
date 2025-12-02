@@ -1,0 +1,22 @@
+name: Second Badges
+description: Second Story with Badges
+slots:
+  slides:
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: timer
+      slots:
+        text: Привет!
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: serves
+      slots:
+        text: Ni hao
+    - type: component
+      component: 'umami:badge'
+      props:
+        icon: difficulty
+      slots:
+        text: Hello

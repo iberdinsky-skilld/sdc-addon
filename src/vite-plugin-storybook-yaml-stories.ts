@@ -1,7 +1,6 @@
 import { readdirSync, readFileSync } from 'fs'
 import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname, extname } from 'path'
-import { globSync } from 'glob'
 import { logger } from './logger.ts'
 import { sanitizeStoryKey } from './utils.ts'
 
@@ -308,7 +307,9 @@ export const yamlStoriesIndexer: Indexer = {
 // Load *.story.yml files.
 const loadStoryFilesSync = (fileName: string) => {
   const folderPath = dirname(fileName)
-  const storyFiles = globSync(join(folderPath, '*.story.yml'))
+  const storyFiles = readdirSync(folderPath)
+    .filter(file => file.endsWith('.story.yml'))
+    .map(file => join(folderPath, file))
 
   return storyFiles.reduce(
     (acc, file) => {
