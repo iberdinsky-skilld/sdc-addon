@@ -1,3 +1,15 @@
+# v0.19.3 (Fri Dec 19 2025)
+
+#### ⚠️ Pushed to `main`
+
+- Audit fix (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.18.3 (Tue Dec 02 2025)
 
 #### ⚠️ Pushed to `main`
