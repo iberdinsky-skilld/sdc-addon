@@ -477,12 +477,12 @@ import { createSynchronousFunction } from 'twing'
 /**
  * Simple test function.
  */
-function testFunction() {
-  return 'IT WORKS!'
+function testFunction(context, parameter) {
+  return `IT WORKS! ${parameter}`
 }
 
-export function initEnvironment(twingEnvironment, config = {}) {
-  const func = createSynchronousFunction('testFunction', testFunction, [])
+export function initEnvironment(twingEnvironment) {
+  const func = createSynchronousFunction('testFunction', testFunction, ['parameter'])
   twingEnvironment.addFunction(func)
 }
 ```
