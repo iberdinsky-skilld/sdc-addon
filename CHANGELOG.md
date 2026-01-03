@@ -1,3 +1,17 @@
+# v0.19.12 (Sat Jan 03 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Audit fix (iberdinsky@skilld.cloud)
+- Updated specs for Twing. ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.19.3 (Fri Dec 19 2025)
 
 #### ⚠️ Pushed to `main`
