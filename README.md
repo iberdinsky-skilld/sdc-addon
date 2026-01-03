@@ -482,7 +482,9 @@ function testFunction(context, parameter) {
 }
 
 export function initEnvironment(twingEnvironment) {
-  const func = createSynchronousFunction('testFunction', testFunction, ['parameter'])
+  const func = createSynchronousFunction('testFunction', testFunction, [
+    'parameter',
+  ])
   twingEnvironment.addFunction(func)
 }
 ```

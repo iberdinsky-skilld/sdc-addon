@@ -308,8 +308,8 @@ export const yamlStoriesIndexer: Indexer = {
 const loadStoryFilesSync = (fileName: string) => {
   const folderPath = dirname(fileName)
   const storyFiles = readdirSync(folderPath)
-    .filter(file => file.endsWith('.story.yml'))
-    .map(file => join(folderPath, file))
+    .filter((file) => file.endsWith('.story.yml'))
+    .map((file) => join(folderPath, file))
 
   return storyFiles.reduce(
     (acc, file) => {

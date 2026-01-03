@@ -10,11 +10,6 @@ import type { Alias } from 'vite'
 import { normalizePath } from 'vite'
 import { logger } from './logger.ts'
 
-const getSubdirectories = (baseDir: string): string[] =>
-  readdirSync(baseDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => join(baseDir, entry.name))
-
 export const getProjectName = (p: string): string => {
   const fullPath = resolve(p)
   const parts = fullPath.split(sep)

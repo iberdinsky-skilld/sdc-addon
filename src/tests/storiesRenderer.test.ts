@@ -4,11 +4,11 @@ describe('storiesRenderer', () => {
   test.each([
     [
       { type: 'component', component: 'umami:card' },
-      'umamicard.default.component({...umamicard.Basic.args, ...{}, ...{ }, ...{}})',
+      'umamicard.default.component({...umamicard.Basic.baseArgs, ...{}, ...{ }, ...{}})',
     ],
     [
       { type: 'component', component: 'umami:card', story: 'preview' },
-      'umamicard.default.component({...umamicard.Basic.args, ...umamicard.Preview.args, ...{ }, ...{}})',
+      'umamicard.default.component({...umamicard.Basic.baseArgs, ...umamicard.Preview.args, ...{ }, ...{}})',
     ],
     [
       {
@@ -24,7 +24,7 @@ describe('storiesRenderer', () => {
           ],
         },
       },
-      'umamicard.default.component({...umamicard.Basic.args, ...umamicard.Preview.args, ...{ }, ...{content: new TwigSafeArray(umamititle.default.component({...umamititle.Basic.args, ...{}, ...{ }, ...{}})),}})',
+      'umamicard.default.component({...umamicard.Basic.baseArgs, ...umamicard.Preview.args, ...{ }, ...{content: new TwigSafeArray(umamititle.default.component({...umamititle.Basic.baseArgs, ...{}, ...{ }, ...{}})),}})',
     ],
 
     [
