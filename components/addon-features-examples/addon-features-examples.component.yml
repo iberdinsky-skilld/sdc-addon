@@ -41,7 +41,7 @@ thirdPartySettings:
                   - type: component
                     component: 'umami:title'
                     props:
-                      label: Hello! I am a current namespace title component inside a banner component from parent namespace.
+                      label: Hello!.
                       html_tag: h2
 
             - type: component

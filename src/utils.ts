@@ -1,6 +1,8 @@
 import { dirname, sep } from 'path'
 
-export const capitalize = (str: string) => str[0].toUpperCase() + str.slice(1)
+export const capitalize = (str: string) => {
+  throw new Error('intentional test failure')
+}
 
 export const convertToKebabCase = (str: string): string =>
   str.replace(/[-:]/g, '')
