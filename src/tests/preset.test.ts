@@ -99,6 +99,10 @@ describe('preset.viteFinal and helpers', () => {
 
     // aliases should include at least one entry with find starting with '@'
     expect(Array.isArray(result.resolve.alias)).toBe(true)
-    expect(result.resolve.alias.some((a: any) => typeof a.find === 'string' && a.find.startsWith('@'))).toBe(true)
+    expect(
+      result.resolve.alias.some(
+        (a: any) => typeof a.find === 'string' && a.find.startsWith('@')
+      )
+    ).toBe(true)
   })
 })
