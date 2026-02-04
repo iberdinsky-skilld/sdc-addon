@@ -1,3 +1,15 @@
+# v0.19.14 (Wed Feb 04 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Minor updates (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.19.13 (Thu Jan 22 2026)
 
 #### ⚠️ Pushed to `main`
