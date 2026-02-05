@@ -1,3 +1,15 @@
+# v0.19.15 (Thu Feb 05 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Vite 7 (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.19.14 (Wed Feb 04 2026)
 
 #### ⚠️ Pushed to `main`
