@@ -1,3 +1,15 @@
+# v0.20.3 (Sun Feb 08 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Fix for basic variant. (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.19.15 (Thu Feb 05 2026)
 
 #### ⚠️ Pushed to `main`
