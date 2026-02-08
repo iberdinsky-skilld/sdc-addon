@@ -145,10 +145,13 @@ const createStoryIndex = (
     Object.keys(stories).forEach((storyKey) => {
       // Skip if this specific story is disabled
       if (!disabledStories.includes(storyKey)) {
+        const capitalizedKey = capitalize(storyKey)
+        const exportName = capitalizedKey === 'Basic' ? `Variant_${capitalizedKey}` : capitalizedKey
+
         storiesIndex.push({
           type: 'story',
           importPath: fileName,
-          exportName: storyKey,
+          exportName,
           title: baseTitle,
           tags,
         })

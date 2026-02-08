@@ -95,7 +95,7 @@ describe('vite-plugin-storybook-yaml-stories (integration)', () => {
       await plugin.load(id)
 
       expect(
-        spy.mock.calls.some((c) => c[0].includes('Skipping variant template'))
+        spy.mock.calls.some((c) => typeof c[0] === 'string' && c[0].includes('Skipping variant template'))
       ).toBe(true)
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
@@ -178,6 +178,33 @@ describe('vite-plugin-storybook-yaml-stories (integration)', () => {
         yamlStoriesIndexer.createIndex(missing, { makeTitle: (s: string) => s })
       ).rejects.toThrow()
       expect(spy).toHaveBeenCalled()
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('createIndex adds Variant_ prefix for story key "basic" to avoid conflict', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-idx-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'conflict')
+      mkdirSync(compDir, { recursive: true })
+      const file = join(compDir, 'conflict.component.yml')
+      // Story with key 'basic' should get Variant_ prefix
+      writeFileSync(
+        file,
+        `name: Conflict\nthirdPartySettings:\n  sdcStorybook:\n    stories:\n      basic:\n        description: Conflicts with Basic\n      other:\n        description: OK`,
+        'utf8'
+      )
+
+      const index = await yamlStoriesIndexer.createIndex(file, {
+        makeTitle: (s: string) => s,
+      })
+
+      // Should have Basic + Variant_Basic + Other
+      expect(index.length).toBe(3)
+      expect(index.find((i: any) => i.exportName === 'Basic')).toBeDefined()
+      expect(index.find((i: any) => i.exportName === 'Variant_Basic')).toBeDefined()
+      expect(index.find((i: any) => i.exportName === 'Other')).toBeDefined()
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
