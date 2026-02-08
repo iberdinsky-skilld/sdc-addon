@@ -12,23 +12,45 @@ describe('storiesGenerator', () => {
         variants?: Record<string, { title: string }>
       }
     > = {
-      basic: {
+      example: {
         component: 'my-component',
         props: { title: 'Hello' },
         slots: { default: { type: 'markup', markup: '<span>slot</span>' } },
         variants: { small: { title: 'Small' } },
-        description: 'A basic story',
+        description: 'An example story',
       },
     }
 
     const out = generate(stories as unknown as Component[])
 
-    expect(out).toContain('export const Basic')
-    expect(out).toContain('A basic story')
+    expect(out).toContain('export const Example')
+    expect(out).toContain('An example story')
     expect(out).toContain('title: "Hello"')
     expect(out).toContain('small: "Small"')
     // slot markup should be rendered into the args
     expect(out).toContain('<span>slot</span>')
+  })
+
+  test('adds Variant_ prefix when story key capitalizes to "Basic"', () => {
+    const stories: Record<
+      string,
+      Partial<Component> & {
+        props?: Record<string, any>
+      }
+    > = {
+      basic: {
+        component: 'my-component',
+        props: { title: 'Basic variant' },
+        description: 'Basic variant story',
+      },
+    }
+
+    const out = generate(stories as unknown as Component[])
+
+    // Should prefix with Variant_ to avoid conflict with auto-generated Basic story
+    expect(out).toContain('export const Variant_Basic')
+    expect(out).not.toContain('export const Basic')
+    expect(out).toContain('Basic variant story')
   })
 
   test('converts props.attributes into defaultAttributes array', () => {

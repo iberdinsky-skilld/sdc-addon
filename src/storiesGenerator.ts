@@ -15,10 +15,15 @@ export default (stories: Component[]): string =>
           name = undefined,
           library_wrapper = '',
         },
-      ]) => `
-export const ${capitalize(storyKey)} = {
+      ]) => {
+        const capitalizedKey = capitalize(storyKey)
+        // Add prefix if conflicts with reserved 'Basic' story
+        const exportName = capitalizedKey === 'Basic' ? `Variant_${capitalizedKey}` : capitalizedKey
+
+        return `
+export const ${exportName} = {
   parameters: {docs: {description: {story: ${JSON.stringify(description, null, 2)}}}},
-  name: ${JSON.stringify(name ?? capitalize(storyKey), null, 2)},
+  name: ${JSON.stringify(name ?? capitalizedKey, null, 2)},
   args: {
     ...Basic.baseArgs,
     ${processPropsAttributes(props)}
@@ -44,6 +49,7 @@ export const ${capitalize(storyKey)} = {
   },
 };
 `
+      }
     )
     .join('\n')
 
