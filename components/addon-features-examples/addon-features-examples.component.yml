@@ -59,3 +59,13 @@ thirdPartySettings:
                     uri: 'https://placehold.co/600x400?text=This+is+an+image+component'
                     attributes:
                       class: 'custom-class'
+      globalsDark:
+        globals:
+          theme: dark
+        name: Preview Dark Example
+        description: 'Addon Features preview description'
+        slots:
+          content:
+            - type: element
+              tag: 'div'
+              value: '<p><strong>Globals:</strong> theme = dark (toolbar).</p><p><strong>Parameters:</strong> component/story parameters still apply as usual.</p>'

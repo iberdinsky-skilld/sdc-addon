@@ -2,7 +2,10 @@ import type { Component } from './sdc.d.ts'
 import { capitalize } from './utils.ts'
 import { generateArgs } from './storyNodeRender.ts'
 
-export default (stories: Component[]): string =>
+export default (
+  stories: Component[],
+  componentGlobals: Record<string, any> = {}
+): string =>
   Object.entries(stories)
     .map(
       ([
@@ -14,15 +17,35 @@ export default (stories: Component[]): string =>
           description = '',
           name = undefined,
           library_wrapper = '',
+          parameters = undefined,
+          globals = undefined,
+          thirdPartySettings = undefined,
         },
       ]) => {
+        const storyParameters =
+          thirdPartySettings?.sdcStorybook?.parameters ??
+          parameters ??
+          {}
+        const storyGlobals =
+          thirdPartySettings?.sdcStorybook?.globals ??
+          globals ??
+          {}
+        const mergedGlobals = {
+          ...componentGlobals,
+          ...storyGlobals,
+        }
+        const globalsBlock =
+          Object.keys(mergedGlobals).length > 0
+            ? `  globals: ${JSON.stringify(mergedGlobals, null, 2)},`
+            : ''
         const capitalizedKey = capitalize(storyKey)
         // Add prefix if conflicts with reserved 'Basic' story
         const exportName = capitalizedKey === 'Basic' ? `Variant_${capitalizedKey}` : capitalizedKey
 
         return `
 export const ${exportName} = {
-  parameters: {docs: {description: {story: ${JSON.stringify(description, null, 2)}}}},
+  parameters:  {...${JSON.stringify(storyParameters, null, 2)}, ...{docs: {description: {story: ${JSON.stringify(description, null, 2)}}}}},
+${globalsBlock}
   name: ${JSON.stringify(name ?? capitalizedKey, null, 2)},
   args: {
     ...Basic.baseArgs,

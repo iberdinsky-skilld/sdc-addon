@@ -119,4 +119,22 @@ describe('storiesGenerator', () => {
     expect(out).toContain('beta-1: "Beta & More"')
     expect(out).toContain('123start: "StartsWithDigits"')
   })
+
+  test('adds globals and merges with component globals', () => {
+    const stories: Record<string, Partial<Component>> = {
+      withGlobals: {
+        component: 'my-component',
+        description: 'globals story',
+        globals: { theme: 'dark' },
+      },
+    }
+
+    const out = generate(stories as unknown as Component[], {
+      locale: 'en',
+    })
+
+    expect(out).toContain('globals:')
+    expect(out).toContain('"locale": "en"')
+    expect(out).toContain('"theme": "dark"')
+  })
 })

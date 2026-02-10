@@ -1,6 +1,6 @@
 import { JSONSchemaFaker } from 'json-schema-faker'
 import type { JSONSchemaFakerOptions } from 'json-schema-faker'
-import type { Args } from 'storybook/internal/types'
+import type { Args } from '@storybook/html-vite'
 import type { SDCSchema, SlotDefinition } from './sdc.d.ts'
 
 // Helper to generate argument strings (for props, slots, or variants)

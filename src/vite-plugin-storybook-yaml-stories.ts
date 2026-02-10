@@ -190,6 +190,8 @@ export default ({
 
       const storiesImports = dynamicImports(previewsStories, namespaces)
       const metadata = componentMetadata(id, content)
+      const componentGlobals =
+        content?.thirdPartySettings?.sdcStorybook?.globals ?? {}
 
       const argTypes: ArgTypes = {
         componentMetadata: { table: { disable: true } },
@@ -223,7 +225,9 @@ export default ({
         ? baseArgs
         : { ...baseArgs, ...generatedArgs }
 
-      const stories = previewsStories ? storiesGenerator(previewsStories) : ''
+      const stories = previewsStories
+        ? storiesGenerator(previewsStories, componentGlobals)
+        : ''
 
       return `
 ${imports}
@@ -238,6 +242,11 @@ class TwigSafeArray extends Array {
 export default {
   component: COMPONENT,
   parameters:  {...${JSON.stringify(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, null, 2)}, ...{docs: {description: {component: ${JSON.stringify(content.description, null, 2)}}}}},
+  ${
+    Object.keys(componentGlobals).length > 0
+      ? `globals: ${JSON.stringify(componentGlobals, null, 2)},`
+      : ''
+  }
   argTypes: ${JSON.stringify(argTypes, null, 2)},
   args: ${JSON.stringify(args, null, 2)},
 };

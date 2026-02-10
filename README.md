@@ -616,6 +616,8 @@ thirdPartySettings:
       - basic
     parameters:
       layout: 'centered'
+    globals:
+      theme: 'dark'
     stories:
       preview:
         args:
@@ -623,6 +625,8 @@ thirdPartySettings:
         parameters:
           backgrounds:
             default: 'light'
+        globals:
+          theme: 'dark'
 ```
 
 ### Option Reference
@@ -634,6 +638,7 @@ Below is a list of all available configuration options for `thirdPartySettings.s
 | `tags`            | `array`  | Optional. Adds additional [Storybook tags](https://storybook.js.org/docs/writing-docs/autodocs) (e.g. `autodocs`).                                                                                                        |
 | `disabledStories` | `array`  | Optional. Array of story names to disable. Supports `basic`, `preview`, or any custom story name. Use `all` to disable all stories. **Note:** `disableBasicStory` is deprecated in favor of `disabledStories: ['basic']`. |
 | `parameters`      | `object` | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories.                                                                                                 |
+| `globals`         | `object` | Global [Storybook globals](https://storybook.js.org/docs/essentials/toolbars-and-globals) applied to all generated stories. Story-level `globals` override component-level values.                                       |
 | `stories`         | `object` | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `args`, `parameters`, and other Storybook options.                                        |
 
 ### Disabled Stories Examples
@@ -667,6 +672,51 @@ thirdPartySettings:
 ```
 
 This configuration creates an additional story named **Preview**, rendered using the provided `args` and `parameters`.
+
+### Example: Globals (Toolbar)
+
+To use globals, define `globalTypes` in Storybook preview and set per-component globals in `component.yml`.
+
+```js
+// .storybook/preview.js
+const preview = {
+  globalTypes: {
+    theme: {
+      description: 'Global theme for components',
+      toolbar: {
+        title: 'Theme',
+        icon: 'circlehollow',
+        items: ['light', 'dark'],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: {
+    theme: 'light',
+  },
+  decorators: [
+    (Story, context) => {
+      const theme = context.globals.theme || 'light'
+      document.documentElement.dataset.theme = theme
+      return Story()
+    },
+  ],
+}
+export default preview
+```
+
+```yaml
+thirdPartySettings:
+  sdcStorybook:
+    # For all stories of this component:
+    globals:
+      theme: dark
+    stories:
+      previewDark:
+        # Or on story level:
+        globals:
+          theme: dark
+```
 
 ## UI Patterns
 

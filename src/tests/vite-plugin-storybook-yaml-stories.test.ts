@@ -9,6 +9,149 @@ import { toNamespaces } from '../namespaces.ts'
 import { logger } from '../logger'
 
 describe('vite-plugin-storybook-yaml-stories (integration)', () => {
+  test('load() merges sdcStorybook.parameters with docs description', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'banner')
+      mkdirSync(compDir, { recursive: true })
+
+      const compYaml = `name: Banner
+description: Banner desc
+thirdPartySettings:
+  sdcStorybook:
+    parameters:
+      layout: fullscreen
+      controls:
+        expanded: true
+`
+      writeFileSync(join(compDir, 'banner.component.yml'), compYaml)
+      writeFileSync(join(compDir, 'banner.twig'), '<div>banner</div>')
+
+      const namespaces = toNamespaces({
+        namespace: '',
+        namespaces: { umami: tmpRoot },
+      })
+
+      const plugin = YamlStoriesPlugin({ namespaces })
+      const id = join(compDir, 'banner.component.yml')
+
+      const result = await plugin.load(id)
+
+      expect(result).toContain('parameters:')
+      expect(result).toContain('"layout": "fullscreen"')
+      expect(result).toContain('"controls": {')
+      expect(result).toContain('"expanded": true')
+      expect(result).toContain('docs: {description: {component: "Banner desc"}}')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('load() keeps docs description when sdcStorybook.parameters is empty', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'branding')
+      mkdirSync(compDir, { recursive: true })
+
+      const compYaml = `name: Branding
+description: Branding desc
+thirdPartySettings:
+  sdcStorybook:
+    parameters: {}
+`
+      writeFileSync(join(compDir, 'branding.component.yml'), compYaml)
+      writeFileSync(join(compDir, 'branding.twig'), '<div>branding</div>')
+
+      const namespaces = toNamespaces({
+        namespace: '',
+        namespaces: { umami: tmpRoot },
+      })
+
+      const plugin = YamlStoriesPlugin({ namespaces })
+      const id = join(compDir, 'branding.component.yml')
+
+      const result = await plugin.load(id)
+
+      expect(result).toContain('parameters:')
+      expect(result).toContain('docs: {description: {component: "Branding desc"}}')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('load() includes component globals in default export', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'menu')
+      mkdirSync(compDir, { recursive: true })
+
+      const compYaml = `name: Menu
+description: Menu desc
+thirdPartySettings:
+  sdcStorybook:
+    globals:
+      theme: dark
+      locale: en`
+      writeFileSync(join(compDir, 'menu.component.yml'), compYaml)
+      writeFileSync(join(compDir, 'menu.twig'), '<div>menu</div>')
+
+      const namespaces = toNamespaces({
+        namespace: '',
+        namespaces: { umami: tmpRoot },
+      })
+
+      const plugin = YamlStoriesPlugin({ namespaces })
+      const id = join(compDir, 'menu.component.yml')
+
+      const result = await plugin.load(id)
+
+      expect(result).toContain('globals:')
+      expect(result).toContain('"theme": "dark"')
+      expect(result).toContain('"locale": "en"')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('load() merges story globals with component globals', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'slider')
+      mkdirSync(compDir, { recursive: true })
+
+      const compYaml = `name: Slider
+description: Slider desc
+thirdPartySettings:
+  sdcStorybook:
+    globals:
+      locale: en`
+      writeFileSync(join(compDir, 'slider.component.yml'), compYaml)
+      writeFileSync(join(compDir, 'slider.twig'), '<div>slider</div>')
+
+      const storyFile = join(compDir, 'slider.withGlobals.story.yml')
+      writeFileSync(
+        storyFile,
+        'thirdPartySettings:\n  sdcStorybook:\n    globals:\n      theme: dark\n'
+      )
+
+      const namespaces = toNamespaces({
+        namespace: '',
+        namespaces: { umami: tmpRoot },
+      })
+
+      const plugin = YamlStoriesPlugin({ namespaces })
+      const id = join(compDir, 'slider.component.yml')
+
+      const result = await plugin.load(id)
+
+      expect(result).toContain('export const WithGlobals')
+      expect(result).toContain('globals:')
+      expect(result).toContain('"locale": "en"')
+      expect(result).toContain('"theme": "dark"')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
   test('load() generates module with imports and Basic export', async () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
     try {

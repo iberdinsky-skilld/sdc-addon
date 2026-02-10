@@ -18,10 +18,29 @@
 />
 
 <style>
+  :root {
+    --sb-bg: #ffffff;
+    --sb-text: #1f2937;
+    --sb-muted: #6b7280;
+    --sb-link: #2563eb;
+    color-scheme: light;
+  }
+
+  :root[data-theme='dark'] {
+    --sb-bg: #0f172a;
+    --sb-text: #e5e7eb;
+    --sb-muted: #94a3b8;
+    --sb-link: #60a5fa;
+    color-scheme: dark;
+  }
+
   body {
     font-family: 'Space Mono', monospace;
     font-weight: 400;
     box-sizing: border-box;
+    margin: 0;
+    background: var(--sb-bg);
+    color: var(--sb-text);
   }
 
   *,
@@ -33,6 +52,15 @@
   img {
     max-width: 100%;
     height: auto;
+  }
+
+  a {
+    color: var(--sb-link);
+  }
+
+  small,
+  .muted {
+    color: var(--sb-muted);
   }
 </style>
 

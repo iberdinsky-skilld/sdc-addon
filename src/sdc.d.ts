@@ -1,5 +1,7 @@
 import type { JSONSchema4 } from 'json-schema'
 import type { JSONSchemaFakerOptions } from 'json-schema-faker'
+import type { Parameters } from '@storybook/html-vite'
+import type { Globals } from 'storybook/internal/types'
 
 export interface SDCSchema {
   $schema?: string
@@ -69,7 +71,8 @@ interface ThirdPartySettings {
 interface SDCStorybookSettings {
   tags?: string[]
   disabledStories?: string[]
-  parameters?: Record<string, any>
+  parameters?: Parameters
+  globals?: Globals
   stories?: Record<string, Component>
 }
 export interface NamespaceDefinition {
@@ -103,8 +106,7 @@ export interface Component {
   props?: JSONSchema4
   slots?: SlotDefinition
   story?: string
-  library_wrapper?: string
-}
+  library_wrapper?: strinяg}
 
 export interface TwigPluginOptions {}
 

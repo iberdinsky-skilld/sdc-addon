@@ -20,7 +20,7 @@
 }
 
 .branding__site-name a {
-  color: black;
+  color: var(--sb-text);
   text-decoration: none;
 }
 
