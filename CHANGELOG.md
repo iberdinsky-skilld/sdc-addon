@@ -1,3 +1,15 @@
+# v0.22.4 (Mon Mar 02 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Update lock (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.22.3 (Mon Mar 02 2026)
 
 #### ⚠️ Pushed to `main`
