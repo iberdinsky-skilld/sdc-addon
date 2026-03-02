@@ -1,3 +1,15 @@
+# v0.22.3 (Mon Mar 02 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Revert dependencies. (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.21.3 (Sat Feb 28 2026)
 
 #### ⚠️ Pushed to `main`
