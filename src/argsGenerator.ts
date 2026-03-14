@@ -1,7 +1,34 @@
-import { JSONSchemaFaker } from 'json-schema-faker'
-import type { JSONSchemaFakerOptions } from 'json-schema-faker'
+import { generate } from 'json-schema-faker'
+import type { GenerateOptions } from 'json-schema-faker'
 import type { Args } from '@storybook/html-vite'
 import type { SDCSchema, SlotDefinition } from './sdc.d.ts'
+
+const createGenerateOptions = (
+  defs: SDCSchema['$defs'],
+  jsonSchemaFakerOptions: GenerateOptions
+): GenerateOptions => {
+  const defsRecord = (defs ?? {}) as Record<string, any>
+  const userRefResolver = jsonSchemaFakerOptions.refResolver
+
+  if (Object.keys(defsRecord).length === 0 && !userRefResolver) {
+    return jsonSchemaFakerOptions
+  }
+
+  return {
+    ...jsonSchemaFakerOptions,
+    refResolver: async (ref: string) => {
+      if (Object.prototype.hasOwnProperty.call(defsRecord, ref)) {
+        return defsRecord[ref]
+      }
+
+      if (userRefResolver) {
+        return userRefResolver(ref)
+      }
+
+      return undefined
+    },
+  }
+}
 
 // Helper to generate argument strings (for props, slots, or variants)
 const generateArgs = (
@@ -9,15 +36,25 @@ const generateArgs = (
     | SDCSchema['props']['properties']
     | SlotDefinition
     | Record<string, any>,
-  defs: SDCSchema['$defs']
-): Args => {
-  return Object.entries(schema).reduce<Args>((acc, [key, property]) => {
-    acc[key] = JSONSchemaFaker.generate(property, defs)
-    if (acc[key] instanceof Object) {
-      acc[key] = Object.values(acc[key])
-    }
-    return acc
-  }, {})
+  defs: SDCSchema['$defs'],
+  jsonSchemaFakerOptions: GenerateOptions
+): Promise<Args> => {
+  return Object.entries(schema).reduce<Promise<Args>>(
+    async (accPromise, [key, property]) => {
+      const acc = await accPromise
+      const schemaWithDefs = {
+        ...(property as Record<string, any>),
+        ...(defs ? { $defs: defs } : {}),
+      }
+
+      acc[key] = await generate(schemaWithDefs, jsonSchemaFakerOptions)
+      if (acc[key] instanceof Object) {
+        acc[key] = Object.values(acc[key])
+      }
+      return acc
+    },
+    Promise.resolve({})
+  )
 }
 
 // Convert slot definitions to schema properties
@@ -32,21 +69,23 @@ const slotsToSchemaProperties = (
   )
 }
 
-export default function generateStorybookArgs(
+export default async function generateStorybookArgs(
   content: SDCSchema,
-  jsonSchemaFakerOptions: JSONSchemaFakerOptions
-): Args {
-  // Configure JSON Schema Faker options
-  JSONSchemaFaker.option({
-    ...jsonSchemaFakerOptions,
-  })
-
+  jsonSchemaFakerOptions: GenerateOptions
+): Promise<Args> {
   const { props, slots, $defs } = content
+  const generateOptions = createGenerateOptions($defs, jsonSchemaFakerOptions)
 
   // Generate arguments from properties and slots
   const generatedArgs: Args = {
-    ...(props?.properties && generateArgs(props.properties, $defs)),
-    ...(slots && generateArgs(slotsToSchemaProperties(slots), $defs)),
+    ...(props?.properties &&
+      (await generateArgs(props.properties, $defs, generateOptions))),
+    ...(slots &&
+      (await generateArgs(
+        slotsToSchemaProperties(slots),
+        $defs,
+        generateOptions
+      ))),
   }
 
   return generatedArgs

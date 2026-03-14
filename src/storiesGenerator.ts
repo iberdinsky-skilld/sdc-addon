@@ -23,13 +23,9 @@ export default (
         },
       ]) => {
         const storyParameters =
-          thirdPartySettings?.sdcStorybook?.parameters ??
-          parameters ??
-          {}
+          thirdPartySettings?.sdcStorybook?.parameters ?? parameters ?? {}
         const storyGlobals =
-          thirdPartySettings?.sdcStorybook?.globals ??
-          globals ??
-          {}
+          thirdPartySettings?.sdcStorybook?.globals ?? globals ?? {}
         const mergedGlobals = {
           ...componentGlobals,
           ...storyGlobals,
@@ -40,7 +36,10 @@ export default (
             : ''
         const capitalizedKey = capitalize(storyKey)
         // Add prefix if conflicts with reserved 'Basic' story
-        const exportName = capitalizedKey === 'Basic' ? `Variant_${capitalizedKey}` : capitalizedKey
+        const exportName =
+          capitalizedKey === 'Basic'
+            ? `Variant_${capitalizedKey}`
+            : capitalizedKey
 
         return `
 export const ${exportName} = {

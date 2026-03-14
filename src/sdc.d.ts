@@ -1,5 +1,5 @@
 import type { JSONSchema4 } from 'json-schema'
-import type { JSONSchemaFakerOptions } from 'json-schema-faker'
+import type { GenerateOptions } from 'json-schema-faker'
 import type { Parameters } from '@storybook/html-vite'
 import type { Globals } from 'storybook/internal/types'
 
@@ -106,13 +106,14 @@ export interface Component {
   props?: JSONSchema4
   slots?: SlotDefinition
   story?: string
-  library_wrapper?: strinяg}
+  library_wrapper?: string
+}
 
 export interface TwigPluginOptions {}
 
 export interface VitePluginTwingDrupalOptions extends TwigPluginOptions {
   namespaces?: Record<string, string[]>
-  include?: string
+  include?: string | RegExp
   hooks?: string
 }
 
@@ -126,5 +127,5 @@ export interface SDCAddonOptions {
   sdcStorybookOptions: SDCStorybookOptions
   vitePluginTwingDrupalOptions?: VitePluginTwingDrupalOptions
   vitePluginTwigDrupalOptions?: VitePluginTwigDrupalOptions
-  jsonSchemaFakerOptions?: JSONSchemaFakerOptions
+  jsonSchemaFakerOptions?: GenerateOptions
 }

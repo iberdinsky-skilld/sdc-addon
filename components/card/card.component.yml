@@ -54,6 +54,7 @@ thirdPartySettings:
                 extra_classes:
                   - umami-card__title
                 label: Preview Story Title
+                html_tag: h3
             - type: component
               component: 'umami:read-more'
               props:

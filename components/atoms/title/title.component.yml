@@ -16,10 +16,11 @@ props:
       type: array
       items:
         type: string
-        examples:
-          - card__title
     label:
       type: string
+      title: Title text
+      examples:
+        - 'This is a title'
     html_tag:
       type: string
       title: HTML tag for title

@@ -13,7 +13,6 @@ export const DEFAULT_ADDON_OPTIONS: SDCAddonOptions = {
   },
   vitePluginTwigDrupalOptions: {},
   jsonSchemaFakerOptions: {
-    ignoreMissingRefs: true,
     failOnInvalidTypes: false,
     useExamplesValue: true,
     useDefaultValue: true,

@@ -16,7 +16,7 @@ import storiesGenerator from './storiesGenerator.ts'
 import { storyNodeRenderer } from './storyNodeRender.ts'
 import componentMetadata from './componentMetadata.ts'
 import type { Component, SDCSchema, SDCStorybookOptions } from './sdc.d.ts'
-import type { JSONSchemaFakerOptions } from 'json-schema-faker'
+import type { GenerateOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
 import { capitalize, convertToKebabCase, deriveGroupFromPath } from './utils.ts'
@@ -146,7 +146,10 @@ const createStoryIndex = (
       // Skip if this specific story is disabled
       if (!disabledStories.includes(storyKey)) {
         const capitalizedKey = capitalize(storyKey)
-        const exportName = capitalizedKey === 'Basic' ? `Variant_${capitalizedKey}` : capitalizedKey
+        const exportName =
+          capitalizedKey === 'Basic'
+            ? `Variant_${capitalizedKey}`
+            : capitalizedKey
 
         storiesIndex.push({
           type: 'story',
@@ -164,7 +167,7 @@ const createStoryIndex = (
 
 // Vite plugin to process YAML component files
 export default ({
-  jsonSchemaFakerOptions = {} as JSONSchemaFakerOptions,
+  jsonSchemaFakerOptions = {} as GenerateOptions,
   sdcStorybookOptions = {} as SDCStorybookOptions,
   globalDefs = {} as JSONSchema4,
   namespaces = {} as Namespaces,
@@ -215,7 +218,7 @@ export default ({
         }),
       }
 
-      const generatedArgs = argsGenerator(content, jsonSchemaFakerOptions)
+      const generatedArgs = await argsGenerator(content, jsonSchemaFakerOptions)
 
       const args: Args = sdcStorybookOptions.useBasicArgsForStories
         ? { ...baseArgs, ...generatedArgs }

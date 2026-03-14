@@ -41,7 +41,9 @@ thirdPartySettings:
       expect(result).toContain('"layout": "fullscreen"')
       expect(result).toContain('"controls": {')
       expect(result).toContain('"expanded": true')
-      expect(result).toContain('docs: {description: {component: "Banner desc"}}')
+      expect(result).toContain(
+        'docs: {description: {component: "Banner desc"}}'
+      )
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
@@ -73,7 +75,9 @@ thirdPartySettings:
       const result = await plugin.load(id)
 
       expect(result).toContain('parameters:')
-      expect(result).toContain('docs: {description: {component: "Branding desc"}}')
+      expect(result).toContain(
+        'docs: {description: {component: "Branding desc"}}'
+      )
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
@@ -238,7 +242,11 @@ thirdPartySettings:
       await plugin.load(id)
 
       expect(
-        spy.mock.calls.some((c) => typeof c[0] === 'string' && c[0].includes('Skipping variant template'))
+        spy.mock.calls.some(
+          (c) =>
+            typeof c[0] === 'string' &&
+            c[0].includes('Skipping variant template')
+        )
       ).toBe(true)
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
@@ -346,7 +354,9 @@ thirdPartySettings:
       // Should have Basic + Variant_Basic + Other
       expect(index.length).toBe(3)
       expect(index.find((i: any) => i.exportName === 'Basic')).toBeDefined()
-      expect(index.find((i: any) => i.exportName === 'Variant_Basic')).toBeDefined()
+      expect(
+        index.find((i: any) => i.exportName === 'Variant_Basic')
+      ).toBeDefined()
       expect(index.find((i: any) => i.exportName === 'Other')).toBeDefined()
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })

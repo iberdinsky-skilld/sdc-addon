@@ -13,7 +13,7 @@ describe('DEFAULT_ADDON_OPTIONS', () => {
   test('includes jsonSchemaFakerOptions with expected flags', () => {
     const jsf: any = DEFAULT_ADDON_OPTIONS.jsonSchemaFakerOptions
     expect(jsf).toBeTruthy()
-    expect(jsf.ignoreMissingRefs).toBe(true)
+    expect(jsf.failOnInvalidTypes).toBe(false)
     expect(jsf.useExamplesValue).toBe(true)
     expect(jsf.useDefaultValue).toBe(true)
   })
