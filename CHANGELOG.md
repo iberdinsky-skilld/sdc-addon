@@ -1,3 +1,15 @@
+# v0.22.6 (Sat Mar 14 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Align with new json-schema-faker (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.22.5 (Wed Mar 11 2026)
 
 #### ⚠️ Pushed to `main`
