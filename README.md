@@ -11,7 +11,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Features of the Addon](#features-of-the-addon)
 - [Quickstart Guide](#quickstart-guide)
 - [Configuration](#configuration)
-- [Creating Experimental Stories](#creating-experimental-stories)
+- [Creating Stories](#creating-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Namespaces](#namespaces)
 - [Advanced Grouping and Nesting](#advanced-grouping-and-nesting)
@@ -124,7 +124,7 @@ const config = {
 export default config
 ```
 
-## Creating Experimental Stories
+## Creating Stories
 
 The `sdcStorybook` configuration in the SDC YAML file provides a flexible way to define custom stories for your components. This feature allows you to use predefined props, custom slots, or even reuse stories defined elsewhere. Here's how it works:
 
@@ -292,10 +292,6 @@ slots:
       slots:
         text: Ciao
 ```
-
-### Why stories experimental?
-
-The [community will have to decide](https://docs.google.com/document/d/1wCQLXrK1lrV2gYlqmqD2pybTql6_H1dByWIKB5xQFcQ/edit?tab=t.0#heading=h.3949vjfiqczr) what format the YAML stories should be.
 
 ## Namespaces
 
