@@ -1,3 +1,15 @@
+# v0.22.12 (Sat Mar 21 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Update specs (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.22.7 (Sat Mar 21 2026)
 
 #### ⚠️ Pushed to `main`
