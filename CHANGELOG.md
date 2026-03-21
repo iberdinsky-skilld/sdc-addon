@@ -22,6 +22,18 @@
 
 ---
 
+# v0.22.7 (Sat Mar 21 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Upgrade dependencies (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.22.6 (Sat Mar 14 2026)
 
 #### ⚠️ Pushed to `main`
