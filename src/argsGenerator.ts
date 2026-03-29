@@ -47,7 +47,15 @@ const generateArgs = (
         ...(defs ? { $defs: defs } : {}),
       }
 
-      acc[key] = await generate(schemaWithDefs, jsonSchemaFakerOptions)
+      // TODO: Remove when json-schema-faker fixes issue #855 (merged in PR #856, not yet released).
+      // In v0.6.0, const/enum is evaluated before useDefaultValue, so default is ignored when enum is present.
+      // https://github.com/json-schema-faker/json-schema-faker/pull/856
+      const prop = property as Record<string, any>
+      if (jsonSchemaFakerOptions.useDefaultValue && prop.default !== undefined) {
+        acc[key] = prop.default
+      } else {
+        acc[key] = await generate(schemaWithDefs, jsonSchemaFakerOptions)
+      }
       if (!Array.isArray(acc[key]) && acc[key] instanceof Object && (property as any).type !== 'object') {
         acc[key] = Object.values(acc[key])
       }

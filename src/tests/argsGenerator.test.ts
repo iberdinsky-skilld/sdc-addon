@@ -213,6 +213,27 @@ describe('generateStorybookArgs', () => {
       expect(args.address).toBeInstanceOf(Object)
     })
 
+    // TODO: Remove this test when json-schema-faker releases a fix for issue #855 (merged in PR #856).
+    // https://github.com/json-schema-faker/json-schema-faker/pull/856
+    it('useDefaultValue takes precedence over enum when default is defined (jsf #855 workaround)', async () => {
+      const content: SDCSchema = {
+        props: {
+          properties: {
+            heading_level: {
+              type: 'string',
+              enum: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+              default: 'h2',
+            },
+          },
+        },
+        $defs: {},
+        name: '',
+      }
+
+      const args = await generateStorybookArgs(content, { useDefaultValue: true })
+      expect(args.heading_level).toBe('h2')
+    })
+
     it('converts a non-object-typed schema that generates an object via Object.values', async () => {
       // A schema with enum containing an object value but no explicit type:'object'
       // json-schema-faker will pick the enum value; result is an Object → converted to array of values
