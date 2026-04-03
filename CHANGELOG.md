@@ -1,3 +1,15 @@
+# v0.22.15 (Fri Apr 03 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Update packages (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.22.14 (Sun Mar 29 2026)
 
 #### ⚠️ Pushed to `main`
