@@ -1,5 +1,9 @@
+{% set classes = [
+  'umami-title',
+  extra_classes ? extra_classes : null,
+] %}
 {% block title_prefix %}{% endblock %}
-<{{ html_tag|default('h2') }}{{ attributes.addClass('umami-title').addClass(extra_classes|default([])) }}>
+<{{ html_tag|default('h2') }}{{ attributes.addClass(classes) }}>
   {{ label }}
 </{{ html_tag|default('h2') }}>
 {% block title_suffix %}{% endblock %}

@@ -1,4 +1,9 @@
-<a{{attributes.addClass('read-more').setAttribute('href',url).addClass(extra_classes|default([]))}}>
+{% set classes = [
+  'read-more',
+  extra_classes ? extra_classes : null,
+] %}
+
+<a{{attributes.addClass(classes).setAttribute('href',url)}}>
   {% block text %}
     {{ text }}
   {% endblock %}
