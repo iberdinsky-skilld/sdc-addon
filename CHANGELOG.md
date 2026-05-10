@@ -2,6 +2,20 @@
 
 #### ⚠️ Pushed to `main`
 
+- import only stories.yml (iberdinsky@skilld.cloud)
+- Audit fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
+# v0.22.17 (Sun May 10 2026)
+
+#### ⚠️ Pushed to `main`
+
 - Audit fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
 
 #### Authors: 1
