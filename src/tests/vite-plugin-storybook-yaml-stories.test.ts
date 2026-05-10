@@ -253,6 +253,42 @@ thirdPartySettings:
     }
   })
 
+  test('generateImports only imports *.story.yml among YAML files', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'slider')
+      mkdirSync(compDir, { recursive: true })
+
+      writeFileSync(
+        join(compDir, 'slider.component.yml'),
+        'name: Slider\ndescription: x'
+      )
+      writeFileSync(join(compDir, 'slider.twig'), '<div>x</div>')
+      writeFileSync(join(compDir, 'slider.css'), '/* x */')
+      writeFileSync(join(compDir, 'slider.badges.story.yml'), 'name: Badges')
+      // arbitrary yaml that must NOT be turned into an import
+      writeFileSync(join(compDir, 'data.yml'), 'foo: bar')
+
+      const namespaces = toNamespaces({
+        namespace: '',
+        namespaces: { umami: tmpRoot },
+      })
+      const plugin = YamlStoriesPlugin({ namespaces })
+      const id = join(compDir, 'slider.component.yml')
+
+      const result = await plugin.load(id)
+
+      expect(result).toContain("import './slider.css';")
+      expect(result).toContain("import './slider.badges.story.yml';")
+      // self-import of the component yml must not be emitted
+      expect(result).not.toContain("import './slider.component.yml';")
+      // arbitrary YAML must be skipped
+      expect(result).not.toContain("import './data.yml';")
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
   test('dynamicImports imports referenced components from props/slots', async () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
     try {

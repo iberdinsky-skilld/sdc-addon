@@ -47,9 +47,14 @@ const generateImports = (directory: string, namespaces: Namespaces): string => {
   const componentName = basename(directory)
 
   return readdirSync(directory)
-    .filter((file) =>
-      ['.css', '.js', '.mjs', '.twig', '.yml'].includes(extname(file))
-    )
+    .filter((file) => {
+      if (extname(file) === '.yml') {
+        // Only *.story.yml is imported (for HMR); skip *.component.yml
+        // (would self-import) and any other arbitrary YAML files.
+        return file.endsWith('.story.yml')
+      }
+      return ['.css', '.js', '.mjs', '.twig'].includes(extname(file))
+    })
     .map((file) => {
       const filePath = `./${file}`
       const namespace = namespaces.pathToNamespace(directory)
