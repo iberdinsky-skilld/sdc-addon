@@ -192,12 +192,21 @@ describe('generateStorybookArgs', () => {
       const content: SDCSchema = {
         props: {
           properties: {
-            identifier: { type: 'string', title: 'Identifier', examples: ['123456'] },
+            identifier: {
+              type: 'string',
+              title: 'Identifier',
+              examples: ['123456'],
+            },
             address: {
               type: 'object',
               title: 'Address',
               examples: [
-                { street: 'Example Street 1', postalCode: 8000, city: 'City', country: 'Country' },
+                {
+                  street: 'Example Street 1',
+                  postalCode: 8000,
+                  city: 'City',
+                  country: 'Country',
+                },
               ],
             },
           },
@@ -213,9 +222,7 @@ describe('generateStorybookArgs', () => {
       expect(args.address).toBeInstanceOf(Object)
     })
 
-    // TODO: Remove this test when json-schema-faker releases a fix for issue #855 (merged in PR #856).
-    // https://github.com/json-schema-faker/json-schema-faker/pull/856
-    it('useDefaultValue takes precedence over enum when default is defined (jsf #855 workaround)', async () => {
+    it('useDefaultValue takes precedence over enum when default is defined', async () => {
       const content: SDCSchema = {
         props: {
           properties: {
@@ -230,7 +237,9 @@ describe('generateStorybookArgs', () => {
         name: '',
       }
 
-      const args = await generateStorybookArgs(content, { useDefaultValue: true })
+      const args = await generateStorybookArgs(content, {
+        useDefaultValue: true,
+      })
       expect(args.heading_level).toBe('h2')
     })
 
