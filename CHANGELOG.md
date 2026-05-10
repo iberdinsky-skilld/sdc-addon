@@ -1,3 +1,15 @@
+# v0.22.17 (Sun May 10 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Audit fix (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.22.16 (Wed Apr 08 2026)
 
 #### ⚠️ Pushed to `main`
