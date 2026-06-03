@@ -1,3 +1,15 @@
+# v0.22.28 (Wed Jun 03 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Icon Api Support ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.22.17 (Wed Jun 03 2026)
 
 #### ⚠️ Pushed to `main`
