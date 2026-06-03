@@ -1,6 +1,6 @@
 {
   "name": "storybook-addon-sdc",
-  "version": "0.22.27",
+  "version": "0.23.01",
   "description": "Drupal Single Directory Components as stories",
   "keywords": [
     "SDC",
@@ -37,7 +37,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "json-schema-faker": "^0.6.1",
+    "json-schema-faker": "^0.6.2",
     "jsonschema": "^1.5.0",
     "lodash-es": "^4.18.1",
     "node-fetch": "^3.3.2",

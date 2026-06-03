@@ -133,6 +133,10 @@ export class Namespaces {
     return namespaces
   }
 
+  public entries(): [string, string][] {
+    return Object.entries(this.namespaces)
+  }
+
   public findPath = (namespace: string): string => {
     return this.namespaces[namespace] || ''
   }

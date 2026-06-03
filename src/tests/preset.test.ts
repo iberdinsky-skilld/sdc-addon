@@ -1,4 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 // Mock dependencies before importing module under test
 vi.mock('./definitions.ts', () => ({
@@ -10,6 +13,7 @@ vi.mock('./namespaces.ts', () => ({
     toTwingNamespaces: () => ({ t: ['p'] }),
     toTwigJsNamespaces: () => ({ t: 'p' }),
     toViteAlias: () => [{ find: '@ns', replacement: '/path/components' }],
+    entries: () => [['ns', '/path']],
   }),
 }))
 
@@ -25,7 +29,12 @@ vi.mock('vite-plugin-twig-drupal', async () => {
   return { default: (opts: any) => ({ name: 'twig-plugin', opts }) }
 })
 
-import { viteFinal, previewHead, experimental_indexers } from '../preset'
+import {
+  viteFinal,
+  previewHead,
+  experimental_indexers,
+  staticDirs,
+} from '../preset'
 
 describe('preset.viteFinal and helpers', () => {
   test('viteFinal includes nodePolyfills and twing plugin when twigLib=twing', async () => {
@@ -80,6 +89,72 @@ describe('preset.viteFinal and helpers', () => {
     ).toBe(true)
     // and at least one indexer should expose createIndex as a function
     expect(arr.some((i: any) => typeof i.createIndex === 'function')).toBe(true)
+  })
+
+  test('staticDirs serves icon source directories (not namespace roots) under /sdc-icons/{ns}/', async () => {
+    const options: any = { sdcStorybookOptions: { namespace: 'umami' } }
+    const result = await staticDirs([], options)
+    expect(Array.isArray(result)).toBe(true)
+    expect(result.length).toBeGreaterThan(0)
+    expect(
+      result.every(
+        (d: any) => typeof d.from === 'string' && d.to.startsWith('/sdc-icons/')
+      )
+    ).toBe(true)
+    const nsRoot = process.cwd()
+    expect(result.every((d: any) => d.from !== nsRoot)).toBe(true)
+  })
+
+  test('staticDirs preserves existing entries', async () => {
+    const options: any = { sdcStorybookOptions: { namespace: 'umami' } }
+    const existing = [{ from: '../components', to: '/components' }]
+    const result = await staticDirs(existing, options)
+    expect(result).toContainEqual({ from: '../components', to: '/components' })
+    expect(result.some((d: any) => d.to?.startsWith('/sdc-icons/'))).toBe(true)
+  })
+
+  test('staticDirs: svg-only pack adds no static entries', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-preset-svg-'))
+    const ns = 'presetsvg'
+    try {
+      mkdirSync(join(tmpRoot, 'icons'))
+      writeFileSync(join(tmpRoot, 'icons', 'a.svg'), '<svg><path/></svg>')
+      writeFileSync(
+        join(tmpRoot, `${ns}.icons.yml`),
+        `pack:\n  extractor: svg\n  config:\n    sources:\n      - icons\n  template: ""\n`
+      )
+      const options: any = {
+        sdcStorybookOptions: { namespaces: { [ns]: tmpRoot } },
+      }
+      const result = await staticDirs([], options)
+      expect(result.every((d: any) => !d.to?.includes(ns))).toBe(true)
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('staticDirs: path extractor adds source directory', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-preset-path-'))
+    const ns = 'presetpath'
+    try {
+      mkdirSync(join(tmpRoot, 'img'))
+      writeFileSync(join(tmpRoot, 'img', 'arrow.png'), 'PNG')
+      writeFileSync(
+        join(tmpRoot, `${ns}.icons.yml`),
+        `pack:\n  extractor: path\n  config:\n    sources:\n      - img/*.png\n  template: ""\n`
+      )
+      const options: any = {
+        sdcStorybookOptions: { namespaces: { [ns]: tmpRoot } },
+      }
+      const result = await staticDirs([], options)
+      const entry = result.find((d: any) =>
+        d.to?.startsWith(`/sdc-icons/${ns}/`)
+      )
+      expect(entry).toBeDefined()
+      expect(entry.from).toContain('img')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
   })
 
   test('viteFinal preserves existing plugins and merges aliases', async () => {

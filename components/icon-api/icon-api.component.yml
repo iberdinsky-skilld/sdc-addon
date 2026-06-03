@@ -1,0 +1,94 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+
+name: Icon API
+description: >
+  Demonstrates Drupal Icon API support. The icon() Twig function is available
+  automatically when *.icons.yml files are present in any registered namespace —
+  no configuration required.
+group: Addon
+status: experimental
+
+props:
+  type: object
+  properties:
+    icons:
+      type: array
+      title: Icons
+      description: List of icon() calls to render.
+      items:
+        type: object
+        properties:
+          pack:
+            type: string
+          id:
+            type: string
+          settings:
+            type: object
+
+thirdPartySettings:
+  sdcStorybook:
+    disabledStories:
+      - basic
+    parameters:
+      layout: centered
+    stories:
+      sprite:
+        name: SVG Sprite
+        description: >
+          extractor: svg_sprite — icons are referenced from a single sprite file
+          via <use href="{{ source }}#{{ icon_id }}">. The source and icon_id
+          variables point to the sprite and symbol; content is empty (the
+          template constructs the <use> element itself).
+        props:
+          icons:
+            - { pack: umami_sprite, id: home }
+            - { pack: umami_sprite, id: star }
+            - { pack: umami_sprite, id: search }
+            - { pack: umami_sprite, id: close }
+            - { pack: umami_sprite, id: menu }
+
+      svg:
+        name: Inline SVG
+        description: >
+          extractor: svg — each icon is an individual .svg file. The inner SVG
+          markup (without the <svg> wrapper) is provided as content, and the
+          original <svg> element attributes are available via attributes.
+        props:
+          icons:
+            - { pack: umami_svg, id: home }
+            - { pack: umami_svg, id: star }
+            - { pack: umami_svg, id: search }
+            - { pack: umami_svg, id: close }
+            - { pack: umami_svg, id: menu }
+
+      path:
+        name: Path (URL reference)
+        description: >
+          extractor: path — icons are referenced by URL, not inlined. The source
+          variable contains the file URL; use it in an <img> or as a CSS
+          background-image. Useful when icons should be cached independently or
+          served from a CDN.
+        props:
+          icons:
+            - { pack: umami_path, id: home }
+            - { pack: umami_path, id: star }
+            - { pack: umami_path, id: search }
+            - { pack: umami_path, id: close }
+            - { pack: umami_path, id: menu }
+
+      settings:
+        name: Settings Override
+        description: >
+          The third argument to icon() overrides settings defined in *.icons.yml.
+          Here size and color are overridden per call.
+        props:
+          icons:
+            - { pack: umami_sprite, id: home, settings: { size: sm } }
+            - { pack: umami_sprite, id: star, settings: { size: md } }
+            - { pack: umami_sprite, id: search, settings: { size: lg } }
+            - { pack: umami_svg, id: close, settings: { color: '#e53935' } }
+            - {
+                pack: umami_svg,
+                id: menu,
+                settings: { color: '#1e88e5', size: lg },
+              }

@@ -1,3 +1,5 @@
+import { existsSync, statSync } from 'node:fs'
+import { join, dirname, relative } from 'node:path'
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
 } from './vite-plugin-storybook-yaml-stories.ts'
@@ -10,6 +12,8 @@ import { toNamespaces } from './namespaces.ts'
 import { loadAndMergeDefinitions } from './definitions.ts'
 import { DEFAULT_ADDON_OPTIONS } from './constants.ts'
 import { merge as lodashMerge } from 'lodash-es'
+import { iconPacksPlugin } from './vite-plugin-sdc-icon-packs.ts'
+import { loadIconPackFile } from './icon-packs.ts'
 
 // Main function to merge Vite configuration
 export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
@@ -52,6 +56,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       }),
       ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
+      iconPacksPlugin(namespaces),
     ],
     optimizeDeps: {
       exclude: ['vite-plugin-twig-drupal', 'vite-plugin-twing-drupal'],
@@ -68,6 +73,42 @@ export const experimental_indexers: StorybookConfig['experimental_indexers'] =
     ...(existingIndexers || []),
     yamlStoriesIndexer,
   ]
+
+export const staticDirs = async (
+  existing: (string | { from: string; to: string })[],
+  options: SDCAddonOptions
+) => {
+  const merged = lodashMerge({}, DEFAULT_ADDON_OPTIONS, options)
+  const namespaces = toNamespaces(merged.sdcStorybookOptions)
+
+  const iconDirs: { from: string; to: string }[] = []
+
+  for (const [ns, nsRoot] of namespaces.entries()) {
+    const iconsFile = join(nsRoot, `${ns}.icons.yml`)
+    if (!existsSync(iconsFile)) continue
+
+    const { packs } = loadIconPackFile(iconsFile)
+    const seen = new Set<string>()
+
+    for (const pack of Object.values(packs)) {
+      if (pack.extractor === 'svg') continue
+
+      for (const src of pack.sources) {
+        if (src.startsWith('http')) continue
+        if (!existsSync(src)) continue
+
+        const dir = statSync(src).isDirectory() ? src : dirname(src)
+        if (seen.has(dir)) continue
+        seen.add(dir)
+
+        const relDir = relative(nsRoot, dir).replace(/\\/g, '/')
+        iconDirs.push({ from: dir, to: `/sdc-icons/${ns}/${relDir}` })
+      }
+    }
+  }
+
+  return [...(existing || []), ...iconDirs]
+}
 
 // Optional: Add the previewHead
 export const previewHead: StorybookConfig['previewHead'] = (head: string) => `

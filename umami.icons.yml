@@ -1,0 +1,77 @@
+# svg_sprite — single sprite file; icons referenced via <use href="{{ source }}#{{ icon_id }}">.
+# Template variables: source (sprite URL), icon_id, attributes, group.
+# content is empty — the template constructs <use> itself.
+umami_sprite:
+  label: 'Umami Icons (SVG Sprite)'
+  extractor: svg_sprite
+  config:
+    sources:
+      - icons/sprite.svg
+  settings:
+    size:
+      type: string
+      default: md
+    class:
+      type: string
+      default: ''
+  template: >
+    <svg {{ attributes
+      .setAttribute('class', 'icon icon--' ~ icon_id ~ (size != 'md' ? ' icon--' ~ size : '') ~ (class ? ' ' ~ class : ''))
+      .setAttribute('width', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('aria-hidden', 'true')
+    }}>
+      <use href="{{ source }}#{{ icon_id }}"></use>
+    </svg>
+
+# svg — individual SVG files; inner markup is inlined as content.
+# Template variables: source (file URL), icon_id, content (inner markup), attributes (from <svg> element), group.
+umami_svg:
+  label: 'Umami Icons (Inline SVG)'
+  extractor: svg
+  config:
+    sources:
+      - icons/svg
+  settings:
+    size:
+      type: string
+      default: md
+    class:
+      type: string
+      default: ''
+    color:
+      type: string
+      default: 'currentColor'
+  template: >
+    <svg {{ attributes
+      .setAttribute('class', 'icon icon--' ~ icon_id ~ (size != 'md' ? ' icon--' ~ size : '') ~ (class ? ' ' ~ class : ''))
+      .setAttribute('width', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('fill', color)
+      .setAttribute('aria-hidden', 'true')
+    }}>{{ content }}</svg>
+
+# path — icons served as static files and referenced by URL.
+# Template variables: source (file URL), icon_id, group.
+# content is empty — use source as img src or CSS background-image.
+umami_path:
+  label: 'Umami Icons (Path / URL)'
+  extractor: path
+  config:
+    sources:
+      - icons/svg/*.svg
+  settings:
+    size:
+      type: string
+      default: md
+    class:
+      type: string
+      default: ''
+  template: >
+    <img {{ attributes
+      .setAttribute('src', source)
+      .setAttribute('class', 'icon icon--' ~ icon_id ~ (size != 'md' ? ' icon--' ~ size : '') ~ (class ? ' ' ~ class : ''))
+      .setAttribute('width', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('aria-hidden', 'true')
+    }}>

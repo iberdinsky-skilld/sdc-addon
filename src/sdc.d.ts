@@ -129,3 +129,37 @@ export interface SDCAddonOptions {
   vitePluginTwigDrupalOptions?: VitePluginTwigDrupalOptions
   jsonSchemaFakerOptions?: GenerateOptions
 }
+
+export interface IconPackSettings {
+  [key: string]: {
+    type?: string
+    default?: any
+    [key: string]: any
+  }
+}
+
+export interface SvgIconData {
+  content: string
+  attrs: Record<string, string>
+  sourceUrl: string
+  group: string
+}
+
+export interface PathIconData {
+  sourceUrl: string
+  group: string
+}
+
+export interface IconPack {
+  packId: string
+  label: string
+  extractor: 'svg_sprite' | 'svg' | 'path'
+  sources: string[]
+  sourceUrls: string[]
+  settings: IconPackSettings
+  template: string
+  svgIcons: Record<string, SvgIconData>
+  pathIcons: Record<string, PathIconData>
+}
+
+export type IconPacks = Record<string, IconPack>

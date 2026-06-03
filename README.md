@@ -14,6 +14,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Creating Stories](#creating-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
 - [Namespaces](#namespaces)
+- [Drupal Icon API](#drupal-icon-api)
 - [Advanced Grouping and Nesting](#advanced-grouping-and-nesting)
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
@@ -48,6 +49,7 @@ The SDC Storybook Addon simplifies the integration of Drupal Single Directory Co
 - **Custom and External Schema Definitions**: Supports custom and external JSON schema definitions to validate components based on Drupal-specific configurations (e.g., UI Patterns, Experience Builder).
 - **Default and Custom Story Rendering**: Use `type: component` to nest components, `type: element` for HTML markup, and `type: image` for images within stories. Or create your own custom renderers.
 - **Namespaces**: Supports multiple namespaces, allowing you to use components from different(parent/sibling) directories or packages.
+- **Drupal Icon API**: Automatically detects `*.icons.yml` files in registered namespaces and makes `{{ icon('pack_id', 'icon_id', settings) }}` available in every Twig template. Supports `svg_sprite`, `svg` (inline), and `path` extractors with no configuration required.
 
 ## Quickstart Guide
 
@@ -365,6 +367,120 @@ And in story definitions within YAML files:
   {% include '@assets/icons/example.svg' %}
   ```
 
+## Drupal Icon API
+
+The addon automatically supports Drupal's [Icon API](https://www.drupal.org/docs/develop/drupal-apis/icon-api) (introduced in Drupal 11.1). No configuration is required — as soon as a `{namespace}.icons.yml` file is found next to the `components/` directory of any registered namespace, the `icon()` Twig function becomes available in every template.
+
+```twig
+{{ icon('pack_id', 'icon_id') }}
+{{ icon('pack_id', 'icon_id', { size: 'sm', class: 'my-icon' }) }}
+```
+
+### `{namespace}.icons.yml`
+
+Place the file alongside the `components/` directory (i.e. the theme/module root):
+
+```
+my-theme/
+├── components/
+│   └── button/
+│       └── button.component.yml
+├── icons/
+│   ├── sprite.svg
+│   └── svg/
+│       ├── home.svg
+│       └── star.svg
+└── my-theme.icons.yml        ← discovered automatically
+```
+
+### Extractors
+
+Three extractors are supported, matching Drupal core. A single pack file can contain any mix:
+
+```yaml
+# my-theme.icons.yml
+
+# svg_sprite — single sprite file; icons referenced via <use href="{{ source }}#{{ icon_id }}">.
+# content is empty — the template constructs <use> itself.
+# Template context: icon_id, source (sprite URL), attributes (empty), group, settings.
+my_sprite:
+  label: 'My Icons (Sprite)'
+  extractor: svg_sprite
+  config:
+    sources:
+      - icons/sprite.svg
+  settings:
+    size:
+      type: string
+      default: md
+  template: >
+    <svg {{ attributes
+      .setAttribute('width', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('aria-hidden', 'true')
+    }}>
+      <use href="{{ source }}#{{ icon_id }}"></use>
+    </svg>
+
+# svg — individual SVG files inlined at build time; inner markup provided as content.
+# Template context: icon_id, source (file URL), content (inner markup, no <svg> wrapper),
+#                   attributes (DrupalAttribute pre-populated from the original <svg> element), group, settings.
+my_svg:
+  label: 'My Icons (Inline SVG)'
+  extractor: svg
+  config:
+    sources:
+      - icons/svg
+      - icons/social/*.svg
+  settings:
+    color:
+      type: string
+      default: currentColor
+  template: >
+    <svg {{ attributes
+      .setAttribute('fill', color)
+      .setAttribute('aria-hidden', 'true')
+    }}>{{ content }}</svg>
+
+# path — files served by URL; use source as img src or CSS background-image.
+# content is empty. Remote URLs (http://…) are supported.
+# Template context: icon_id, source (file URL), attributes (empty), group, settings.
+my_path:
+  label: 'My Icons (Path)'
+  extractor: path
+  config:
+    sources:
+      - icons/png/*.png
+  template: '<img src="{{ source }}" alt="{{ icon_id }}" aria-hidden="true">'
+```
+
+### Settings
+
+Settings defined in `*.icons.yml` are exposed as template variables. Default values are applied automatically; the third argument to `icon()` overrides them at call time.
+
+```yaml
+settings:
+  size:
+    type: string # string | number | integer | boolean
+    default: md
+  color:
+    type: string
+    default: currentColor
+```
+
+### Production static build
+
+For `storybook build`, add icon asset directories to `staticDirs` in `.storybook/main.js` so the files are copied into the build output:
+
+```js
+staticDirs: [
+  { from: '../components', to: '/components' },
+  { from: '../icons',      to: '/icons' },   // ← icon assets
+],
+```
+
+---
+
 ## Advanced Grouping and Nesting
 
 By default, the addon organizes all SDC stories under a single **SDC** [Folder](https://storybook.js.org/docs/writing-stories/naming-components-and-hierarchy#structure-and-hierarchy) at the Storybook root.
@@ -635,7 +751,7 @@ Below is a list of all available configuration options for `thirdPartySettings.s
 | `disabledStories` | `array`  | Optional. Array of story names to disable. Supports `basic`, `preview`, or any custom story name. Use `all` to disable all stories. **Note:** `disableBasicStory` is deprecated in favor of `disabledStories: ['basic']`. |
 | `parameters`      | `object` | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories.                                                                                                 |
 | `globals`         | `object` | Global [Storybook globals](https://storybook.js.org/docs/essentials/toolbars-and-globals) applied to all generated stories. Story-level `globals` override component-level values.                                        |
-| `stories`         | `object` | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `props`, `slots`, `parameters`, `globals`, `description`, `name`, and `library_wrapper`. |
+| `stories`         | `object` | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `props`, `slots`, `parameters`, `globals`, `description`, `name`, and `library_wrapper`.  |
 
 ### Disabled Stories Examples
 

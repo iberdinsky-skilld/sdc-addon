@@ -1,0 +1,32 @@
+.icon-api-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 24px;
+}
+
+.icon-api-demo__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.icon-api-demo__label {
+  color: #666;
+  white-space: nowrap;
+}
+
+.icon--sm {
+  width: 16px;
+  height: 16px;
+}
+.icon--md {
+  width: 24px;
+  height: 24px;
+}
+.icon--lg {
+  width: 32px;
+  height: 32px;
+}

@@ -1,0 +1,13 @@
+<div class="icon-api-demo">
+  {% for item in icons %}
+    <figure class="icon-api-demo__item">
+      {{ icon(item.pack, item.id, item.settings|default({})) }}
+      <figcaption class="icon-api-demo__label">
+        <b>{{ item.pack }}:{{ item.id }}</b>
+        {% if item.settings %}
+          {% for key, val in item.settings %}<br>{{ key }}: {{ val }}{% endfor %}
+        {% endif %}
+      </figcaption>
+    </figure>
+  {% endfor %}
+</div>

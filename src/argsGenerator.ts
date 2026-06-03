@@ -48,7 +48,11 @@ const generateArgs = (
       }
 
       acc[key] = await generate(schemaWithDefs, jsonSchemaFakerOptions)
-      if (!Array.isArray(acc[key]) && acc[key] instanceof Object && (property as any).type !== 'object') {
+      if (
+        !Array.isArray(acc[key]) &&
+        acc[key] instanceof Object &&
+        (property as any).type !== 'object'
+      ) {
         acc[key] = Object.values(acc[key])
       }
       return acc
