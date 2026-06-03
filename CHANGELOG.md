@@ -26,6 +26,20 @@
 
 ---
 
+# v0.22.17 (Wed Jun 03 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Fix specs ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- import only stories.yml ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Audit fix ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.22.17 (Sun May 10 2026)
 
 #### ⚠️ Pushed to `main`
