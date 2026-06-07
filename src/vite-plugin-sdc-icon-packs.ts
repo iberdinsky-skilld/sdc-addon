@@ -14,6 +14,7 @@ const PACK_PREFIX = '\0icons-pack:'
 
 const SHARED_HELPERS = /* js */ `
 function _sdcBuildIconContext(DrupalAttribute, pack, iconId, settings) {
+  if (settings instanceof Map) settings = Object.fromEntries(settings);
   var resolved = {};
   var packSettings = pack.settings || {};
   var settingKeys = Object.keys(packSettings);

@@ -530,6 +530,73 @@ _sdcRegisterIcon(Twig);
     }
   })
 
+  describe('_sdcBuildIconContext settings resolution', () => {
+    class MockDrupalAttribute {
+      constructor(_entries: any) {}
+    }
+
+    const spritePack = {
+      extractor: 'svg_sprite',
+      sourceUrls: ['/sdc-icons/sprite.svg'],
+      settings: { size: { default: 'md' }, color: { default: 'black' } },
+      svgIcons: {},
+      pathIcons: {},
+    }
+
+    function getBuildCtx() {
+      const ns = toNamespaces({ namespace: '', namespaces: {} })
+      const p = iconPacksPlugin(ns) as any
+      const code: string = p.load.call(
+        { addWatchFile: () => {} },
+        '\0virtual:sdc-icon-packs:twig'
+      )
+      const match = code.match(
+        /(function _sdcBuildIconContext[\s\S]+?)\nvar _sdcIconPacks/
+      )
+      if (!match) throw new Error('_sdcBuildIconContext not found in generated code')
+      // eslint-disable-next-line no-new-func
+      return new Function(match[1] + '\nreturn _sdcBuildIconContext;')()
+    }
+
+    test('plain object settings override defaults', () => {
+      const buildCtx = getBuildCtx()
+      const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', { size: 'lg' })
+      expect(ctx.size).toBe('lg')
+      expect(ctx.color).toBe('black')
+    })
+
+    test('Map settings are applied (Twing passes Map instead of plain object)', () => {
+      const buildCtx = getBuildCtx()
+      const ctx = buildCtx(
+        MockDrupalAttribute,
+        spritePack,
+        'home',
+        new Map([['size', 'xl'], ['color', 'blue']])
+      )
+      expect(ctx.size).toBe('xl')
+      expect(ctx.color).toBe('blue')
+    })
+
+    test('partial Map uses defaults for missing keys', () => {
+      const buildCtx = getBuildCtx()
+      const ctx = buildCtx(
+        MockDrupalAttribute,
+        spritePack,
+        'home',
+        new Map([['size', 'xl']])
+      )
+      expect(ctx.size).toBe('xl')
+      expect(ctx.color).toBe('black')
+    })
+
+    test('empty settings object uses all defaults', () => {
+      const buildCtx = getBuildCtx()
+      const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', {})
+      expect(ctx.size).toBe('md')
+      expect(ctx.color).toBe('black')
+    })
+  })
+
   test('_sdcBuildIconContext available in twig module with attributes and group', () => {
     const { tmpRoot, cleanup } = makeTmpNs('ctx')
     try {
