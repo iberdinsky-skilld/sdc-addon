@@ -40,6 +40,25 @@ const sdcStorybookOptions: SDCStorybookOptions = {
   ],
   customDefs: CUSTOM_TEST_DEFS as SDCStorybookOptions['customDefs'],
 
+  dependencyMap: {
+    'core/jquery': [
+      {
+        type: 'js',
+        url: 'https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js',
+      },
+    ],
+    'jquery/ui.accordion': [
+      {
+        type: 'css',
+        url: 'https://cdn.jsdelivr.net/npm/jquery-ui@1.13/dist/themes/base/jquery-ui.min.css',
+      },
+      {
+        type: 'js',
+        url: 'https://cdn.jsdelivr.net/npm/jquery-ui@1.13/dist/jquery-ui.min.js',
+      },
+    ],
+  },
+
   externalDefs: [
     'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.4.3/drupal-defs/uiPatternsSchema.yml',
     join(cwd(), './drupal-defs/exBuilderSchema.yml'),

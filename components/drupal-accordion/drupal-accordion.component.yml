@@ -1,0 +1,28 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+
+name: jQuery UI Accordion
+description: Demonstrates dependencyMap — core/jquery and jquery/ui.accordion are resolved to CDN assets via sdcStorybookOptions.dependencyMap.
+status: stable
+
+group: 'Addon'
+
+props:
+  type: object
+  properties:
+    heading:
+      title: Heading
+      type: string
+      examples:
+        - jQuery UI Accordion via dependencyMap
+
+slots:
+  content:
+    title: Content
+    examples:
+      - Loaded from CDN using jquery/ui.accordion declared in libraryOverrides.dependencies.
+
+libraryOverrides:
+  dependencies:
+    - core/jquery
+    - core/once
+    - jquery/ui.accordion

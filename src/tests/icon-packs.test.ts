@@ -553,14 +553,17 @@ _sdcRegisterIcon(Twig);
       const match = code.match(
         /(function _sdcBuildIconContext[\s\S]+?)\nvar _sdcIconPacks/
       )
-      if (!match) throw new Error('_sdcBuildIconContext not found in generated code')
+      if (!match)
+        throw new Error('_sdcBuildIconContext not found in generated code')
       // eslint-disable-next-line no-new-func
       return new Function(match[1] + '\nreturn _sdcBuildIconContext;')()
     }
 
     test('plain object settings override defaults', () => {
       const buildCtx = getBuildCtx()
-      const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', { size: 'lg' })
+      const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', {
+        size: 'lg',
+      })
       expect(ctx.size).toBe('lg')
       expect(ctx.color).toBe('black')
     })
@@ -571,7 +574,10 @@ _sdcRegisterIcon(Twig);
         MockDrupalAttribute,
         spritePack,
         'home',
-        new Map([['size', 'xl'], ['color', 'blue']])
+        new Map([
+          ['size', 'xl'],
+          ['color', 'blue'],
+        ])
       )
       expect(ctx.size).toBe('xl')
       expect(ctx.color).toBe('blue')

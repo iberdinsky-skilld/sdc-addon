@@ -1,6 +1,6 @@
-import { readdirSync, readFileSync } from 'fs'
+import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { parse as parseYaml } from 'yaml'
-import { join, basename, dirname, extname } from 'path'
+import { join, basename, dirname } from 'node:path'
 import { logger } from './logger.ts'
 import { sanitizeStoryKey } from './utils.ts'
 
@@ -15,7 +15,15 @@ import argTypesGenerator from './argTypesGenerator.ts'
 import storiesGenerator from './storiesGenerator.ts'
 import { storyNodeRenderer } from './storyNodeRender.ts'
 import componentMetadata from './componentMetadata.ts'
-import type { Component, SDCSchema, SDCStorybookOptions } from './sdc.d.ts'
+import type {
+  Component,
+  ExternalAsset,
+  ExternalCssAsset,
+  ExternalJsAsset,
+  LibraryDefinition,
+  SDCSchema,
+  SDCStorybookOptions,
+} from './sdc.d.ts'
 import type { GenerateOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
 import { validateJson } from './validateJson.ts'
@@ -42,41 +50,26 @@ const readSDC = (
   return sdcSchema
 }
 
-// Generate import statements for all assets in a directory
-const generateImports = (directory: string, namespaces: Namespaces): string => {
-  const componentName = basename(directory)
+const VIRTUAL_ASSET_INJECTOR = 'virtual:sdc-asset-injector'
+const VIRTUAL_ASSET_INJECTOR_ID = '\0' + VIRTUAL_ASSET_INJECTOR
 
-  return readdirSync(directory)
-    .filter((file) => {
-      if (extname(file) === '.yml') {
-        // Only *.story.yml is imported (for HMR); skip *.component.yml
-        // (would self-import) and any other arbitrary YAML files.
-        return file.endsWith('.story.yml')
+const assetInjectorModule = `
+export async function injectAssets(assets) {
+  if (typeof document === 'undefined') return
+  await Promise.all(assets.map((asset) => {
+    const sel = asset.type === 'js' ? \`script[src="\${asset.url}"]\` : \`link[href="\${asset.url}"]\`
+    if (document.querySelector(sel)) return Promise.resolve()
+    return new Promise((res, rej) => {
+      if (asset.type === 'js') {
+        const s = document.createElement('script'); s.src = asset.url; s.onload = res; s.onerror = rej; document.head.appendChild(s)
+      } else {
+        const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = asset.url
+        if (asset.media) l.media = asset.media; l.onload = res; document.head.appendChild(l)
       }
-      return ['.css', '.js', '.mjs', '.twig'].includes(extname(file))
     })
-    .map((file) => {
-      const filePath = `./${file}`
-      const namespace = namespaces.pathToNamespace(directory)
-      logger.info(`IMPORT ASSET ${directory}/${file}`)
-
-      if (extname(file) === '.twig') {
-        const fileName = basename(file, '.twig')
-        // Import only the main component file (matching directory name)
-        // Skip variant files (containing ~ or other special chars)
-        if (fileName === componentName) {
-          return `import COMPONENT from '${namespace}/${file}';`
-        }
-        // Skip variant twig files but log them
-        logger.info(`Skipping variant template: ${file}`)
-        return ''
-      }
-
-      return `import '${filePath}';`
-    })
-    .filter(Boolean) // Remove empty strings
-    .join('\n')
+  }))
 }
+`
 
 // Dynamically generate component imports from story configurations
 const dynamicImports = (
@@ -118,6 +111,84 @@ const dynamicImports = (
   Object.values(stories).forEach(({ slots = {}, props = {} }) =>
     extractComponentImports({ ...slots, ...props })
   )
+  return Array.from(imports).join('\n')
+}
+
+const CSS_GROUPS = ['base', 'layout', 'component', 'state', 'theme'] as const
+
+const isExternalUrl = (s: string): boolean =>
+  s.startsWith('http://') || s.startsWith('https://')
+
+const extractCssAssets = (library: LibraryDefinition): ExternalCssAsset[] =>
+  CSS_GROUPS.flatMap((group) =>
+    Object.entries(library.css?.[group] ?? {})
+      .filter(([url]) => isExternalUrl(url))
+      .map(
+        ([url, opts]): ExternalCssAsset => ({
+          type: 'css',
+          url,
+          media: opts.media,
+        })
+      )
+  )
+
+const extractJsAssets = (library: LibraryDefinition): ExternalJsAsset[] =>
+  Object.entries(library.js ?? {})
+    .filter(([url]) => isExternalUrl(url))
+    .map(
+      ([url, opts]): ExternalJsAsset => ({
+        type: 'js',
+        url,
+        attributes: opts.attributes as Record<string, string> | undefined,
+      })
+    )
+
+export const libraryOverridesImports = (
+  content: SDCSchema,
+  dependencyMap: Record<string, ExternalAsset[]> = {}
+): ExternalAsset[] => {
+  const overrides = content.libraryOverrides
+  if (!overrides) return []
+  return [
+    ...extractCssAssets(overrides),
+    ...extractJsAssets(overrides),
+    ...(overrides.dependencies ?? []).flatMap(
+      (dep) => dependencyMap[dep] ?? []
+    ),
+  ]
+}
+
+// Parse a .twig file for {% include/embed/extends 'ns:component' %} directives
+// and return import statements for each resolved component's .component.yml.
+// This ensures sub-component CSS/JS assets are loaded even when composition
+// happens inside a Twig template rather than in YAML story definitions.
+export const twigDependencyImports = (
+  twigFilePath: string,
+  namespaces: Namespaces
+): string => {
+  if (!existsSync(twigFilePath)) return ''
+
+  const twigContent = readFileSync(twigFilePath, 'utf8')
+  const imports = new Set<string>()
+
+  // Match include/embed/extends with a 'namespace:component' reference (SDC format).
+  // Intentionally excludes @namespace/path style (non-component asset refs).
+  const pattern =
+    /{%-?\s*(?:include|embed|extends)\s+['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g
+  let match: RegExpExecArray | null
+
+  while ((match = pattern.exec(twigContent)) !== null) {
+    const [namespace, componentName] = match[1].split(':')
+    const resolvedPath = resolveComponentPath(
+      namespace,
+      componentName,
+      namespaces
+    )
+    if (resolvedPath) {
+      imports.add(`import '${resolvedPath}';`)
+    }
+  }
+
   return Array.from(imports).join('\n')
 }
 
@@ -178,7 +249,12 @@ export default ({
   namespaces = {} as Namespaces,
 }) => ({
   name: 'vite-plugin-storybook-yaml-stories',
+  resolveId(id: string) {
+    if (id === VIRTUAL_ASSET_INJECTOR) return VIRTUAL_ASSET_INJECTOR_ID
+  },
   async load(id: string) {
+    if (id === VIRTUAL_ASSET_INJECTOR_ID) return assetInjectorModule
+
     if (id.endsWith('story.yml')) {
       // We need to load the story.yml to support reload.
       // But we ignore to load them.
@@ -189,7 +265,10 @@ export default ({
 
     try {
       const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
-      const imports = generateImports(dirname(id), namespaces)
+      const externalAssets = libraryOverridesImports(
+        content,
+        sdcStorybookOptions.dependencyMap ?? {}
+      )
       const previewsStories = {
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
@@ -197,6 +276,10 @@ export default ({
       storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer ?? [])
 
       const storiesImports = dynamicImports(previewsStories, namespaces)
+      const componentBaseName = basename(id, '.component.yml')
+      const namespace = namespaces.pathToNamespace(dirname(id))
+      const twigFile = join(dirname(id), `${componentBaseName}.twig`)
+      const twigImports = twigDependencyImports(twigFile, namespaces)
       const metadata = componentMetadata(id, content)
       const componentGlobals =
         content?.thirdPartySettings?.sdcStorybook?.globals ?? {}
@@ -237,10 +320,19 @@ export default ({
         ? storiesGenerator(previewsStories, componentGlobals)
         : ''
 
-      return `
-${imports}
-${storiesImports}
+      const assetInjection =
+        externalAssets.length > 0
+          ? `await injectAssets(${JSON.stringify(externalAssets)});`
+          : ''
 
+      return `
+import COMPONENT from '${namespace}/${componentBaseName}.twig';
+void import.meta.glob('./*.css', { eager: true });
+import { injectAssets } from '${VIRTUAL_ASSET_INJECTOR}';
+${storiesImports}
+${twigImports}
+${assetInjection}
+await Promise.all(Object.values(import.meta.glob('./*.{js,mjs}')).map(fn => fn()));
 class TwigSafeArray extends Array {
   toString() {
     return this.join('');
@@ -249,7 +341,10 @@ class TwigSafeArray extends Array {
 
 export default {
   component: COMPONENT,
-  parameters:  {...${JSON.stringify(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, null, 2)}, ...{docs: {description: {component: ${JSON.stringify(content.description, null, 2)}}}}},
+  parameters: {
+    ...${JSON.stringify(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, null, 2)},
+    docs: {description: {component: ${JSON.stringify(content.description, null, 2)}}},
+  },
   ${
     Object.keys(componentGlobals).length > 0
       ? `globals: ${JSON.stringify(componentGlobals, null, 2)},`

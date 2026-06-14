@@ -4,13 +4,13 @@ import YamlStoriesPlugin, {
   yamlStoriesIndexer,
 } from './vite-plugin-storybook-yaml-stories.ts'
 import { mergeConfig } from 'vite'
-import type { UserConfig } from 'vite'
+import type { HtmlTagDescriptor, UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
 import type { StorybookConfig } from '@storybook/html-vite'
 import type { SDCAddonOptions } from './sdc.d.ts'
 import { toNamespaces } from './namespaces.ts'
 import { loadAndMergeDefinitions } from './definitions.ts'
-import { DEFAULT_ADDON_OPTIONS } from './constants.ts'
+import { DEFAULT_ADDON_OPTIONS, DEFAULT_DEPENDENCY_MAP } from './constants.ts'
 import { merge as lodashMerge } from 'lodash-es'
 import { iconPacksPlugin } from './vite-plugin-sdc-icon-packs.ts'
 import { loadIconPackFile } from './icon-packs.ts'
@@ -38,6 +38,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       ...vitePluginTwingDrupalOptions,
       namespaces: { ...namespaces.toTwingNamespaces() },
     }
+    // @ts-ignore — no type declarations for this package
     const { default: twing } = await import('vite-plugin-twing-drupal')
     twigPlugin = twing(options.vitePluginTwingDrupalOptions)
   } else if (sdcStorybookOptions.twigLib === 'twig') {
@@ -45,9 +46,35 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       ...vitePluginTwigDrupalOptions,
       namespaces: { ...namespaces.toTwigJsNamespaces() },
     }
+    // @ts-ignore — no type declarations for this package
     const { default: twig } = await import('vite-plugin-twig-drupal')
     twigPlugin = twig(options.vitePluginTwigDrupalOptions)
   }
+
+  const userMap = sdcStorybookOptions.dependencyMap ?? {}
+  const effectiveMap = { ...DEFAULT_DEPENDENCY_MAP, ...userMap }
+
+  const seen = new Set<string>()
+  const headTags: HtmlTagDescriptor[] = Object.keys(DEFAULT_DEPENDENCY_MAP)
+    .flatMap((k) => effectiveMap[k] ?? [])
+    .filter((asset) => (seen.has(asset.url) ? false : seen.add(asset.url)))
+    .map((asset) =>
+      asset.type === 'css'
+        ? {
+            tag: 'link' as const,
+            attrs: {
+              rel: 'stylesheet',
+              href: asset.url,
+              ...(asset.media ? { media: asset.media } : {}),
+            },
+            injectTo: 'head' as const,
+          }
+        : {
+            tag: 'script' as const,
+            attrs: { src: asset.url },
+            injectTo: 'head' as const,
+          }
+    )
 
   return mergeConfig(config, {
     plugins: [
@@ -57,6 +84,9 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
       iconPacksPlugin(namespaces),
+      ...(headTags.length > 0
+        ? [{ name: 'vite-plugin-sdc-head', transformIndexHtml: () => headTags }]
+        : []),
     ],
     optimizeDeps: {
       exclude: ['vite-plugin-twig-drupal', 'vite-plugin-twing-drupal'],
@@ -109,22 +139,3 @@ export const staticDirs = async (
 
   return [...(existing || []), ...iconDirs]
 }
-
-// Optional: Add the previewHead
-export const previewHead: StorybookConfig['previewHead'] = (head: string) => `
-  <style>
-    .visually-hidden {
-      position: absolute !important;
-      overflow: hidden;
-      clip: rect(1px, 1px, 1px, 1px);
-      width: 1px;
-      height: 1px;
-      word-wrap: normal;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupalSettingsLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupal.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/drupal/drupal/core/misc/drupal.init.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@drupal/once@1.0.1/dist/once.min.js"></script>
-  ${head}
-`

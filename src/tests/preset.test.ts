@@ -29,12 +29,9 @@ vi.mock('vite-plugin-twig-drupal', async () => {
   return { default: (opts: any) => ({ name: 'twig-plugin', opts }) }
 })
 
-import {
-  viteFinal,
-  previewHead,
-  experimental_indexers,
-  staticDirs,
-} from '../preset'
+import { viteFinal, experimental_indexers, staticDirs } from '../preset'
+
+import { DEFAULT_DEPENDENCY_MAP } from '../constants'
 
 describe('preset.viteFinal and helpers', () => {
   test('viteFinal includes nodePolyfills and twing plugin when twigLib=twing', async () => {
@@ -71,11 +68,41 @@ describe('preset.viteFinal and helpers', () => {
     )
   })
 
-  test('previewHead injects head and scripts', () => {
-    const out = previewHead('<meta name="x"/>')
-    expect(out).toContain('<script')
-    expect(out).toContain('<style>')
-    expect(out).toContain('<meta name="x"/>')
+  test('viteFinal injects DEFAULT_DEPENDENCY_MAP as head tags', async () => {
+    const result = await viteFinal(
+      { plugins: [] } as any,
+      { sdcStorybookOptions: {} } as any
+    )
+    const headPlugin = result.plugins?.find(
+      (p: any) => p?.name === 'vite-plugin-sdc-head'
+    )
+    expect(headPlugin).toBeDefined()
+    const tags = headPlugin.transformIndexHtml()
+    expect(
+      tags.some(
+        (t: any) => t.tag === 'script' && t.attrs?.src?.includes('drupal.js')
+      )
+    ).toBe(true)
+    expect(
+      tags.some(
+        (t: any) =>
+          t.tag === 'link' && t.attrs?.href?.includes('hidden.module.css')
+      )
+    ).toBe(true)
+    expect(Object.keys(DEFAULT_DEPENDENCY_MAP).length).toBeGreaterThan(0)
+  })
+
+  test('viteFinal allows overriding a default dep via dependencyMap', async () => {
+    const result = await viteFinal(
+      { plugins: [] } as any,
+      { sdcStorybookOptions: { dependencyMap: { 'core/once': [] } } } as any
+    )
+    const headPlugin = result.plugins?.find(
+      (p: any) => p?.name === 'vite-plugin-sdc-head'
+    )
+    expect(headPlugin).toBeDefined()
+    const tags = headPlugin.transformIndexHtml()
+    expect(tags.every((t: any) => !t.attrs?.src?.includes('once'))).toBe(true)
   })
 
   test('experimental_indexers includes yamlStoriesIndexer', async () => {

@@ -19,6 +19,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
 - [Setting Default Values](#setting-default-values)
+- [`dependencyMap`](#dependencymap)
 - [Story Configuration via thirdPartySettings.sdcStorybook](#story-configuration-via-thirdpartysettingssdcstorybook)
 - [UI Patterns](#ui-patterns)
 - [Why Choose SDC Storybook Over Alternatives?](#why-choose-sdc-storybook-over-alternatives)
@@ -50,6 +51,7 @@ The SDC Storybook Addon simplifies the integration of Drupal Single Directory Co
 - **Default and Custom Story Rendering**: Use `type: component` to nest components, `type: element` for HTML markup, and `type: image` for images within stories. Or create your own custom renderers.
 - **Namespaces**: Supports multiple namespaces, allowing you to use components from different(parent/sibling) directories or packages.
 - **Drupal Icon API**: Automatically detects `*.icons.yml` files in registered namespaces and makes `{{ icon('pack_id', 'icon_id', settings) }}` available in every Twig template. Supports `svg_sprite`, `svg` (inline), and `path` extractors with no configuration required.
+- **Drupal Library CDN Resolution**: Resolves Drupal library dependencies (e.g. `core/jquery`) to CDN assets via `dependencyMap`. Assets are injected per-component — only when a story uses a component that declares the dependency in `libraryOverrides.dependencies`. Built-in defaults cover the Drupal runtime (`core/drupal`, `core/once`, etc.).
 
 ## Quickstart Guide
 
@@ -547,6 +549,7 @@ export const Basic = {}
 - **externalDefs**: An array of URLs or local file paths to external schema definition files.
 - **validate**: A URL or path to a JSON schema for validating your SDC components.
 - **useBasicArgsForStories**: Boolean. When `true` (default) generated stories inherit `...Basic.args` from the component; set to `false` to prevent automatic spreading of `Basic.args`.
+- **dependencyMap**: Maps Drupal library names to CDN assets. See [`dependencyMap`](#dependencymap).
 
 ### Twig.js with `vitePluginTwigDrupalOptions`
 
@@ -685,6 +688,44 @@ useBasicArgsForStories: false,
 ```
 
 When set to `false`, the generated stories will not inherit the `Basic.args`, allowing you to define story-specific arguments without the influence of the default `Basic` configuration.
+
+### `dependencyMap`
+
+Maps Drupal library dependency names to CDN assets to inject into the Storybook preview.
+
+The addon ships with a built-in `DEFAULT_DEPENDENCY_MAP` covering the Drupal runtime — these are always injected into every preview page:
+
+| Key                   | Assets                                           |
+| --------------------- | ------------------------------------------------ |
+| `system/base/hidden`  | `hidden.module.css` (`.visually-hidden` utility) |
+| `core/drupalSettings` | `drupalSettingsLoader.js`                        |
+| `core/drupal`         | `drupal.js`, `drupal.init.js`                    |
+| `core/once`           | `once.min.js`                                    |
+
+User-provided entries are injected **per-component** — only when a component declares that dependency in `libraryOverrides.dependencies`. This means `core/jquery` only loads when a story actually uses a component that needs it.
+
+```js
+sdcStorybookOptions: {
+  dependencyMap: {
+    // Add a new dependency
+    'core/jquery': [{ type: 'js', url: 'https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js' }],
+    // Override a built-in default
+    'core/once': [{ type: 'js', url: 'https://cdn.example.com/once@2.min.js' }],
+    // Disable a built-in default
+    'system/base/hidden': [],
+  },
+}
+```
+
+In the component YAML, declare the dependency as usual:
+
+```yaml
+libraryOverrides:
+  dependencies:
+    - core/jquery
+```
+
+---
 
 ## Setting Default Values
 

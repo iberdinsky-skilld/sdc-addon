@@ -25,44 +25,55 @@ interface SlotDefinition {
   }
 }
 
-interface CssAttributes {
-  [key: string]:
-    | {
-        attributes?: Record<string, any>
-        group?: string
-        media?: string
-        minified?: boolean
-        preprocess?: boolean
-        type?: string
-        weight?: number
-      }
-    | CssAttributes[]
+export interface CssFileOptions {
+  attributes?: Record<string, any>
+  group?: string
+  media?: string
+  minified?: boolean
+  preprocess?: boolean
+  type?: string
+  weight?: number
 }
 
-interface CssDefinition {
-  base?: CssAttributes
-  layout?: CssAttributes
-  component?: CssAttributes
-  state?: CssAttributes
-  theme?: CssAttributes
+/** One CSS group (base / layout / component / state / theme). Keys are file paths or URLs. */
+export type CssGroup = Record<string, CssFileOptions>
+
+export interface CssSection {
+  base?: CssGroup
+  layout?: CssGroup
+  component?: CssGroup
+  state?: CssGroup
+  theme?: CssGroup
 }
 
-interface JsAttributes {
-  [key: string]:
-    | {
-        attributes?: Record<string, any>
-        preprocess?: boolean
-        type?: string
-        weight?: number
-      }
-    | JsAttributes[]
+export interface JsFileOptions {
+  attributes?: Record<string, string | boolean>
+  preprocess?: boolean
+  type?: string
+  weight?: number
 }
 
-interface LibraryDefinition {
+export type JsSection = Record<string, JsFileOptions>
+
+export interface LibraryDefinition {
   dependencies?: string[]
-  css?: CssDefinition | CssAttributes[]
-  js?: JsAttributes
+  css?: CssSection
+  js?: JsSection
 }
+
+export interface ExternalCssAsset {
+  type: 'css'
+  url: string
+  media?: string
+}
+
+export interface ExternalJsAsset {
+  type: 'js'
+  url: string
+  attributes?: Record<string, string>
+}
+
+export type ExternalAsset = ExternalCssAsset | ExternalJsAsset
 
 interface ThirdPartySettings {
   [key: string]: Record<string, any>
@@ -84,6 +95,7 @@ export interface SDCStorybookOptions extends NamespaceDefinition {
   experimentalVariants?: boolean
   useBasicArgsForStories?: boolean
   storyNodesRenderer?: StoryNodeRenderer[]
+  dependencyMap?: Record<string, ExternalAsset[]>
   twigLib?: 'twing' | 'twig'
   customDefs?: {
     [key: string]: JSONSchema4
