@@ -1,3 +1,15 @@
+# v0.23.6 (Sun Jun 14 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Dependencies map (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.23.3 (Sun Jun 07 2026)
 
 #### ⚠️ Pushed to `main`
