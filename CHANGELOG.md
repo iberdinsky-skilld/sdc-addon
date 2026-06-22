@@ -1,3 +1,15 @@
+# v0.24.7 (Mon Jun 22 2026)
+
+#### ⚠️ Pushed to `main`
+
+- theme: image full support (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.6 (Mon Jun 22 2026)
 
 #### ⚠️ Pushed to `main`
