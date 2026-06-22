@@ -1,3 +1,15 @@
+# v0.24.9 (Mon Jun 22 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Fix order (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.8 (Mon Jun 22 2026)
 
 #### ⚠️ Pushed to `main`
