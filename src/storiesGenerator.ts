@@ -59,9 +59,12 @@ ${globalsBlock}
           const wrapper = ${JSON.stringify(library_wrapper)};
           if (!wrapper) return Story();
 
-          // Replace {{ _story }} with the actual story component
-          const wrappedHtml = wrapper.replace('{{ _story }}', Story());
-          return wrappedHtml;
+          const placeholder = '___SDC_STORY___';
+          const rendered = _sdcRenderInline(
+            wrapper.replace(/\\{\\{\\s*_story\\s*\\}\\}/g, placeholder),
+            {}
+          );
+          return rendered.split(placeholder).join(Story());
         }
       ],`
       : ''

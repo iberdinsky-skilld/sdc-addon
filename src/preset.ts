@@ -12,7 +12,7 @@ import { toNamespaces } from './namespaces.ts'
 import { loadAndMergeDefinitions } from './definitions.ts'
 import { DEFAULT_ADDON_OPTIONS, DEFAULT_DEPENDENCY_MAP } from './constants.ts'
 import { merge as lodashMerge } from 'lodash-es'
-import { iconPacksPlugin } from './vite-plugin-sdc-icon-packs.ts'
+import { sdcTwigRuntimePlugin } from './vite-plugin-sdc-twig-runtime.ts'
 import { loadIconPackFile } from './icon-packs.ts'
 
 // Main function to merge Vite configuration
@@ -83,7 +83,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       }),
       ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
-      iconPacksPlugin(namespaces, sdcStorybookOptions.resolveIconSource),
+      sdcTwigRuntimePlugin(namespaces, sdcStorybookOptions.resolveIconSource),
       ...(headTags.length > 0
         ? [{ name: 'vite-plugin-sdc-head', transformIndexHtml: () => headTags }]
         : []),

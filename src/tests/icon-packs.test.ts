@@ -11,7 +11,7 @@ import {
   fetchRemoteSprite,
 } from '../icon-packs.ts'
 import type { IconPack } from '../icon-packs.ts'
-import { iconPacksPlugin } from '../vite-plugin-sdc-icon-packs.ts'
+import { sdcTwigRuntimePlugin } from '../vite-plugin-sdc-twig-runtime.ts'
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -414,11 +414,11 @@ describe('loadIconPackFile', () => {
   })
 })
 
-// ── iconPacksPlugin virtual modules ────────────────────────────────────────
+// ── sdcTwigRuntimePlugin virtual modules ────────────────────────────────────────
 
-describe('iconPacksPlugin', () => {
+describe('sdcTwigRuntimePlugin', () => {
   function makePlugin(ns: ReturnType<typeof toNamespaces>) {
-    return iconPacksPlugin(ns) as any
+    return sdcTwigRuntimePlugin(ns) as any
   }
 
   test('resolves virtual module IDs including icons-pack prefix', async () => {
@@ -426,11 +426,11 @@ describe('iconPacksPlugin', () => {
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { vns: tmpRoot } })
       const p = makePlugin(ns)
-      expect(p.resolveId('virtual:sdc-icon-packs:twig')).toBe(
-        '\0virtual:sdc-icon-packs:twig'
+      expect(p.resolveId('virtual:sdc-twig-runtime:twig')).toBe(
+        '\0virtual:sdc-twig-runtime:twig'
       )
-      expect(p.resolveId('virtual:sdc-icon-packs:twing')).toBe(
-        '\0virtual:sdc-icon-packs:twing'
+      expect(p.resolveId('virtual:sdc-twig-runtime:twing')).toBe(
+        '\0virtual:sdc-twig-runtime:twing'
       )
       expect(p.resolveId('\0icons-pack:/some/path.icons.yml')).toBe(
         '\0icons-pack:/some/path.icons.yml'
@@ -468,12 +468,12 @@ tvns:
       const mockThis = { addWatchFile: () => {} }
       const twigCode = await p.load.call(
         mockThis,
-        '\0virtual:sdc-icon-packs:twig'
+        '\0virtual:sdc-twig-runtime:twig'
       )
 
       expect(twigCode).toContain("from 'drupal-attribute'")
       expect(twigCode).toContain('Twig.extendFunction')
-      expect(twigCode).toContain('registerIconFunction')
+      expect(twigCode).toContain('registerSdcRuntime')
       expect(twigCode).toContain('\0icons-pack:')
       expect(twigCode).toContain('tvns')
 
@@ -499,13 +499,13 @@ tvns:
       const ns = toNamespaces({ namespace: '', namespaces: { tgvns: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code = await p.load.call(mockThis, '\0virtual:sdc-icon-packs:twing')
+      const code = await p.load.call(mockThis, '\0virtual:sdc-twig-runtime:twing')
 
       expect(code).toContain("from 'twing'")
       expect(code).toContain("from 'drupal-attribute'")
       expect(code).toContain('\0icons-pack:')
       expect(code).toContain('createSynchronousFunction')
-      expect(code).toContain('registerIconFunction')
+      expect(code).toContain('registerSdcRuntime')
       expect(code).toContain('loader.setTemplate')
       expect(code).toContain("env.render('_sdc_icon_")
       expect(code).toContain('function(_twingCtx, packId, iconId, settings)')
@@ -527,8 +527,8 @@ export default (ctx) => Twig.render(ctx);
 `
       const result = p.transform(fakeJs, 'comp.twig')
       expect(result).not.toBeNull()
-      expect(result.code).toContain("from 'virtual:sdc-icon-packs:twig'")
-      expect(result.code).toContain('_sdcRegisterIcon(Twig)')
+      expect(result.code).toContain("from 'virtual:sdc-twig-runtime:twig'")
+      expect(result.code).toContain('_sdcRegisterRuntime(Twig)')
     } finally {
       cleanup()
     }
@@ -548,8 +548,8 @@ export default render;
 `
       const result = p.transform(fakeJs, 'comp.twig')
       expect(result).not.toBeNull()
-      expect(result.code).toContain("from 'virtual:sdc-icon-packs:twing'")
-      expect(result.code).toContain('_sdcRegisterIcon(env)')
+      expect(result.code).toContain("from 'virtual:sdc-twig-runtime:twing'")
+      expect(result.code).toContain('_sdcRegisterRuntime(env)')
     } finally {
       cleanup()
     }
@@ -561,10 +561,10 @@ export default render;
       const ns = toNamespaces({ namespace: '', namespaces: { idem: tmpRoot } })
       const p = makePlugin(ns)
       const alreadyInjected = `
-import { registerIconFunction as _sdcRegisterIcon } from 'virtual:sdc-icon-packs:twig';
+import { registerSdcRuntime as _sdcRegisterRuntime } from 'virtual:sdc-twig-runtime:twig';
 import { addDrupalExtensions } from 'drupal-twig-extensions/twig';
 addDrupalExtensions(Twig);
-_sdcRegisterIcon(Twig);
+_sdcRegisterRuntime(Twig);
 `
       expect(p.transform(alreadyInjected, 'comp.twig')).toBeNull()
     } finally {
@@ -599,10 +599,10 @@ _sdcRegisterIcon(Twig);
 
     async function getBuildCtx() {
       const ns = toNamespaces({ namespace: '', namespaces: {} })
-      const p = iconPacksPlugin(ns) as any
+      const p = sdcTwigRuntimePlugin(ns) as any
       const code = await p.load.call(
         { addWatchFile: () => {} },
-        '\0virtual:sdc-icon-packs:twig'
+        '\0virtual:sdc-twig-runtime:twig'
       )
       const match = code.match(
         /(function _sdcBuildIconContext[\s\S]+?)\nvar _sdcIconPacks/
@@ -693,7 +693,7 @@ _sdcRegisterIcon(Twig);
       const ns = toNamespaces({ namespace: '', namespaces: { ctx: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code = await p.load.call(mockThis, '\0virtual:sdc-icon-packs:twig')
+      const code = await p.load.call(mockThis, '\0virtual:sdc-twig-runtime:twig')
 
       expect(code).toContain('_sdcBuildIconContext')
       expect(code).toContain('attributes')

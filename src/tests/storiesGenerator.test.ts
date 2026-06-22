@@ -91,8 +91,9 @@ describe('storiesGenerator', () => {
     expect(out).toContain('decorators')
     // JSON.stringify wraps and escapes quotes; assert the placeholder exists instead
     expect(out).toContain('{{ _story }}')
-    // ensure the placeholder replacement code is present
-    expect(out).toContain("wrapper.replace('{{ _story }}', Story())")
+    expect(out).toContain('_sdcRenderInline(')
+    expect(out).toContain('___SDC_STORY___')
+    expect(out).toContain('.join(Story())')
   })
 
   test('renders complex variants with multiple keys and special titles', () => {

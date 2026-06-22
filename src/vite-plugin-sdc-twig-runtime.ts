@@ -62,10 +62,10 @@ function readNamespaceYamlData(namespaces: Namespaces): unknown[] {
   return out
 }
 
-export const VIRTUAL_TWIG = 'virtual:sdc-icon-packs:twig'
+export const VIRTUAL_TWIG = 'virtual:sdc-twig-runtime:twig'
 const RESOLVED_TWIG = '\0' + VIRTUAL_TWIG
 
-export const VIRTUAL_TWING = 'virtual:sdc-icon-packs:twing'
+export const VIRTUAL_TWING = 'virtual:sdc-twig-runtime:twing'
 const RESOLVED_TWING = '\0' + VIRTUAL_TWING
 
 const PACK_PREFIX = '\0icons-pack:'
@@ -157,7 +157,19 @@ export function renderIcon(packId, iconId, settings) {
   }
 }
 
-export function registerIconFunction(Twig) {
+// Render an inline Twig template string (e.g. a story library_wrapper) so
+// {{ include(...) }} and other Twig works; {{ _story }} comes from context.
+export function renderInline(template, context) {
+  if (!_sdcTwig || !template) return template || '';
+  try {
+    return _sdcTwig.twig({ data: template }).render(context || {});
+  } catch (e) {
+    console.error('[SDC] renderInline error:', e);
+    return template;
+  }
+}
+
+export function registerSdcRuntime(Twig) {
   _sdcTwig = Twig;
   if (Twig.__sdcIconRegistered) return;
   Twig.__sdcIconRegistered = true;
@@ -203,7 +215,30 @@ export function renderIcon(packId, iconId, settings) {
   }
 }
 
-export function registerIconFunction(env) {
+// Render an inline Twig template string (e.g. a story library_wrapper) through
+// the captured SDC environment, so {{ include(...) }} resolves against the same
+// loader and Twig works; {{ _story }} comes from context.
+var _sdcInlineNames = {};
+var _sdcInlineSeq = 0;
+export function renderInline(template, context) {
+  if (!_sdcIconEnv || !template) return template || '';
+  var loader = _sdcIconEnv.loader;
+  if (!loader || typeof loader.setTemplate !== 'function') return template;
+  var name = _sdcInlineNames[template];
+  if (!name) {
+    name = '_sdc_inline_' + (_sdcInlineSeq++);
+    _sdcInlineNames[template] = name;
+    loader.setTemplate(name, template);
+  }
+  try {
+    return _sdcIconEnv.render(name, context || {});
+  } catch (e) {
+    console.error('[SDC] renderInline error:', e);
+    return template;
+  }
+}
+
+export function registerSdcRuntime(env) {
   _sdcIconEnv = env;
   // Register icon templates into the existing loader so env.render() finds them.
   // createSynchronousArrayLoader (used by vite-plugin-twing-drupal's SDC loader)
@@ -246,14 +281,14 @@ const TWIG_JS_MARKER = "from 'drupal-twig-extensions/twig'"
 const TWIG_JS_INJECT_AFTER = 'addDrupalExtensions(Twig);'
 const TWING_MARKER = 'createSynchronousEnvironment'
 const TWING_INJECT_AFTER = 'addDrupalExtensions(env);'
-const INJECTED_GUARD = '_sdcRegisterIcon'
+const INJECTED_GUARD = '_sdcRegisterRuntime'
 
-export function iconPacksPlugin(
+export function sdcTwigRuntimePlugin(
   namespaces: Namespaces,
   resolveIconSource?: ResolveIconSource
 ): Plugin {
   return {
-    name: 'vite-plugin-sdc-icon-packs',
+    name: 'vite-plugin-sdc-twig-runtime',
 
     resolveId(id: string) {
       if (id === VIRTUAL_TWIG) return RESOLVED_TWIG
@@ -355,7 +390,7 @@ if (typeof document !== 'undefined') {
       if (code.includes(TWING_MARKER) && code.includes(TWING_INJECT_AFTER)) {
         return {
           code:
-            `import { registerIconFunction as ${INJECTED_GUARD} } from '${VIRTUAL_TWING}';\n` +
+            `import { registerSdcRuntime as ${INJECTED_GUARD} } from '${VIRTUAL_TWING}';\n` +
             code.replace(
               TWING_INJECT_AFTER,
               `${TWING_INJECT_AFTER}\n${INJECTED_GUARD}(env);`
@@ -370,7 +405,7 @@ if (typeof document !== 'undefined') {
       ) {
         return {
           code:
-            `import { registerIconFunction as ${INJECTED_GUARD} } from '${VIRTUAL_TWIG}';\n` +
+            `import { registerSdcRuntime as ${INJECTED_GUARD} } from '${VIRTUAL_TWIG}';\n` +
             code.replace(
               TWIG_JS_INJECT_AFTER,
               `${TWIG_JS_INJECT_AFTER}\n${INJECTED_GUARD}(Twig);`

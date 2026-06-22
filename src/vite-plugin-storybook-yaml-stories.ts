@@ -33,7 +33,7 @@ import {
   getProjectName,
   resolveComponentPath,
 } from './namespaces.ts'
-import { VIRTUAL_TWIG, VIRTUAL_TWING } from './vite-plugin-sdc-icon-packs.ts'
+import { VIRTUAL_TWIG, VIRTUAL_TWING } from './vite-plugin-sdc-twig-runtime.ts'
 
 // Helper to read and validate SDC YAML files
 const readSDC = (
@@ -333,7 +333,7 @@ export default ({
 import COMPONENT from '${namespace}/${componentBaseName}.twig';
 void import.meta.glob('./*.css', { eager: true });
 import { injectAssets } from '${VIRTUAL_ASSET_INJECTOR}';
-import { renderIcon as _sdcRenderIcon } from '${iconModule}';
+import { renderIcon as _sdcRenderIcon, renderInline as _sdcRenderInline } from '${iconModule}';
 ${storiesImports}
 ${twigImports}
 ${assetInjection}
