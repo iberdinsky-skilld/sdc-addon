@@ -77,3 +77,19 @@ thirdPartySettings:
           content:
             - type: youtube
               id: aqz-KE-bpKQ
+
+      custom_node_nested:
+        name: Custom Node (nested value)
+        description: >
+          A custom `type: link` node whose `value` is rendered through the
+          shared pipeline (the renderValue argument) — exactly like a slot, so
+          it can hold a string plus a nested `type: icon` node.
+        slots:
+          content:
+            - type: link
+              url: 'https://example.com'
+              value:
+                - 'Read the docs '
+                - type: icon
+                  pack_id: heroicons_cdn
+                  icon_id: arrow-long-right

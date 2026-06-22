@@ -132,6 +132,30 @@ describe('storyNodeRenderer (merged)', () => {
     expect(storyNodeRenderer.render(storyArray)).toBe(expected)
   })
 
+  test('custom renderer receives renderValue to render nested values like a slot', () => {
+    storyNodeRenderer.register([
+      {
+        appliesTo: (item) => item?.type === 'wrap_tag',
+        render: (item, renderValue) =>
+          `("<a>" + ${renderValue(item.value)} + "</a>")`,
+        priority: 10,
+      },
+    ])
+
+    // primitive value -> rendered as a quoted string
+    expect(storyNodeRenderer.render({ type: 'wrap_tag', value: 'hi' })).toBe(
+      '("<a>" + "hi" + "</a>")'
+    )
+
+    // array of nodes -> TwigSafeArray through the shared pipeline
+    expect(
+      storyNodeRenderer.render({
+        type: 'wrap_tag',
+        value: [{ type: 'icon', pack_id: 'p', icon_id: 'i' }],
+      })
+    ).toBe('("<a>" + new TwigSafeArray(_sdcRenderIcon("p", "i", {})) + "</a>")')
+  })
+
   test('renders a type:icon node via the Icon API helper', () => {
     const out = storyNodeRenderer.render({
       type: 'icon',

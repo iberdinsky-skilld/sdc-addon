@@ -112,7 +112,9 @@ export interface SDCStorybookOptions extends NamespaceDefinition {
 
 export type StoryNodeRenderer = {
   appliesTo: (item: any) => boolean
-  render: (item: any) => string
+  // `renderValue` renders a nested value (node, array of nodes, or primitive)
+  // through the shared pipeline — the same way component slots are rendered.
+  render: (item: any, renderValue: (value: any) => string) => string
   priority?: number
 }
 

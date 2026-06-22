@@ -3,6 +3,11 @@
   border: 1px solid lightgray;
   background-color: var(--sb-bg);
   border-radius: 0.5rem;
+
+  .custom-link {
+    display: flex;
+    color: inherit;
+  }
 }
 
 .umami-card__content {

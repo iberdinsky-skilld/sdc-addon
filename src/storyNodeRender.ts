@@ -11,7 +11,7 @@ export const generateArgs = (
     .join('\n')
 
 // Format an argument's value, handling arrays, components, and primitives
-const formatArgValue = (value: any, isSlot: boolean): string => {
+const formatArgValue = (value: any, isSlot = false): string => {
   if (Array.isArray(value)) {
     const arrayContent = value.map((item) => storyNodeRenderer.render(item))
     return `new TwigSafeArray(${arrayContent.join(', ')})`
@@ -31,7 +31,8 @@ class StoryNodeRenderService {
 
   render(item: any): string {
     const renderer = this.renderer.find((h) => h.appliesTo(item))
-    return renderer?.render ? renderer.render(item) : JSON.stringify(item)
+    if (!renderer?.render) return JSON.stringify(item)
+    return renderer.render(item, formatArgValue)
   }
 }
 

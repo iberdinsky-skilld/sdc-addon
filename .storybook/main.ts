@@ -38,6 +38,15 @@ const sdcStorybookOptions: SDCStorybookOptions = {
         ),
       priority: -4,
     },
+    {
+      // Custom node that wraps arbitrary nested story-nodes: `value` is rendered
+      // through the shared pipeline (renderValue) — exactly like a component slot,
+      // so it may be a string, a node, or an array of nodes.
+      appliesTo: (item) => item?.type === 'link',
+      render: (item, renderValue) =>
+        `('<a class="custom-link" href="${item.url ?? '#'}">' + ${renderValue(item.value)} + '</a>')`,
+      priority: -4,
+    },
   ],
   customDefs: CUSTOM_TEST_DEFS as SDCStorybookOptions['customDefs'],
 
