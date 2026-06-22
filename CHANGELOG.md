@@ -1,3 +1,15 @@
+# v0.24.4 (Mon Jun 22 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Support for icons CDN (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.3 (Mon Jun 22 2026)
 
 #### ⚠️ Pushed to `main`
