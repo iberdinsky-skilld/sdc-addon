@@ -1,3 +1,17 @@
+# v0.24.3 (Mon Jun 22 2026)
+
+#### ⚠️ Pushed to `main`
+
+- esnext (iberdinsky@skilld.cloud)
+- UIP fresh schema ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 2
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.23.6 (Sun Jun 14 2026)
 
 #### ⚠️ Pushed to `main`
