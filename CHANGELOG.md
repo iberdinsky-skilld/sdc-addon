@@ -1,3 +1,15 @@
+# v0.24.8 (Mon Jun 22 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Fix UIP Library wrapper (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.7 (Mon Jun 22 2026)
 
 #### ⚠️ Pushed to `main`
