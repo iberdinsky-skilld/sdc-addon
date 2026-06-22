@@ -29,7 +29,7 @@ describe('storiesRenderer', () => {
 
     [
       { type: 'image', uri: 'https://placehold.co/600x400' },
-      '"<img src=\\"https://placehold.co/600x400\\">"',
+      '"<img src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
     ],
     [
       {
@@ -37,7 +37,7 @@ describe('storiesRenderer', () => {
         uri: 'https://placehold.co/600x400',
         attributes: { class: ['class-1', 'class-2'] },
       },
-      '"<img src=\\"https://placehold.co/600x400\\" class=\\"class-1 class-2\\">"',
+      '"<img class=\\"class-1 class-2\\" src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
     ],
     [{ type: 'element', value: 'sample' }, '"<div> sample </div>"'],
     [

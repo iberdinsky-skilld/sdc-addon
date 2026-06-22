@@ -102,7 +102,7 @@ describe('storyNodeRenderer (merged)', () => {
 
     [
       { type: 'image', uri: 'https://placehold.co/600x400' },
-      '"<img src=\\"https://placehold.co/600x400\\">"',
+      '"<img src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
     ],
     [
       {
@@ -110,7 +110,7 @@ describe('storyNodeRenderer (merged)', () => {
         uri: 'https://placehold.co/600x400',
         attributes: { class: ['class-1', 'class-2'] },
       },
-      '"<img src=\\"https://placehold.co/600x400\\" class=\\"class-1 class-2\\">"',
+      '"<img class=\\"class-1 class-2\\" src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
     ],
     [{ type: 'element', value: 'sample' }, '"<div> sample </div>"'],
     [
@@ -130,6 +130,43 @@ describe('storyNodeRenderer (merged)', () => {
     [1, '1'],
   ])('Render(%s) -> expected: %s', (storyArray, expected: string) => {
     expect(storyNodeRenderer.render(storyArray)).toBe(expected)
+  })
+
+  test('theme:image maps uri/width/height/alt onto the <img> like Drupal', () => {
+    const out = storyNodeRenderer.render({
+      theme: 'image',
+      uri: 'https://placehold.co/600x400',
+      alt: 'Shoes',
+      width: 600,
+      height: 400,
+    })
+    expect(out).toBe(
+      '"<img src=\\"https://placehold.co/600x400\\" width=\\"600\\" height=\\"400\\" alt=\\"Shoes\\" />"'
+    )
+  })
+
+  test('theme:image alt variable overrides attributes.alt (Drupal behavior)', () => {
+    const out = storyNodeRenderer.render({
+      theme: 'image',
+      uri: 'x',
+      alt: 'A',
+      attributes: { alt: 'B' },
+    })
+    expect(out).toBe('"<img alt=\\"A\\" src=\\"x\\" />"')
+  })
+
+  test('theme:image defaults alt to "" and joins srcset', () => {
+    const out = storyNodeRenderer.render({
+      theme: 'image',
+      uri: 'x',
+      srcset: [
+        { uri: 'a.webp', width: '600w' },
+        { uri: 'b.webp', width: '1200w' },
+      ],
+    })
+    expect(out).toBe(
+      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" alt=\\"\\" />"'
+    )
   })
 
   test('custom renderer receives renderValue to render nested values like a slot', () => {

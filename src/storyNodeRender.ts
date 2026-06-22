@@ -46,11 +46,27 @@ const renderComponent = (item: Component): string => {
   return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.baseArgs, ${storyArgs}, ${componentProps}})`
 }
 
-// Render theme=image
 const renderImage = (item: any): string => {
-  return JSON.stringify(
-    `<img src="${item.uri}"${toAttributes(item.attributes)}>`
-  )
+  const attrs: Record<string, any> = { ...(item.attributes ?? {}) }
+  if (item.uri != null) attrs.src = item.uri
+  if (Array.isArray(item.srcset) && item.srcset.length > 0) {
+    attrs.srcset = item.srcset
+      .map((s: any) =>
+        s && typeof s === 'object' ? [s.uri, s.width].filter(Boolean).join(' ') : s
+      )
+      .join(', ')
+  }
+  const mapped: Record<string, any> = {
+    width: item.width,
+    height: item.height,
+    alt: item.alt ?? '',
+    sizes: item.sizes,
+    title: item.title,
+  }
+  for (const key of ['width', 'height', 'alt', 'sizes', 'title']) {
+    if (mapped[key] != null) attrs[key] = mapped[key]
+  }
+  return JSON.stringify(`<img${toAttributes(attrs)} />`)
 }
 
 // Generate type=element
