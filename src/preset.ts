@@ -90,7 +90,9 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
     ],
     optimizeDeps: {
       exclude: ['vite-plugin-twig-drupal', 'vite-plugin-twing-drupal'],
+      esbuildOptions: { target: 'esnext' },
     },
+    build: { target: 'esnext' },
     resolve: {
       alias: [...namespaces.toViteAlias()],
     },
