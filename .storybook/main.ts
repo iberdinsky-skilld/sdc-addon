@@ -11,6 +11,18 @@ const sdcStorybookOptions: SDCStorybookOptions = {
     'parent-namespace': resolve('./parent-namespace'),
   },
   twigLib: 'twig', // Switch here to twing
+  // Remap Drupal /libraries/... icon sources to CDNs for the demo packs.
+  resolveIconSource: (source) => {
+    const cdn: Record<string, string> = {
+      '/libraries/heroicons': 'https://cdn.jsdelivr.net/npm/heroicons@2.2.0',
+      '/libraries/bootstrap-icons':
+        'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3',
+    }
+    for (const [prefix, url] of Object.entries(cdn)) {
+      if (source.startsWith(prefix)) return source.replace(prefix, url)
+    }
+    return source
+  },
   storyNodesRenderer: [
     {
       appliesTo: (item) => item?.type === 'sample',

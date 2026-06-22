@@ -8,6 +8,7 @@ import type {
   IconPackSettings,
   SvgIconData,
   PathIconData,
+  ResolveIconSource,
 } from './sdc.d.ts'
 
 export type { IconPack, IconPacks, IconPackSettings, SvgIconData, PathIconData }
@@ -114,7 +115,10 @@ function resolveSourceEntry(rawSource: string, nsRoot: string): ScannedFile[] {
   return scanDir(baseDir, baseDir, filterExt)
 }
 
-export function loadIconPackFile(iconsFilePath: string): IconPackFileResult {
+export function loadIconPackFile(
+  iconsFilePath: string,
+  resolveIconSource?: ResolveIconSource
+): IconPackFileResult {
   const watchFiles: string[] = [iconsFilePath]
   const packs: IconPacks = {}
 
@@ -140,11 +144,14 @@ export function loadIconPackFile(iconsFilePath: string): IconPackFileResult {
 
     const extractor = (packDef.extractor ?? 'svg') as IconPack['extractor']
     const rawSources: string[] = packDef.config?.sources ?? []
+    const resolvedSources = resolveIconSource
+      ? rawSources.map((src) => resolveIconSource(src, { packId, namespace: ns }))
+      : rawSources
 
     const sources: string[] = []
     const sourceUrls: string[] = []
 
-    for (const src of rawSources) {
+    for (const src of resolvedSources) {
       if (/^https?:\/\//.test(src)) {
         sources.push(src)
         sourceUrls.push(src)
@@ -169,7 +176,7 @@ export function loadIconPackFile(iconsFilePath: string): IconPackFileResult {
     const pathIcons: Record<string, PathIconData> = {}
 
     if (extractor === 'svg') {
-      for (const src of rawSources) {
+      for (const src of resolvedSources) {
         for (const file of resolveSourceEntry(src, nsRoot)) {
           if (file.iconId === '*') continue
           watchFiles.push(file.absPath)
@@ -189,7 +196,7 @@ export function loadIconPackFile(iconsFilePath: string): IconPackFileResult {
         }
       }
     } else if (extractor === 'path') {
-      for (const src of rawSources) {
+      for (const src of resolvedSources) {
         for (const file of resolveSourceEntry(src, nsRoot)) {
           if (file.iconId === '*') continue
           pathIcons[file.iconId] = {
@@ -216,12 +223,85 @@ export function loadIconPackFile(iconsFilePath: string): IconPackFileResult {
   return { packs, watchFiles }
 }
 
-export function discoverIconPacks(namespaces: Namespaces): IconPacks {
+// Walk parsed YAML (component/story) data and collect every icon_id that is
+// referenced for the given pack (props `icon: {pack_id, icon_id}` and
+// `type: icon` nodes both match on the pack_id/icon_id pair).
+export function collectIconIdsFromData(
+  data: unknown,
+  packId: string,
+  out: Set<string>
+): void {
+  if (Array.isArray(data)) {
+    for (const item of data) collectIconIdsFromData(item, packId, out)
+    return
+  }
+  if (data && typeof data === 'object') {
+    const obj = data as Record<string, unknown>
+    // ui-patterns icon prop / type:icon node shape.
+    if (obj.pack_id === packId && typeof obj.icon_id === 'string') {
+      out.add(obj.icon_id)
+    }
+    // Compact { pack, id } shape (e.g. the icon-api demo component).
+    if (obj.pack === packId && typeof obj.id === 'string') {
+      out.add(obj.id)
+    }
+    for (const value of Object.values(obj)) {
+      collectIconIdsFromData(value, packId, out)
+    }
+  }
+}
+
+// For a pack whose svg sources are remote (CDN) URLs, fetch and inline the
+// SVG content of only the used icons. `fetchSvg` is injectable for testing.
+export async function fetchRemoteSvgIcons(
+  pack: IconPack,
+  usedIconIds: Iterable<string>,
+  fetchSvg: (url: string) => Promise<string | null>
+): Promise<void> {
+  const httpSources = pack.sources.filter((s) => /^https?:\/\//.test(s))
+  if (httpSources.length === 0) return
+  for (const iconId of usedIconIds) {
+    if (pack.svgIcons[iconId]) continue
+    for (const src of httpSources) {
+      const url = src.includes('{icon_id}')
+        ? src.replace(/\{icon_id\}/g, iconId)
+        : `${src.replace(/\/$/, '')}/${iconId}.svg`
+      const raw = await fetchSvg(url)
+      if (raw) {
+        const { content, attrs } = parseSvgFile(raw)
+        pack.svgIcons[iconId] = { content, attrs, sourceUrl: url, group: '' }
+        break
+      }
+    }
+  }
+}
+
+// For an svg_sprite pack whose source is a remote (CDN) sprite, fetch the
+// sprite once. Browsers block external `<use href>`, so the caller inlines the
+// sprite into the DOM and we switch the source to '' → `<use href="#icon_id">`.
+export async function fetchRemoteSprite(
+  pack: IconPack,
+  fetchSvg: (url: string) => Promise<string | null>
+): Promise<string | null> {
+  if (pack.extractor !== 'svg_sprite') return null
+  const remote = pack.sources.find((s) => /^https?:\/\//.test(s))
+  if (!remote) return null
+  const content = await fetchSvg(remote)
+  if (!content) return null
+  pack.sources = ['']
+  pack.sourceUrls = ['']
+  return content
+}
+
+export function discoverIconPacks(
+  namespaces: Namespaces,
+  resolveIconSource?: ResolveIconSource
+): IconPacks {
   const packs: IconPacks = {}
   for (const [ns, nsRoot] of namespaces.entries()) {
     const iconsFile = join(nsRoot, `${ns}.icons.yml`)
     if (!existsSync(iconsFile)) continue
-    const { packs: filePacks } = loadIconPackFile(iconsFile)
+    const { packs: filePacks } = loadIconPackFile(iconsFile, resolveIconSource)
     Object.assign(packs, filePacks)
   }
   return packs

@@ -92,3 +92,51 @@ thirdPartySettings:
                 id: menu,
                 settings: { color: '#1e88e5', size: lg },
               }
+
+      cdn:
+        name: CDN (svg, fetched on build)
+        description: >
+          extractor: svg with a remote /libraries/... source remapped to a CDN
+          via resolveIconSource. The addon fetches and inlines only the icons
+          actually used in stories, at build time, so they render as inline SVG
+          and stay recolorable (here via the color setting).
+        props:
+          icons:
+            - { pack: heroicons_cdn, id: heart, settings: { color: '#e53935' } }
+            - { pack: heroicons_cdn, id: bolt, settings: { color: '#fbc02d' } }
+            - { pack: heroicons_cdn, id: star, settings: { color: '#1e88e5' } }
+            - { pack: heroicons_cdn, id: bell }
+            - {
+                pack: heroicons_cdn,
+                id: check-circle,
+                settings: { color: '#43a047', size: lg },
+              }
+
+      cdn_path:
+        name: CDN Path (img)
+        description: >
+          extractor: path with a remote /libraries/... source remapped to a CDN.
+          Rendered as <img src="…/{icon_id}.svg"> — no build fetch, the browser
+          loads each file; the addon substitutes {icon_id} in the remote URL.
+          It's an image, so no recolor.
+        props:
+          icons:
+            - { pack: heroicons_cdn_path, id: heart }
+            - { pack: heroicons_cdn_path, id: bolt }
+            - { pack: heroicons_cdn_path, id: star }
+            - { pack: heroicons_cdn_path, id: bell, settings: { size: lg } }
+
+      cdn_sprite:
+        name: CDN Sprite (fetched + inlined)
+        description: >
+          extractor: svg_sprite with a remote sprite remapped to a CDN. Browsers
+          block external <use href>, so the addon fetches the sprite once at
+          build and inlines it into the page; <use href="#icon_id"> then resolves
+          locally. Recolorable via currentColor.
+        props:
+          icons:
+            - { pack: bootstrap_cdn_sprite, id: house }
+            - { pack: bootstrap_cdn_sprite, id: star }
+            - { pack: bootstrap_cdn_sprite, id: bell }
+            - { pack: bootstrap_cdn_sprite, id: heart }
+            - { pack: bootstrap_cdn_sprite, id: gear, settings: { size: lg } }

@@ -91,11 +91,17 @@ export interface NamespaceDefinition {
   namespaces?: Record<string, string>
 }
 
+export type ResolveIconSource = (
+  source: string,
+  context: { packId: string; namespace: string }
+) => string
+
 export interface SDCStorybookOptions extends NamespaceDefinition {
   experimentalVariants?: boolean
   useBasicArgsForStories?: boolean
   storyNodesRenderer?: StoryNodeRenderer[]
   dependencyMap?: Record<string, ExternalAsset[]>
+  resolveIconSource?: ResolveIconSource
   twigLib?: 'twing' | 'twig'
   customDefs?: {
     [key: string]: JSONSchema4

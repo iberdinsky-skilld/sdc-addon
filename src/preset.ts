@@ -83,7 +83,7 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
       }),
       ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
-      iconPacksPlugin(namespaces),
+      iconPacksPlugin(namespaces, sdcStorybookOptions.resolveIconSource),
       ...(headTags.length > 0
         ? [{ name: 'vite-plugin-sdc-head', transformIndexHtml: () => headTags }]
         : []),

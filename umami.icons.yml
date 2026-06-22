@@ -75,3 +75,71 @@ umami_path:
       .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
       .setAttribute('aria-hidden', 'true')
     }}>
+
+# svg — remote (CDN) source. The /libraries/... path is remapped to a CDN via
+# resolveIconSource in .storybook/main.ts; the addon fetches and inlines only
+# the icons actually used, at build time, so they stay inline (recolorable).
+heroicons_cdn:
+  label: 'Heroicons Outline (CDN, fetched on build)'
+  extractor: svg
+  config:
+    sources:
+      - '/libraries/heroicons/24/outline/{icon_id}.svg'
+  settings:
+    size:
+      type: string
+      default: md
+    color:
+      type: string
+      default: currentColor
+  template: >
+    <svg {{ attributes
+      .setAttribute('width', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('stroke', color)
+      .setAttribute('aria-hidden', 'true')
+    }}>{{ content }}</svg>
+
+# path — remote (CDN) source rendered as <img src>. No build fetch (the browser
+# loads each file); the addon substitutes {icon_id} in the remote URL. No recolor.
+heroicons_cdn_path:
+  label: 'Heroicons Outline (CDN, path/img)'
+  extractor: path
+  config:
+    sources:
+      - '/libraries/heroicons/24/outline/{icon_id}.svg'
+  settings:
+    size:
+      type: string
+      default: md
+  template: >
+    <img {{ attributes
+      .setAttribute('src', source)
+      .setAttribute('width', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('aria-hidden', 'true')
+    }}>
+
+# svg_sprite — remote (CDN) sprite. Browsers block external <use href>, so the
+# addon fetches the sprite once at build and inlines it into the page; the source
+# is switched to '' → <use href="#icon_id"> resolves locally. Recolorable.
+bootstrap_cdn_sprite:
+  label: 'Bootstrap Icons (CDN sprite, fetched + inlined)'
+  extractor: svg_sprite
+  config:
+    sources:
+      - '/libraries/bootstrap-icons/bootstrap-icons.svg'
+  settings:
+    size:
+      type: string
+      default: md
+    color:
+      type: string
+      default: currentColor
+  template: >
+    <svg {{ attributes
+      .setAttribute('width', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('height', size == 'sm' ? '16' : (size == 'lg' ? '32' : '24'))
+      .setAttribute('fill', color)
+      .setAttribute('aria-hidden', 'true')
+    }}><use href="{{ source }}#{{ icon_id }}"></use></svg>

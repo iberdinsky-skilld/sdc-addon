@@ -1,8 +1,66 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { parse as parseYaml } from 'yaml'
+import fetch from 'node-fetch'
 import type { Plugin } from 'vite'
-import { loadIconPackFile } from './icon-packs.ts'
+import {
+  loadIconPackFile,
+  collectIconIdsFromData,
+  fetchRemoteSvgIcons,
+  fetchRemoteSprite,
+} from './icon-packs.ts'
 import type { Namespaces } from './namespaces.ts'
+import type { ResolveIconSource } from './sdc.d.ts'
+
+const remoteSvgCache = new Map<string, string | null>()
+
+async function fetchSvgFromUrl(url: string): Promise<string | null> {
+  if (remoteSvgCache.has(url)) return remoteSvgCache.get(url) ?? null
+  try {
+    const res = await fetch(url)
+    if (!res.ok) {
+      remoteSvgCache.set(url, null)
+      return null
+    }
+    const text = await res.text()
+    remoteSvgCache.set(url, text)
+    return text
+  } catch {
+    remoteSvgCache.set(url, null)
+    return null
+  }
+}
+
+function readNamespaceYamlData(namespaces: Namespaces): unknown[] {
+  const out: unknown[] = []
+  const walk = (dir: string) => {
+    let entries
+    try {
+      entries = readdirSync(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        walk(full)
+      } else if (
+        entry.name.endsWith('.story.yml') ||
+        entry.name.endsWith('.component.yml')
+      ) {
+        try {
+          out.push(parseYaml(readFileSync(full, 'utf8')))
+        } catch {
+          /* skip unparseable */
+        }
+      }
+    }
+  }
+  for (const [, root] of namespaces.entries()) {
+    walk(join(root, 'components'))
+  }
+  return out
+}
 
 const VIRTUAL_TWIG = 'virtual:sdc-icon-packs:twig'
 const RESOLVED_TWIG = '\0' + VIRTUAL_TWIG
@@ -50,7 +108,11 @@ function _sdcBuildIconContext(DrupalAttribute, pack, iconId, settings) {
       source = pathData.sourceUrl || '';
       group = pathData.group || '';
     } else if (pack.sourceUrls && pack.sourceUrls[0]) {
-      source = pack.sourceUrls[0] + '/' + iconId;
+      var base = pack.sourceUrls[0];
+      source =
+        base.indexOf('{icon_id}') !== -1
+          ? base.replace(/\{icon_id\}/g, iconId)
+          : base + '/' + iconId;
     }
   }
 
@@ -158,7 +220,10 @@ const TWING_MARKER = 'createSynchronousEnvironment'
 const TWING_INJECT_AFTER = 'addDrupalExtensions(env);'
 const INJECTED_GUARD = '_sdcRegisterIcon'
 
-export function iconPacksPlugin(namespaces: Namespaces): Plugin {
+export function iconPacksPlugin(
+  namespaces: Namespaces,
+  resolveIconSource?: ResolveIconSource
+): Plugin {
   return {
     name: 'vite-plugin-sdc-icon-packs',
 
@@ -168,7 +233,7 @@ export function iconPacksPlugin(namespaces: Namespaces): Plugin {
       if (id.startsWith(PACK_PREFIX)) return id
     },
 
-    load(id: string) {
+    async load(id: string) {
       if (id === RESOLVED_TWIG || id === RESOLVED_TWING) {
         const packFilePaths = namespaces
           .entries()
@@ -181,9 +246,61 @@ export function iconPacksPlugin(namespaces: Namespaces): Plugin {
 
       if (id.startsWith(PACK_PREFIX)) {
         const filePath = id.slice(PACK_PREFIX.length)
-        const { packs, watchFiles } = loadIconPackFile(filePath)
+        const { packs, watchFiles } = loadIconPackFile(filePath, resolveIconSource)
         watchFiles.forEach((f) => this.addWatchFile(f))
-        return `export default ${JSON.stringify(packs)};`
+
+        // For svg packs with remote (CDN) sources, fetch and inline only the
+        // icons actually referenced by stories/components.
+        const remotePacks = Object.values(packs).filter(
+          (p) =>
+            p.extractor === 'svg' &&
+            p.sources.some((s) => /^https?:\/\//.test(s))
+        )
+        if (remotePacks.length > 0) {
+          const yamlData = readNamespaceYamlData(namespaces)
+          for (const pack of remotePacks) {
+            const used = new Set<string>()
+            for (const data of yamlData) {
+              collectIconIdsFromData(data, pack.packId, used)
+            }
+            await fetchRemoteSvgIcons(pack, used, fetchSvgFromUrl)
+          }
+        }
+
+        // For svg_sprite packs with a remote (CDN) sprite, fetch it once and
+        // inline it into the DOM (browsers block external `<use href>`).
+        const sprites: Record<string, string> = {}
+        for (const pack of Object.values(packs)) {
+          if (
+            pack.extractor === 'svg_sprite' &&
+            pack.sources.some((s) => /^https?:\/\//.test(s))
+          ) {
+            const content = await fetchRemoteSprite(pack, fetchSvgFromUrl)
+            if (content) sprites[pack.packId] = content
+          }
+        }
+
+        const injection =
+          Object.keys(sprites).length > 0
+            ? `
+if (typeof document !== 'undefined') {
+  var _sdcSprites = ${JSON.stringify(sprites)};
+  for (var _k in _sdcSprites) {
+    var _elId = 'sdc-sprite-' + _k;
+    if (!document.getElementById(_elId)) {
+      var _d = document.createElement('div');
+      _d.id = _elId;
+      _d.style.display = 'none';
+      _d.setAttribute('aria-hidden', 'true');
+      _d.innerHTML = _sdcSprites[_k];
+      document.body.appendChild(_d);
+    }
+  }
+}
+`
+            : ''
+
+        return `${injection}export default ${JSON.stringify(packs)};`
       }
     },
 

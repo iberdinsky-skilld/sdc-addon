@@ -3,7 +3,14 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { toNamespaces } from '../namespaces.ts'
-import { discoverIconPacks, loadIconPackFile } from '../icon-packs.ts'
+import {
+  discoverIconPacks,
+  loadIconPackFile,
+  collectIconIdsFromData,
+  fetchRemoteSvgIcons,
+  fetchRemoteSprite,
+} from '../icon-packs.ts'
+import type { IconPack } from '../icon-packs.ts'
 import { iconPacksPlugin } from '../vite-plugin-sdc-icon-packs.ts'
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -20,7 +27,7 @@ function makeTmpNs(ns: string) {
 // ── discoverIconPacks ──────────────────────────────────────────────────────
 
 describe('discoverIconPacks', () => {
-  test('returns {} when no *.icons.yml exists', () => {
+  test('returns {} when no *.icons.yml exists', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('noicons')
     try {
       const ns = toNamespaces({
@@ -33,7 +40,7 @@ describe('discoverIconPacks', () => {
     }
   })
 
-  test('skips packs with enabled: false', () => {
+  test('skips packs with enabled: false', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('entest')
     try {
       writeFileSync(
@@ -59,7 +66,7 @@ disabled:
     }
   })
 
-  test('svg_sprite extractor: resolves sprite file URL, no per-icon data', () => {
+  test('svg_sprite extractor: resolves sprite file URL, no per-icon data', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('sprite')
     try {
       writeFileSync(join(tmpRoot, 'sprite.svg'), '<svg></svg>')
@@ -98,7 +105,7 @@ sprite:
     }
   })
 
-  test('svg extractor: inlines inner SVG content and parses attributes', () => {
+  test('svg extractor: inlines inner SVG content and parses attributes', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('svgext')
     try {
       const iconsDir = join(tmpRoot, 'icons')
@@ -151,7 +158,57 @@ svgext:
     }
   })
 
-  test('svg extractor with {group} subdirectory structure', () => {
+  test('resolveIconSource: remaps source paths before resolving', async () => {
+    const { tmpRoot, cleanup } = makeTmpNs('iconmap')
+    try {
+      // Vendor "heroicons" at a real local dir.
+      const vendorDir = join(tmpRoot, 'vendor', 'heroicons', '24', 'outline')
+      mkdirSync(vendorDir, { recursive: true })
+      writeFileSync(
+        join(vendorDir, 'heart.svg'),
+        '<svg viewBox="0 0 24 24"><path d="M1"/></svg>'
+      )
+
+      // icons.yml points to a Drupal-style absolute path that does not exist.
+      const iconsFile = join(tmpRoot, 'iconmap.icons.yml')
+      writeFileSync(
+        iconsFile,
+        `
+hero_outline_24:
+  extractor: svg
+  config:
+    sources:
+      - "/libraries/heroicons/24/outline/{icon_id}.svg"
+  template: "<svg>{{ content }}</svg>"
+`
+      )
+
+      // Without a resolver the absolute path resolves to nothing.
+      const withoutResolver = loadIconPackFile(iconsFile)
+      expect(withoutResolver.packs['hero_outline_24'].svgIcons).toEqual({})
+
+      // With a resolver remapping /libraries/heroicons to the local vendor dir.
+      const seen: Array<{ packId: string; namespace: string }> = []
+      const resolved = loadIconPackFile(iconsFile, (source, context) => {
+        seen.push(context)
+        return source.replace(
+          '/libraries/heroicons',
+          join(tmpRoot, 'vendor', 'heroicons')
+        )
+      })
+
+      expect(seen).toEqual([
+        { packId: 'hero_outline_24', namespace: 'iconmap' },
+      ])
+      const heart = resolved.packs['hero_outline_24'].svgIcons['heart']
+      expect(heart).toBeDefined()
+      expect(heart.content).toContain('<path')
+    } finally {
+      cleanup()
+    }
+  })
+
+  test('svg extractor with {group} subdirectory structure', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('grouped')
     try {
       const socialDir = join(tmpRoot, 'icons', 'social')
@@ -189,7 +246,7 @@ grouped:
     }
   })
 
-  test('path extractor: discovers icons with source URLs', () => {
+  test('path extractor: discovers icons with source URLs', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('pathext')
     try {
       const imgDir = join(tmpRoot, 'img')
@@ -225,7 +282,7 @@ pathext:
     }
   })
 
-  test('skips malformed YAML without throwing', () => {
+  test('skips malformed YAML without throwing', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('bad')
     try {
       writeFileSync(join(tmpRoot, 'bad.icons.yml'), ':: invalid yaml ::')
@@ -237,7 +294,7 @@ pathext:
     }
   })
 
-  test('discovers packs from multiple namespaces', () => {
+  test('discovers packs from multiple namespaces', async () => {
     const { tmpRoot: r1, cleanup: c1 } = makeTmpNs('ns1')
     const { tmpRoot: r2, cleanup: c2 } = makeTmpNs('ns2')
     try {
@@ -262,7 +319,7 @@ pathext:
     }
   })
 
-  test('defaults extractor to svg when extractor field is omitted', () => {
+  test('defaults extractor to svg when extractor field is omitted', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('defext')
     try {
       writeFileSync(
@@ -283,13 +340,13 @@ pathext:
 // ── loadIconPackFile ───────────────────────────────────────────────────────
 
 describe('loadIconPackFile', () => {
-  test('returns empty packs and watchFiles=[path] for non-existent file', () => {
+  test('returns empty packs and watchFiles=[path] for non-existent file', async () => {
     const result = loadIconPackFile('/nonexistent/path.icons.yml')
     expect(result.packs).toEqual({})
     expect(result.watchFiles).toEqual(['/nonexistent/path.icons.yml'])
   })
 
-  test('returns empty packs for malformed YAML', () => {
+  test('returns empty packs for malformed YAML', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-bad')
     try {
       writeFileSync(join(tmpRoot, 'lf-bad.icons.yml'), ':: invalid ::')
@@ -300,7 +357,7 @@ describe('loadIconPackFile', () => {
     }
   })
 
-  test('svg extractor: adds SVG files to watchFiles', () => {
+  test('svg extractor: adds SVG files to watchFiles', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-svg')
     try {
       const iconsDir = join(tmpRoot, 'icons')
@@ -320,7 +377,7 @@ describe('loadIconPackFile', () => {
     }
   })
 
-  test('svg_sprite extractor: adds sprite file to watchFiles', () => {
+  test('svg_sprite extractor: adds sprite file to watchFiles', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-sprite')
     try {
       writeFileSync(join(tmpRoot, 'sprite.svg'), '<svg></svg>')
@@ -337,7 +394,7 @@ describe('loadIconPackFile', () => {
     }
   })
 
-  test('path extractor: does not add source files to watchFiles', () => {
+  test('path extractor: does not add source files to watchFiles', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-path')
     try {
       mkdirSync(join(tmpRoot, 'img'))
@@ -364,7 +421,7 @@ describe('iconPacksPlugin', () => {
     return iconPacksPlugin(ns) as any
   }
 
-  test('resolves virtual module IDs including icons-pack prefix', () => {
+  test('resolves virtual module IDs including icons-pack prefix', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('vns')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { vns: tmpRoot } })
@@ -384,7 +441,7 @@ describe('iconPacksPlugin', () => {
     }
   })
 
-  test('twig virtual module: imports from icons-pack modules, pack data in pack module', () => {
+  test('twig virtual module: imports from icons-pack modules, pack data in pack module', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('tvns')
     try {
       mkdirSync(join(tmpRoot, 'icons'))
@@ -409,7 +466,7 @@ tvns:
       const ns = toNamespaces({ namespace: '', namespaces: { tvns: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const twigCode: string = p.load.call(
+      const twigCode = await p.load.call(
         mockThis,
         '\0virtual:sdc-icon-packs:twig'
       )
@@ -420,7 +477,7 @@ tvns:
       expect(twigCode).toContain('\0icons-pack:')
       expect(twigCode).toContain('tvns')
 
-      const packCode: string = p.load.call(
+      const packCode = await p.load.call(
         mockThis,
         `\0icons-pack:${join(tmpRoot, 'tvns.icons.yml')}`
       )
@@ -432,7 +489,7 @@ tvns:
     }
   })
 
-  test('twing virtual module: imports from icons-pack, uses setTemplate and env.render', () => {
+  test('twing virtual module: imports from icons-pack, uses setTemplate and env.render', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('tgvns')
     try {
       writeFileSync(
@@ -442,7 +499,7 @@ tvns:
       const ns = toNamespaces({ namespace: '', namespaces: { tgvns: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code: string = p.load.call(
+      const code = await p.load.call(
         mockThis,
         '\0virtual:sdc-icon-packs:twing'
       )
@@ -460,7 +517,7 @@ tvns:
     }
   })
 
-  test('transform injects twig.js icon registration', () => {
+  test('transform injects twig.js icon registration', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('injt')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { injt: tmpRoot } })
@@ -480,7 +537,7 @@ export default (ctx) => Twig.render(ctx);
     }
   })
 
-  test('transform injects twing icon registration', () => {
+  test('transform injects twing icon registration', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('injtg')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { injtg: tmpRoot } })
@@ -501,7 +558,7 @@ export default render;
     }
   })
 
-  test('transform is idempotent', () => {
+  test('transform is idempotent', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('idem')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { idem: tmpRoot } })
@@ -518,7 +575,7 @@ _sdcRegisterIcon(Twig);
     }
   })
 
-  test('transform returns null for non-twig files', () => {
+  test('transform returns null for non-twig files', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('nt')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { nt: tmpRoot } })
@@ -543,10 +600,10 @@ _sdcRegisterIcon(Twig);
       pathIcons: {},
     }
 
-    function getBuildCtx() {
+    async function getBuildCtx() {
       const ns = toNamespaces({ namespace: '', namespaces: {} })
       const p = iconPacksPlugin(ns) as any
-      const code: string = p.load.call(
+      const code = await p.load.call(
         { addWatchFile: () => {} },
         '\0virtual:sdc-icon-packs:twig'
       )
@@ -559,8 +616,8 @@ _sdcRegisterIcon(Twig);
       return new Function(match[1] + '\nreturn _sdcBuildIconContext;')()
     }
 
-    test('plain object settings override defaults', () => {
-      const buildCtx = getBuildCtx()
+    test('plain object settings override defaults', async () => {
+      const buildCtx = await getBuildCtx()
       const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', {
         size: 'lg',
       })
@@ -568,8 +625,8 @@ _sdcRegisterIcon(Twig);
       expect(ctx.color).toBe('black')
     })
 
-    test('Map settings are applied (Twing passes Map instead of plain object)', () => {
-      const buildCtx = getBuildCtx()
+    test('Map settings are applied (Twing passes Map instead of plain object)', async () => {
+      const buildCtx = await getBuildCtx()
       const ctx = buildCtx(
         MockDrupalAttribute,
         spritePack,
@@ -583,8 +640,8 @@ _sdcRegisterIcon(Twig);
       expect(ctx.color).toBe('blue')
     })
 
-    test('partial Map uses defaults for missing keys', () => {
-      const buildCtx = getBuildCtx()
+    test('partial Map uses defaults for missing keys', async () => {
+      const buildCtx = await getBuildCtx()
       const ctx = buildCtx(
         MockDrupalAttribute,
         spritePack,
@@ -595,15 +652,41 @@ _sdcRegisterIcon(Twig);
       expect(ctx.color).toBe('black')
     })
 
-    test('empty settings object uses all defaults', () => {
-      const buildCtx = getBuildCtx()
+    test('empty settings object uses all defaults', async () => {
+      const buildCtx = await getBuildCtx()
       const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', {})
       expect(ctx.size).toBe('md')
       expect(ctx.color).toBe('black')
     })
+
+    test('path extractor substitutes {icon_id} in a remote source URL', async () => {
+      const buildCtx = await getBuildCtx()
+      const pack = {
+        extractor: 'path',
+        sourceUrls: ['https://cdn.example/icons/{icon_id}.svg'],
+        settings: {},
+        svgIcons: {},
+        pathIcons: {},
+      }
+      const ctx = buildCtx(MockDrupalAttribute, pack, 'heart', {})
+      expect(ctx.source).toBe('https://cdn.example/icons/heart.svg')
+    })
+
+    test('path extractor appends id when there is no placeholder', async () => {
+      const buildCtx = await getBuildCtx()
+      const pack = {
+        extractor: 'path',
+        sourceUrls: ['https://cdn.example/icons'],
+        settings: {},
+        svgIcons: {},
+        pathIcons: {},
+      }
+      const ctx = buildCtx(MockDrupalAttribute, pack, 'heart', {})
+      expect(ctx.source).toBe('https://cdn.example/icons/heart')
+    })
   })
 
-  test('_sdcBuildIconContext available in twig module with attributes and group', () => {
+  test('_sdcBuildIconContext available in twig module with attributes and group', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('ctx')
     try {
       writeFileSync(
@@ -613,7 +696,7 @@ _sdcRegisterIcon(Twig);
       const ns = toNamespaces({ namespace: '', namespaces: { ctx: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code: string = p.load.call(
+      const code = await p.load.call(
         mockThis,
         '\0virtual:sdc-icon-packs:twig'
       )
@@ -625,5 +708,131 @@ _sdcRegisterIcon(Twig);
     } finally {
       cleanup()
     }
+  })
+})
+
+// ── remote (CDN) svg icons ─────────────────────────────────────────────────
+
+describe('collectIconIdsFromData', () => {
+  test('collects icon_ids from props and type:icon nodes for a pack', async () => {
+    const data = {
+      props: { icon: { pack_id: 'hero_outline_24', icon_id: 'heart' } },
+      slots: {
+        items: [
+          { type: 'icon', pack_id: 'hero_outline_24', icon_id: 'star' },
+          { type: 'icon', pack_id: 'other_pack', icon_id: 'ignored' },
+          { pack_id: 'hero_outline_24', icon_id: 'bolt' },
+        ],
+      },
+    }
+    const out = new Set<string>()
+    collectIconIdsFromData(data, 'hero_outline_24', out)
+    expect([...out].sort()).toEqual(['bolt', 'heart', 'star'])
+  })
+
+  test('ignores entries without a string icon_id', async () => {
+    const out = new Set<string>()
+    collectIconIdsFromData({ pack_id: 'p', icon_id: 123 }, 'p', out)
+    expect(out.size).toBe(0)
+  })
+
+  test('also collects the compact { pack, id } shape', async () => {
+    const data = {
+      icons: [
+        { pack: 'hero', id: 'heart' },
+        { pack: 'other', id: 'ignored' },
+      ],
+    }
+    const out = new Set<string>()
+    collectIconIdsFromData(data, 'hero', out)
+    expect([...out]).toEqual(['heart'])
+  })
+})
+
+describe('fetchRemoteSvgIcons', () => {
+  const makePack = (sources: string[]): IconPack => ({
+    packId: 'hero_outline_24',
+    label: 'Hero',
+    extractor: 'svg',
+    sources,
+    sourceUrls: sources,
+    settings: {},
+    template: '<svg>{{ content }}</svg>',
+    svgIcons: {},
+    pathIcons: {},
+  })
+
+  test('fetches only used icons and inlines content with attrs', async () => {
+    const pack = makePack([
+      'https://cdn.example/heroicons/24/outline/{icon_id}.svg',
+    ])
+    const fetched: string[] = []
+    const fetchSvg = async (url: string) => {
+      fetched.push(url)
+      return '<svg viewBox="0 0 24 24" class="ico"><path d="M1"/></svg>'
+    }
+
+    await fetchRemoteSvgIcons(pack, ['heart', 'star'], fetchSvg)
+
+    expect(fetched).toEqual([
+      'https://cdn.example/heroicons/24/outline/heart.svg',
+      'https://cdn.example/heroicons/24/outline/star.svg',
+    ])
+    expect(pack.svgIcons['heart'].content).toBe('<path d="M1"/>')
+    expect(pack.svgIcons['heart'].attrs['viewBox']).toBe('0 0 24 24')
+    expect(pack.svgIcons['heart'].sourceUrl).toBe(
+      'https://cdn.example/heroicons/24/outline/heart.svg'
+    )
+  })
+
+  test('is a no-op when the pack has no remote sources', async () => {
+    const pack = makePack(['/local/icons/{icon_id}.svg'])
+    let called = false
+    await fetchRemoteSvgIcons(pack, ['heart'], async () => {
+      called = true
+      return '<svg></svg>'
+    })
+    expect(called).toBe(false)
+    expect(pack.svgIcons).toEqual({})
+  })
+
+  test('skips icons that fail to fetch', async () => {
+    const pack = makePack(['https://cdn.example/{icon_id}.svg'])
+    await fetchRemoteSvgIcons(pack, ['missing'], async () => null)
+    expect(pack.svgIcons['missing']).toBeUndefined()
+  })
+})
+
+describe('fetchRemoteSprite', () => {
+  const makeSpritePack = (sources: string[]): IconPack => ({
+    packId: 'cdn_sprite',
+    label: 'Sprite',
+    extractor: 'svg_sprite',
+    sources,
+    sourceUrls: sources,
+    settings: {},
+    template: '<svg><use href="{{ source }}#{{ icon_id }}"></use></svg>',
+    svgIcons: {},
+    pathIcons: {},
+  })
+
+  test('fetches a remote sprite and switches source to inline reference', async () => {
+    const pack = makeSpritePack(['https://cdn.example/sprite.svg'])
+    const content = await fetchRemoteSprite(
+      pack,
+      async () => '<svg><symbol id="house"></symbol></svg>'
+    )
+    expect(content).toBe('<svg><symbol id="house"></symbol></svg>')
+    expect(pack.sources).toEqual([''])
+    expect(pack.sourceUrls).toEqual([''])
+  })
+
+  test('returns null for non-sprite or local packs', async () => {
+    const local = makeSpritePack(['icons/sprite.svg'])
+    expect(await fetchRemoteSprite(local, async () => '<svg/>')).toBeNull()
+    expect(local.sources).toEqual(['icons/sprite.svg'])
+
+    const svgPack = { ...makeSpritePack(['https://cdn/x.svg']), extractor: 'svg' as const }
+    expect(await fetchRemoteSprite(svgPack, async () => '<svg/>')).toBeNull()
   })
 })
