@@ -62,10 +62,10 @@ function readNamespaceYamlData(namespaces: Namespaces): unknown[] {
   return out
 }
 
-const VIRTUAL_TWIG = 'virtual:sdc-icon-packs:twig'
+export const VIRTUAL_TWIG = 'virtual:sdc-icon-packs:twig'
 const RESOLVED_TWIG = '\0' + VIRTUAL_TWIG
 
-const VIRTUAL_TWING = 'virtual:sdc-icon-packs:twing'
+export const VIRTUAL_TWING = 'virtual:sdc-icon-packs:twing'
 const RESOLVED_TWING = '\0' + VIRTUAL_TWING
 
 const PACK_PREFIX = '\0icons-pack:'
@@ -143,8 +143,22 @@ ${imports}
 ${SHARED_HELPERS}
 
 var _sdcIconPacks = ${mergeExpr};
+var _sdcTwig = null;
+
+// Render an icon node (type: icon) the same way the icon() Twig function does.
+export function renderIcon(packId, iconId, settings) {
+  var pack = _sdcIconPacks[packId];
+  if (!_sdcTwig || !pack || !iconId) return '';
+  var ctx = _sdcBuildIconContext(DrupalAttribute, pack, iconId, settings || {});
+  try {
+    return _sdcTwig.twig({ data: pack.template }).render(ctx);
+  } catch (e) {
+    return '';
+  }
+}
 
 export function registerIconFunction(Twig) {
+  _sdcTwig = Twig;
   if (Twig.__sdcIconRegistered) return;
   Twig.__sdcIconRegistered = true;
 
@@ -175,8 +189,22 @@ ${imports}
 ${SHARED_HELPERS}
 
 var _sdcIconPacks = ${mergeExpr};
+var _sdcIconEnv = null;
+
+// Render an icon node (type: icon) the same way the icon() Twig function does.
+export function renderIcon(packId, iconId, settings) {
+  var pack = _sdcIconPacks[packId];
+  if (!_sdcIconEnv || !pack || !iconId) return '';
+  var ctx = _sdcBuildIconContext(DrupalAttribute, pack, iconId, settings || {});
+  try {
+    return _sdcIconEnv.render('_sdc_icon_' + packId, ctx);
+  } catch (e) {
+    return '';
+  }
+}
 
 export function registerIconFunction(env) {
+  _sdcIconEnv = env;
   // Register icon templates into the existing loader so env.render() finds them.
   // createSynchronousArrayLoader (used by vite-plugin-twing-drupal's SDC loader)
   // stores templates by reference — setTemplate() propagates to both the wrapper
@@ -246,7 +274,10 @@ export function iconPacksPlugin(
 
       if (id.startsWith(PACK_PREFIX)) {
         const filePath = id.slice(PACK_PREFIX.length)
-        const { packs, watchFiles } = loadIconPackFile(filePath, resolveIconSource)
+        const { packs, watchFiles } = loadIconPackFile(
+          filePath,
+          resolveIconSource
+        )
         watchFiles.forEach((f) => this.addWatchFile(f))
 
         // For svg packs with remote (CDN) sources, fetch and inline only the

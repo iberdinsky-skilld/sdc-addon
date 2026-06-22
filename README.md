@@ -180,7 +180,7 @@ The addon dynamically renders the components and stories as defined:
 
 ## Core and custom story node types
 
-Plugin supports 3 core story node types: `component`, `element`, and `image`.
+Plugin supports these core story node types: `component`, `element`, `image`, and `icon`.
 
 Use `component` to nest other components within your story.
 
@@ -232,13 +232,25 @@ thirdPartySettings:
                 class: 'custom-class'
 ```
 
-### You can add custom renderers for additional `story` node types.
-
-For example, to render a custom `icon` type:
+Use `icon` to render an icon from the [Drupal Icon API](#drupal-icon-api). It is
+a built-in node type — `{ pack_id, icon_id }` is rendered through the same
+pipeline as the `icon()` Twig function (inline SVG, recolorable):
 
 ```yaml
 - type: icon
-  icon: arrow
+  pack_id: my_svg
+  icon_id: star
+  settings:
+    color: '#e53935'
+```
+
+### You can add custom renderers for additional `story` node types.
+
+For example, to render a custom `youtube` type:
+
+```yaml
+- type: youtube
+  id: aqz-KE-bpKQ
 ```
 
 Add the following to your `sdcStorybookOptions`:
@@ -248,10 +260,10 @@ sdcStorybookOptions: {
   ...
   storyNodesRenderer: [
     {
-      appliesTo: item => item?.type === 'icon',
+      appliesTo: item => item?.type === 'youtube',
       render: item =>
         JSON.stringify(
-          `<svg class="icon" aria-hidden="true"><use xlink:href="#${item.icon}"></use></svg>`
+          `<iframe src="https://www.youtube.com/embed/${item.id}" allowfullscreen></iframe>`
         ),
       priority: -4,
     },

@@ -85,6 +85,14 @@ const defaultStoryNodes: StoryNodeRenderer[] = [
     render: (item) => renderMarkup(item),
     priority: -2,
   },
+  {
+    appliesTo: (item) => item?.type === 'icon',
+    render: (item) =>
+      `_sdcRenderIcon(${JSON.stringify(item.pack_id)}, ${JSON.stringify(
+        item.icon_id
+      )}, ${JSON.stringify(item.settings ?? {})})`,
+    priority: -5,
+  },
 ]
 
 // Singleton export

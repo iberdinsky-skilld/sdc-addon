@@ -57,9 +57,8 @@ thirdPartySettings:
                 text: Custom link text and icon
                 icon:
                   - type: icon
-                    icon: icon-plus
-                    attributes:
-                      class: read-more__icon
+                    pack_id: heroicons_cdn
+                    icon_id: plus
               props:
                 extra_classes:
                   - banner__link

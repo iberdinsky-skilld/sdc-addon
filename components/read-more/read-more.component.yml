@@ -45,6 +45,5 @@ thirdPartySettings:
           text: Learn More
           icon:
             type: icon
-            icon: 'arrow-long'
-            attributes:
-              class: read-more__icon
+            pack_id: heroicons_cdn
+            icon_id: arrow-long-right

@@ -1,7 +1,7 @@
 ui-patterns://attributes:
   type: object
   patternProperties:
-    ".+":
+    '.+':
       anyOf:
         - type:
             - string

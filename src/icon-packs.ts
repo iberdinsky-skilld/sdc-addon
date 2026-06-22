@@ -145,7 +145,9 @@ export function loadIconPackFile(
     const extractor = (packDef.extractor ?? 'svg') as IconPack['extractor']
     const rawSources: string[] = packDef.config?.sources ?? []
     const resolvedSources = resolveIconSource
-      ? rawSources.map((src) => resolveIconSource(src, { packId, namespace: ns }))
+      ? rawSources.map((src) =>
+          resolveIconSource(src, { packId, namespace: ns })
+        )
       : rawSources
 
     const sources: string[] = []

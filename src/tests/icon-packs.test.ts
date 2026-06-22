@@ -499,10 +499,7 @@ tvns:
       const ns = toNamespaces({ namespace: '', namespaces: { tgvns: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code = await p.load.call(
-        mockThis,
-        '\0virtual:sdc-icon-packs:twing'
-      )
+      const code = await p.load.call(mockThis, '\0virtual:sdc-icon-packs:twing')
 
       expect(code).toContain("from 'twing'")
       expect(code).toContain("from 'drupal-attribute'")
@@ -696,10 +693,7 @@ _sdcRegisterIcon(Twig);
       const ns = toNamespaces({ namespace: '', namespaces: { ctx: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code = await p.load.call(
-        mockThis,
-        '\0virtual:sdc-icon-packs:twig'
-      )
+      const code = await p.load.call(mockThis, '\0virtual:sdc-icon-packs:twig')
 
       expect(code).toContain('_sdcBuildIconContext')
       expect(code).toContain('attributes')
@@ -832,7 +826,10 @@ describe('fetchRemoteSprite', () => {
     expect(await fetchRemoteSprite(local, async () => '<svg/>')).toBeNull()
     expect(local.sources).toEqual(['icons/sprite.svg'])
 
-    const svgPack = { ...makeSpritePack(['https://cdn/x.svg']), extractor: 'svg' as const }
+    const svgPack = {
+      ...makeSpritePack(['https://cdn/x.svg']),
+      extractor: 'svg' as const,
+    }
     expect(await fetchRemoteSprite(svgPack, async () => '<svg/>')).toBeNull()
   })
 })

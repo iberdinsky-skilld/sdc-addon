@@ -131,4 +131,39 @@ describe('storyNodeRenderer (merged)', () => {
   ])('Render(%s) -> expected: %s', (storyArray, expected: string) => {
     expect(storyNodeRenderer.render(storyArray)).toBe(expected)
   })
+
+  test('renders a type:icon node via the Icon API helper', () => {
+    const out = storyNodeRenderer.render({
+      type: 'icon',
+      pack_id: 'hero_outline_24',
+      icon_id: 'heart',
+      settings: { size: 48 },
+    })
+    expect(out).toBe('_sdcRenderIcon("hero_outline_24", "heart", {"size":48})')
+  })
+
+  test('type:icon node without settings defaults to {}', () => {
+    const out = storyNodeRenderer.render({
+      type: 'icon',
+      pack_id: 'p',
+      icon_id: 'i',
+    })
+    expect(out).toBe('_sdcRenderIcon("p", "i", {})')
+  })
+
+  test('a user-provided icon renderer overrides the built-in one', () => {
+    storyNodeRenderer.register([
+      {
+        appliesTo: (item) => item?.type === 'icon',
+        render: () => '"CUSTOM"',
+        priority: 10,
+      },
+    ])
+    const out = storyNodeRenderer.render({
+      type: 'icon',
+      pack_id: 'p',
+      icon_id: 'i',
+    })
+    expect(out).toBe('"CUSTOM"')
+  })
 })

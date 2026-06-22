@@ -64,6 +64,16 @@ thirdPartySettings:
                 text: Learn More
                 icon:
                   type: icon
-                  icon: 'arrow-long'
-                  attributes:
-                    class: read-more__icon
+                  pack_id: heroicons_cdn
+                  icon_id: arrow-long-right
+
+      custom_node:
+        name: Custom Node (YouTube)
+        description: >
+          A custom story node type. `type: youtube` is rendered by a
+          storyNodesRenderer defined in .storybook/main.ts into an <iframe>
+          embed — showing how to add your own node types.
+        slots:
+          content:
+            - type: youtube
+              id: aqz-KE-bpKQ

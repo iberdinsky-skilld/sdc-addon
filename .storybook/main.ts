@@ -30,23 +30,12 @@ const sdcStorybookOptions: SDCStorybookOptions = {
       priority: -4,
     },
     {
-      appliesTo: (item) => item?.type === 'icon',
-      render: (item) => {
-        const attrs = item.attributes
-          ? ' ' +
-            Object.entries(item.attributes)
-              .map(([key, value]) => {
-                if (Array.isArray(value)) {
-                  return `${key}="${value.join(' ')}"`
-                }
-                return `${key}="${value}"`
-              })
-              .join(' ')
-          : ''
-        return JSON.stringify(
-          `<svg${attrs} aria-hidden="true"><use xlink:href="#${item.icon}"></use></svg>`
-        )
-      },
+      // Custom story node type — render a YouTube embed from { type: youtube, id }.
+      appliesTo: (item) => item?.type === 'youtube',
+      render: (item) =>
+        JSON.stringify(
+          `<iframe width="${item.width ?? 560}" height="${item.height ?? 315}" src="https://www.youtube.com/embed/${item.id}" title="YouTube video" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+        ),
       priority: -4,
     },
   ],
