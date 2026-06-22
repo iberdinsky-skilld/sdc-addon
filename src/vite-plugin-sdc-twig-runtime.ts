@@ -228,9 +228,9 @@ export function renderInline(template, context) {
   if (!name) {
     name = '_sdc_inline_' + (_sdcInlineSeq++);
     _sdcInlineNames[template] = name;
-    loader.setTemplate(name, template);
   }
   try {
+    loader.setTemplate(name, template);
     return _sdcIconEnv.render(name, context || {});
   } catch (e) {
     console.error('[SDC] renderInline error:', e);
