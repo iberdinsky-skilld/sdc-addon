@@ -1,3 +1,15 @@
+# v0.24.5 (Mon Jun 22 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Icon Standart nodes renderer Icon API (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.4 (Mon Jun 22 2026)
 
 #### ⚠️ Pushed to `main`
