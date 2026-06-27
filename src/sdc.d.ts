@@ -35,8 +35,12 @@ export interface CssFileOptions {
   weight?: number
 }
 
-/** One CSS group (base / layout / component / state / theme). Keys are file paths or URLs. */
-export type CssGroup = Record<string, CssFileOptions>
+/**
+ * One CSS group (base / layout / component / state / theme). Keys are file
+ * paths or URLs. A `false` value disables an asset, matching Drupal's
+ * `libraryOverrides` semantics.
+ */
+export type CssGroup = Record<string, CssFileOptions | false>
 
 export interface CssSection {
   base?: CssGroup
@@ -53,7 +57,11 @@ export interface JsFileOptions {
   weight?: number
 }
 
-export type JsSection = Record<string, JsFileOptions>
+/**
+ * Keys are file paths or URLs. A `false` value disables an asset, matching
+ * Drupal's `libraryOverrides` semantics.
+ */
+export type JsSection = Record<string, JsFileOptions | false>
 
 export interface LibraryDefinition {
   dependencies?: string[]
@@ -65,12 +73,13 @@ export interface ExternalCssAsset {
   type: 'css'
   url: string
   media?: string
+  attributes?: Record<string, string | boolean>
 }
 
 export interface ExternalJsAsset {
   type: 'js'
   url: string
-  attributes?: Record<string, string>
+  attributes?: Record<string, string | boolean>
 }
 
 export type ExternalAsset = ExternalCssAsset | ExternalJsAsset

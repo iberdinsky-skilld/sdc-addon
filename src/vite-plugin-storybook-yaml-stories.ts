@@ -17,9 +17,11 @@ import { storyNodeRenderer } from './storyNodeRender.ts'
 import componentMetadata from './componentMetadata.ts'
 import type {
   Component,
+  CssFileOptions,
   ExternalAsset,
   ExternalCssAsset,
   ExternalJsAsset,
+  JsFileOptions,
   LibraryDefinition,
   SDCSchema,
   SDCStorybookOptions,
@@ -55,6 +57,13 @@ const VIRTUAL_ASSET_INJECTOR = 'virtual:sdc-asset-injector'
 const VIRTUAL_ASSET_INJECTOR_ID = '\0' + VIRTUAL_ASSET_INJECTOR
 
 const assetInjectorModule = `
+function applyAttrs(el, attrs) {
+  if (!attrs) return
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === false || v == null) continue
+    el.setAttribute(k, v === true ? '' : String(v))
+  }
+}
 export async function injectAssets(assets) {
   if (typeof document === 'undefined') return
   await Promise.all(assets.map((asset) => {
@@ -62,9 +71,13 @@ export async function injectAssets(assets) {
     if (document.querySelector(sel)) return Promise.resolve()
     return new Promise((res, rej) => {
       if (asset.type === 'js') {
-        const s = document.createElement('script'); s.src = asset.url; s.onload = res; s.onerror = rej; document.head.appendChild(s)
+        const s = document.createElement('script')
+        applyAttrs(s, asset.attributes)
+        s.src = asset.url; s.onload = res; s.onerror = rej; document.head.appendChild(s)
       } else {
-        const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = asset.url
+        const l = document.createElement('link'); l.rel = 'stylesheet'
+        applyAttrs(l, asset.attributes)
+        l.href = asset.url
         if (asset.media) l.media = asset.media; l.onload = res; document.head.appendChild(l)
       }
     })
@@ -120,27 +133,33 @@ const CSS_GROUPS = ['base', 'layout', 'component', 'state', 'theme'] as const
 const isExternalUrl = (s: string): boolean =>
   s.startsWith('http://') || s.startsWith('https://')
 
+// Drupal `libraryOverrides` disables an asset when its value is `false`.
+const isDisabled = (opts: unknown): opts is false => opts === false
+
 const extractCssAssets = (library: LibraryDefinition): ExternalCssAsset[] =>
   CSS_GROUPS.flatMap((group) =>
     Object.entries(library.css?.[group] ?? {})
-      .filter(([url]) => isExternalUrl(url))
+      .filter(([url, opts]) => isExternalUrl(url) && !isDisabled(opts))
       .map(
         ([url, opts]): ExternalCssAsset => ({
           type: 'css',
           url,
-          media: opts.media,
+          media: (opts as CssFileOptions).media,
+          attributes: (opts as CssFileOptions).attributes,
         })
       )
   )
 
 const extractJsAssets = (library: LibraryDefinition): ExternalJsAsset[] =>
   Object.entries(library.js ?? {})
-    .filter(([url]) => isExternalUrl(url))
+    .filter(([url, opts]) => isExternalUrl(url) && !isDisabled(opts))
     .map(
       ([url, opts]): ExternalJsAsset => ({
         type: 'js',
         url,
-        attributes: opts.attributes as Record<string, string> | undefined,
+        attributes: (opts as JsFileOptions).attributes as
+          | Record<string, string>
+          | undefined,
       })
     )
 
@@ -157,6 +176,63 @@ export const libraryOverridesImports = (
       (dep) => dependencyMap[dep] ?? []
     ),
   ]
+}
+
+// Normalize a libraryOverrides path to a component-relative import specifier.
+const normalizeLocalPath = (p: string): string =>
+  p.startsWith('.') ? p : `./${p}`
+
+// Drupal core SDC auto-loads only `<name>.css` / `<name>.js` at the component
+// root; the generated module mirrors that with a flat `./*.css` / `./*.{js,mjs}`
+// glob. Any `libraryOverrides` path that is a root file with one of those
+// extensions is therefore already covered by the glob and must not be imported
+// again (de-dupe). Subfolder paths (e.g. `styles/alert.css`, `js/carousel.js`)
+// are not matched by the flat glob, so they fall through to explicit imports.
+const isGlobCoveredCss = (p: string): boolean => /^\.\/[^/]+\.css$/.test(p)
+const isGlobCoveredJs = (p: string): boolean => /^\.\/[^/]+\.(js|mjs)$/.test(p)
+
+export interface LocalCssImport {
+  path: string
+  // Carries `media` from the override so a media-scoped stylesheet can be
+  // injected as a `<link media>` rather than bundled, matching Drupal.
+  media?: string
+}
+
+// Collect local (non-external, non-disabled) `libraryOverrides` asset paths,
+// resolved relative to the component directory and de-duped against the flat
+// glob. These are loaded like the glob assets — CSS eagerly bundled, JS
+// dynamically imported after asset injection — rather than through
+// `injectAssets`, which only handles external URLs. A media-scoped CSS entry
+// keeps its `media` so the generator can inject it as a `<link>` instead.
+export const libraryOverridesLocalImports = (
+  content: SDCSchema
+): { css: LocalCssImport[]; js: string[] } => {
+  const overrides = content.libraryOverrides
+  if (!overrides) return { css: [], js: [] }
+
+  const css: LocalCssImport[] = []
+  const seenCss = new Set<string>()
+  for (const group of CSS_GROUPS) {
+    for (const [url, opts] of Object.entries(overrides.css?.[group] ?? {})) {
+      if (isDisabled(opts) || isExternalUrl(url)) continue
+      const path = normalizeLocalPath(url)
+      if (isGlobCoveredCss(path) || seenCss.has(path)) continue
+      seenCss.add(path)
+      css.push({ path, media: (opts as CssFileOptions).media })
+    }
+  }
+
+  const js: string[] = []
+  const seenJs = new Set<string>()
+  for (const [url, opts] of Object.entries(overrides.js ?? {})) {
+    if (isDisabled(opts) || isExternalUrl(url)) continue
+    const path = normalizeLocalPath(url)
+    if (isGlobCoveredJs(path) || seenJs.has(path)) continue
+    seenJs.add(path)
+    js.push(path)
+  }
+
+  return { css, js }
 }
 
 // Parse a .twig file for {% include/embed/extends 'ns:component' %} directives
@@ -270,6 +346,7 @@ export default ({
         content,
         sdcStorybookOptions.dependencyMap ?? {}
       )
+      const localAssets = libraryOverridesLocalImports(content)
       // Watch every *.story.yml in the component folder (including nested
       // subfolders) so edits invalidate this module and regenerate stories.
       // `this` is Rollup's PluginContext at runtime; absent in unit tests that
@@ -333,10 +410,46 @@ export default ({
         ? storiesGenerator(previewsStories, componentGlobals, componentId)
         : ''
 
+      // Local CSS without `media`: eager static imports (no global deps,
+      // bundled by Vite) alongside the flat-glob CSS.
+      const eagerCss = localAssets.css.filter((c) => !c.media)
+      // Local CSS with `media`: a bundled import can't carry a media query, so
+      // resolve its URL (`?url`) and inject a `<link media>` via injectAssets,
+      // matching how Drupal scopes the stylesheet.
+      const mediaCss = localAssets.css.filter((c) => c.media)
+
+      const localCssImports = eagerCss
+        .map((c) => `import '${c.path}';`)
+        .join('\n')
+      const localCssUrlImports = mediaCss
+        .map((c, i) => `import _sdcLocalCss${i} from '${c.path}?url';`)
+        .join('\n')
+      const localMediaAssets = mediaCss
+        .map(
+          (c, i) =>
+            `{ type: 'css', url: _sdcLocalCss${i}, media: ${JSON.stringify(c.media)} }`
+        )
+        .join(', ')
+
+      // Merge external (CDN) assets and media-scoped local CSS into one
+      // injectAssets call. external assets are a static JSON literal; local
+      // media CSS references the `?url` import bindings, so it can't be
+      // JSON-stringified.
+      const injectParts = [
+        externalAssets.length > 0 ? `...${JSON.stringify(externalAssets)}` : '',
+        localMediaAssets,
+      ].filter(Boolean)
       const assetInjection =
-        externalAssets.length > 0
-          ? `await injectAssets(${JSON.stringify(externalAssets)});`
+        injectParts.length > 0
+          ? `await injectAssets([${injectParts.join(', ')}]);`
           : ''
+
+      // Local JS from libraryOverrides: dynamic imports placed AFTER asset
+      // injection so Drupal/once globals exist before behavior IIFEs run. Must
+      // be dynamic — static imports hoist above the injection await.
+      const localJsImports = localAssets.js
+        .map((p) => `await import('${p}');`)
+        .join('\n')
 
       const iconModule =
         sdcStorybookOptions.twigLib === 'twing' ? VIRTUAL_TWING : VIRTUAL_TWIG
@@ -344,11 +457,14 @@ export default ({
       return `
 import COMPONENT from '${namespace}/${componentBaseName}.twig';
 void import.meta.glob('./*.css', { eager: true });
+${localCssImports}
+${localCssUrlImports}
 import { injectAssets } from '${VIRTUAL_ASSET_INJECTOR}';
 import { renderIcon as _sdcRenderIcon, renderInline as _sdcRenderInline, makeStory as _sdcMakeStory } from '${iconModule}';
 ${storiesImports}
 ${twigImports}
 ${assetInjection}
+${localJsImports}
 await Promise.all(Object.values(import.meta.glob('./*.{js,mjs}')).map(fn => fn()));
 class TwigSafeArray extends Array {
   toString() {

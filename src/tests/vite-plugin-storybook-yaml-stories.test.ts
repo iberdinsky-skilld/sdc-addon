@@ -6,6 +6,7 @@ import YamlStoriesPlugin, {
   yamlStoriesIndexer,
   twigDependencyImports,
   libraryOverridesImports,
+  libraryOverridesLocalImports,
 } from '../vite-plugin-storybook-yaml-stories.ts'
 import { toNamespaces } from '../namespaces.ts'
 import { logger } from '../logger'
@@ -997,6 +998,51 @@ describe('libraryOverridesImports', () => {
     expect(result).toEqual([{ type: 'js', url, attributes: undefined }])
   })
 
+  test('preserves attributes on external JS', () => {
+    const url = 'https://cdn.example.com/widget.js'
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        js: {
+          [url]: { attributes: { defer: true, crossorigin: 'anonymous' } },
+        },
+      },
+    }
+    const result = libraryOverridesImports(content as any)
+    expect(result).toEqual([
+      {
+        type: 'js',
+        url,
+        attributes: { defer: true, crossorigin: 'anonymous' },
+      },
+    ])
+  })
+
+  test('preserves attributes on external CSS', () => {
+    const url = 'https://cdn.example.com/fonts.css'
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        css: {
+          theme: {
+            [url]: {
+              attributes: { integrity: 'sha384-abc', crossorigin: 'anonymous' },
+            },
+          },
+        },
+      },
+    }
+    const result = libraryOverridesImports(content as any)
+    expect(result).toEqual([
+      {
+        type: 'css',
+        url,
+        media: undefined,
+        attributes: { integrity: 'sha384-abc', crossorigin: 'anonymous' },
+      },
+    ])
+  })
+
   test('returns both CSS and JS assets when both present', () => {
     const cssUrl = 'https://cdn.example.com/style.css'
     const jsUrl = 'https://cdn.example.com/lib.js'
@@ -1102,6 +1148,113 @@ describe('libraryOverridesImports', () => {
     }
     const result = libraryOverridesImports(content as any, {})
     expect(result).toEqual([])
+  })
+})
+
+describe('libraryOverridesLocalImports', () => {
+  test('returns empty when no libraryOverrides', () => {
+    expect(libraryOverridesLocalImports({ name: 'Test' } as any)).toEqual({
+      css: [],
+      js: [],
+    })
+  })
+
+  test('collects local subfolder CSS and JS, normalized to relative paths', () => {
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        css: { component: { 'styles/alert.css': {} } },
+        js: { 'js/carousel.js': {} },
+      },
+    }
+    expect(libraryOverridesLocalImports(content as any)).toEqual({
+      css: [{ path: './styles/alert.css', media: undefined }],
+      js: ['./js/carousel.js'],
+    })
+  })
+
+  test('de-dupes root files already covered by the flat glob', () => {
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        css: { component: { 'card.css': {} } },
+        js: { 'card.js': {} },
+      },
+    }
+    expect(libraryOverridesLocalImports(content as any)).toEqual({
+      css: [],
+      js: [],
+    })
+  })
+
+  test('keeps subfolder .mjs and drops root .mjs', () => {
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        js: { 'behaviors/widget.mjs': {}, 'widget.mjs': {} },
+      },
+    }
+    expect(libraryOverridesLocalImports(content as any)).toEqual({
+      css: [],
+      js: ['./behaviors/widget.mjs'],
+    })
+  })
+
+  test('excludes external URLs (those flow through injectAssets)', () => {
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        css: { theme: { 'https://cdn.example.com/x.css': {} } },
+        js: { 'https://cdn.example.com/x.js': {}, 'js/local.js': {} },
+      },
+    }
+    expect(libraryOverridesLocalImports(content as any)).toEqual({
+      css: [],
+      js: ['./js/local.js'],
+    })
+  })
+
+  test('de-dupes repeated declarations of the same local path', () => {
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        css: {
+          base: { 'styles/x.css': {} },
+          theme: { 'styles/x.css': {} },
+        },
+      },
+    }
+    expect(libraryOverridesLocalImports(content as any).css).toEqual([
+      { path: './styles/x.css', media: undefined },
+    ])
+  })
+
+  test('skips assets disabled via `false` (Drupal semantics)', () => {
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        css: {
+          component: { 'styles/keep.css': {}, 'styles/drop.css': false },
+        },
+        js: { 'js/keep.js': {}, 'js/drop.js': false },
+      },
+    }
+    expect(libraryOverridesLocalImports(content as any)).toEqual({
+      css: [{ path: './styles/keep.css', media: undefined }],
+      js: ['./js/keep.js'],
+    })
+  })
+
+  test('carries `media` from a CSS override entry', () => {
+    const content = {
+      name: 'Test',
+      libraryOverrides: {
+        css: { theme: { 'styles/print.css': { media: 'print' } } },
+      },
+    }
+    expect(libraryOverridesLocalImports(content as any).css).toEqual([
+      { path: './styles/print.css', media: 'print' },
+    ])
   })
 })
 
@@ -1235,6 +1388,159 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       rmSync(tmpRoot, { recursive: true, force: true })
     }
   })
+
+  test('load() imports local libraryOverrides subfolder CSS/JS with correct ordering', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-lib-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'carousel')
+      mkdirSync(compDir, { recursive: true })
+
+      writeFileSync(
+        join(compDir, 'carousel.component.yml'),
+        [
+          'name: Carousel',
+          'libraryOverrides:',
+          '  dependencies:',
+          '    - core/drupal',
+          '    - core/once',
+          '  js:',
+          "    'js/carousel.js': {}",
+          '  css:',
+          '    component:',
+          "      'styles/carousel.css': {}",
+        ].join('\n')
+      )
+      writeFileSync(join(compDir, 'carousel.twig'), '<div>carousel</div>')
+
+      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+      const plugin = YamlStoriesPlugin({ namespaces: ns })
+      const result = await plugin.load(join(compDir, 'carousel.component.yml'))
+
+      expect(result).toContain("import './styles/carousel.css';")
+      expect(result).toContain("await import('./js/carousel.js');")
+
+      // Local CSS import sits after the eager css glob.
+      expect(result.indexOf("import.meta.glob('./*.css'")).toBeLessThan(
+        result.indexOf("import './styles/carousel.css';")
+      )
+      // Local JS dynamic import sits after asset injection and before the
+      // flat js glob runs.
+      const jsImportIdx = result.indexOf("await import('./js/carousel.js');")
+      expect(jsImportIdx).toBeGreaterThan(
+        result.indexOf("import './styles/carousel.css';")
+      )
+      expect(jsImportIdx).toBeLessThan(
+        result.indexOf("import.meta.glob('./*.{js,mjs}')")
+      )
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('load() does not duplicate root libraryOverrides files covered by the glob', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-lib-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'card')
+      mkdirSync(compDir, { recursive: true })
+
+      writeFileSync(
+        join(compDir, 'card.component.yml'),
+        [
+          'name: Card',
+          'libraryOverrides:',
+          '  js:',
+          "    'card.js': {}",
+          '  css:',
+          '    component:',
+          "      'card.css': {}",
+        ].join('\n')
+      )
+      writeFileSync(join(compDir, 'card.twig'), '<div>card</div>')
+
+      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+      const plugin = YamlStoriesPlugin({ namespaces: ns })
+      const result = await plugin.load(join(compDir, 'card.component.yml'))
+
+      // Root files are loaded by the flat glob, not re-imported explicitly.
+      expect(result).not.toContain("import './card.css';")
+      expect(result).not.toContain("await import('./card.js');")
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('load() injects media-scoped local CSS via ?url + injectAssets', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-lib-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'poster')
+      mkdirSync(compDir, { recursive: true })
+
+      writeFileSync(
+        join(compDir, 'poster.component.yml'),
+        [
+          'name: Poster',
+          'libraryOverrides:',
+          '  css:',
+          '    theme:',
+          "      'styles/print.css':",
+          "        media: 'print'",
+        ].join('\n')
+      )
+      writeFileSync(join(compDir, 'poster.twig'), '<div>poster</div>')
+
+      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+      const plugin = YamlStoriesPlugin({ namespaces: ns })
+      const result = await plugin.load(join(compDir, 'poster.component.yml'))
+
+      // Media CSS is resolved as a URL and injected as a <link media>, not
+      // bundled via a plain import.
+      expect(result).toContain(
+        "import _sdcLocalCss0 from './styles/print.css?url';"
+      )
+      expect(result).not.toContain("import './styles/print.css';")
+      expect(result).toContain('await injectAssets([')
+      expect(result).toContain(
+        '{ type: \'css\', url: _sdcLocalCss0, media: "print" }'
+      )
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('load() omits assets disabled via `false`', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-lib-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'panel')
+      mkdirSync(compDir, { recursive: true })
+
+      writeFileSync(
+        join(compDir, 'panel.component.yml'),
+        [
+          'name: Panel',
+          'libraryOverrides:',
+          '  css:',
+          '    component:',
+          "      'styles/keep.css': {}",
+          "      'styles/drop.css': false",
+          '  js:',
+          "    'js/keep.js': {}",
+          "    'js/drop.js': false",
+        ].join('\n')
+      )
+      writeFileSync(join(compDir, 'panel.twig'), '<div>panel</div>')
+
+      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+      const plugin = YamlStoriesPlugin({ namespaces: ns })
+      const result = await plugin.load(join(compDir, 'panel.component.yml'))
+
+      expect(result).toContain("import './styles/keep.css';")
+      expect(result).toContain("await import('./js/keep.js');")
+      expect(result).not.toContain('drop.css')
+      expect(result).not.toContain('drop.js')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('component asset imports via import.meta.glob', () => {
@@ -1274,6 +1580,66 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
     expect(moduleCode).toContain('export async function injectAssets')
     expect(moduleCode).toContain("createElement('script')")
     expect(moduleCode).toContain("createElement('link')")
+    expect(moduleCode).toContain('applyAttrs')
+  })
+
+  test('injectAssets applies attributes to script and link elements', async () => {
+    const plugin = YamlStoriesPlugin({ namespaces: {} as any })
+    const moduleCode = (await plugin.load(
+      '\0virtual:sdc-asset-injector'
+    )) as string
+
+    // Evaluate the ESM source in a sandbox with a stub document so we can
+    // observe what injectAssets builds. appendChild fires onload to resolve.
+    const created: any[] = []
+    const fakeDoc = {
+      querySelector: (): any => null,
+      head: {
+        appendChild: (el: any) => {
+          created.push(el)
+          if (el.onload) el.onload()
+        },
+      },
+      createElement: (tag: string) => {
+        const _attrs: Record<string, string> = {}
+        return {
+          tagName: tag,
+          _attrs,
+          setAttribute: (k: string, v: string) => {
+            _attrs[k] = v
+          },
+        } as any
+      },
+    }
+    const factory = new Function(
+      'document',
+      moduleCode.replace('export async function', 'async function') +
+        '\nreturn injectAssets;'
+    )
+    const injectAssets = factory(fakeDoc)
+
+    await injectAssets([
+      {
+        type: 'js',
+        url: 'https://cdn.example.com/widget.js',
+        attributes: { defer: true, crossorigin: 'anonymous' },
+      },
+      {
+        type: 'css',
+        url: 'https://cdn.example.com/fonts.css',
+        media: 'print',
+        attributes: { integrity: 'sha384-abc' },
+      },
+    ])
+
+    const [script, link] = created
+    expect(script.src).toBe('https://cdn.example.com/widget.js')
+    expect(script._attrs.defer).toBe('') // boolean true → present, empty value
+    expect(script._attrs.crossorigin).toBe('anonymous')
+
+    expect(link.href).toBe('https://cdn.example.com/fonts.css')
+    expect(link.media).toBe('print')
+    expect(link._attrs.integrity).toBe('sha384-abc')
   })
 
   test('no injectAssets call when component has no external assets', async () => {
