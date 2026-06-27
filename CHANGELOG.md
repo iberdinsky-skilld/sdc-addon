@@ -1,3 +1,16 @@
+# v0.24.11 (Sat Jun 27 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Library overrides full (iberdinsky@skilld.cloud)
+- Fix Library wrapper (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.10 (Sat Jun 27 2026)
 
 #### ⚠️ Pushed to `main`
