@@ -27,11 +27,11 @@ thirdPartySettings:
       preview:
         name: Preview Example
         description: 'Addon Features preview description'
-        library_wrapper: '
+        library_wrapper: "
           <fieldset>
-          <legend>library_wrapper is rendered through Twig (e.g. {{ ''twig''|upper }})</legend>
+          <legend>library_wrapper is rendered through Twig (e.g. {{ 'twig'|upper }})</legend>
           {{ _story }}
-          </fieldset>'
+          </fieldset>"
         slots:
           content:
             - type: component

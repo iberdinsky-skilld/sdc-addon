@@ -316,6 +316,59 @@ thirdPartySettings:
     }
   })
 
+  test('story.yml in a nested stories/ subfolder is indexed', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-idx-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'accordion')
+      const storiesDir = join(compDir, 'stories')
+      mkdirSync(storiesDir, { recursive: true })
+
+      const file = join(compDir, 'accordion.component.yml')
+      writeFileSync(file, 'name: Accordion', 'utf8')
+      writeFileSync(
+        join(storiesDir, 'accordion.always_open.story.yml'),
+        'name: Always open',
+        'utf8'
+      )
+
+      const index = await yamlStoriesIndexer.createIndex(file, {
+        makeTitle: (s: string) => s,
+      })
+      const exportNames = index.map((i: { exportName: string }) => i.exportName)
+      expect(exportNames).toContain('Basic')
+      expect(exportNames).toContain('Always_open')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('stories of a nested sub-component do not leak into the parent', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-idx-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'card')
+      const subDir = join(compDir, 'inner')
+      mkdirSync(subDir, { recursive: true })
+
+      const file = join(compDir, 'card.component.yml')
+      writeFileSync(file, 'name: Card', 'utf8')
+      // A nested component with its own story — must NOT be pulled into Card.
+      writeFileSync(join(subDir, 'inner.component.yml'), 'name: Inner', 'utf8')
+      writeFileSync(
+        join(subDir, 'inner.special.story.yml'),
+        'name: Special',
+        'utf8'
+      )
+
+      const index = await yamlStoriesIndexer.createIndex(file, {
+        makeTitle: (s: string) => s,
+      })
+      const exportNames = index.map((i: { exportName: string }) => i.exportName)
+      expect(exportNames).not.toContain('Special')
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
   test('createIndex respects disabledStories all (returns empty)', async () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-idx-'))
     try {

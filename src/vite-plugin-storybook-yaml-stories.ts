@@ -270,6 +270,17 @@ export default ({
         content,
         sdcStorybookOptions.dependencyMap ?? {}
       )
+      // Watch every *.story.yml in the component folder (including nested
+      // subfolders) so edits invalidate this module and regenerate stories.
+      // `this` is Rollup's PluginContext at runtime; absent in unit tests that
+      // call load() directly, so guard the optional call.
+      const ctx = this as unknown as {
+        addWatchFile?: (id: string) => void
+      }
+      collectStoryFilesSync(dirname(id)).forEach((file) =>
+        ctx.addWatchFile?.(file)
+      )
+
       const previewsStories = {
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
@@ -424,18 +435,57 @@ export const yamlStoriesIndexer: Indexer = {
   },
 }
 
+// Recursively collect *.story.yml files within a component's folder, at any
+// depth (e.g. a nested `stories/` subfolder). Subfolders that contain their own
+// *.component.yml are skipped so a nested component's stories don't leak into
+// its parent.
+const collectStoryFilesSync = (rootDir: string): string[] => {
+  const out: string[] = []
+  const walk = (dir: string, isRoot: boolean) => {
+    let entries
+    try {
+      entries = readdirSync(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+    // A nested directory that owns a *.component.yml belongs to another
+    // component; don't descend into it (the root itself is always walked).
+    if (
+      !isRoot &&
+      entries.some(
+        (entry) => entry.isFile() && entry.name.endsWith('.component.yml')
+      )
+    ) {
+      return
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        walk(full, false)
+      } else if (entry.name.endsWith('.story.yml')) {
+        out.push(full)
+      }
+    }
+  }
+  walk(rootDir, true)
+  return out
+}
+
 // Load *.story.yml files.
 const loadStoryFilesSync = (fileName: string) => {
   const folderPath = dirname(fileName)
-  const storyFiles = readdirSync(folderPath)
-    .filter((file) => file.endsWith('.story.yml'))
-    .map((file) => join(folderPath, file))
+  const storyFiles = collectStoryFilesSync(folderPath)
 
   return storyFiles.reduce(
     (acc, file) => {
       const content = readFileSync(file, 'utf8')
       const rawKey = basename(file).split('.')[1]
       const key = sanitizeStoryKey(rawKey)
+      if (Object.prototype.hasOwnProperty.call(acc, key)) {
+        logger.warn(
+          `Duplicate story key "${key}" from ${file} overrides an earlier story while indexing ${fileName}`
+        )
+      }
       return {
         ...acc,
         [key]: parseYaml(content),

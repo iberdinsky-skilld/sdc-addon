@@ -499,7 +499,10 @@ tvns:
       const ns = toNamespaces({ namespace: '', namespaces: { tgvns: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code = await p.load.call(mockThis, '\0virtual:sdc-twig-runtime:twing')
+      const code = await p.load.call(
+        mockThis,
+        '\0virtual:sdc-twig-runtime:twing'
+      )
 
       expect(code).toContain("from 'twing'")
       expect(code).toContain("from 'drupal-attribute'")
@@ -693,7 +696,10 @@ _sdcRegisterRuntime(Twig);
       const ns = toNamespaces({ namespace: '', namespaces: { ctx: tmpRoot } })
       const p = makePlugin(ns)
       const mockThis = { addWatchFile: () => {} }
-      const code = await p.load.call(mockThis, '\0virtual:sdc-twig-runtime:twig')
+      const code = await p.load.call(
+        mockThis,
+        '\0virtual:sdc-twig-runtime:twig'
+      )
 
       expect(code).toContain('_sdcBuildIconContext')
       expect(code).toContain('attributes')

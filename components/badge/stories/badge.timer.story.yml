@@ -1,0 +1,6 @@
+name: Timer
+description: Story loaded from a nested stories/ subfolder to demonstrate nested story discovery.
+props:
+  icon: timer
+slots:
+  text: 30 minutes

@@ -52,7 +52,9 @@ const renderImage = (item: any): string => {
   if (Array.isArray(item.srcset) && item.srcset.length > 0) {
     attrs.srcset = item.srcset
       .map((s: any) =>
-        s && typeof s === 'object' ? [s.uri, s.width].filter(Boolean).join(' ') : s
+        s && typeof s === 'object'
+          ? [s.uri, s.width].filter(Boolean).join(' ')
+          : s
       )
       .join(', ')
   }
