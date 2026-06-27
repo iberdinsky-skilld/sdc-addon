@@ -96,6 +96,45 @@ describe('storiesGenerator', () => {
     expect(out).toContain('.join(Story())')
   })
 
+  test('builds a _story render array (with component id and slot partition) for the wrapper', () => {
+    const wrapper =
+      "{{ _story }}{{ _story|merge({'#props': _story['#props']|merge({label: 'X'})}) }}"
+    const stories: Record<
+      string,
+      Partial<Component> & {
+        props?: Record<string, any>
+        slots?: Record<string, any>
+      }
+    > = {
+      wrapped: {
+        component: 'my-component',
+        props: { color: 'primary' },
+        slots: { label: { type: 'markup', markup: 'Hi' } },
+        library_wrapper: wrapper,
+        description: 'render array story',
+      },
+    }
+
+    const out = generate(
+      stories as unknown as Component[],
+      {},
+      'ui_suite_bootstrap:badge'
+    )
+
+    // _story is built from the resolved args via the runtime factory.
+    expect(out).toContain('_sdcMakeStory(')
+    expect(out).toContain('"ui_suite_bootstrap:badge"')
+    // slot keys drive the props/slots partition at runtime.
+    expect(out).toContain('const slotKeys = ["label"]')
+    // internal keys are stripped from _story but carried as render context.
+    expect(out).toContain(
+      'const { componentMetadata, defaultAttributes, ...storyArgs }'
+    )
+    // context (second decorator arg) and { _story } passed to the inline render.
+    expect(out).toContain('(Story, context) =>')
+    expect(out).toContain('{ _story }')
+  })
+
   test('renders complex variants with multiple keys and special titles', () => {
     const stories: Record<
       string,

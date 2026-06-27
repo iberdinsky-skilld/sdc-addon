@@ -4,7 +4,8 @@ import { generateArgs } from './storyNodeRender.ts'
 
 export default (
   stories: Component[],
-  componentGlobals: Record<string, any> = {}
+  componentGlobals: Record<string, any> = {},
+  componentId = ''
 ): string =>
   Object.entries(stories)
     .map(
@@ -55,14 +56,36 @@ ${globalsBlock}
   ${
     library_wrapper
       ? `decorators: [
-        (Story) => {
+        (Story, context) => {
           const wrapper = ${JSON.stringify(library_wrapper)};
           if (!wrapper) return Story();
+
+          // Build \`_story\` as a UI Patterns render array so wrappers can do
+          // \`_story['#props']|merge({...})\` and re-render in a loop. Props/slots
+          // come from the resolved story args, partitioned by the story's slot
+          // keys; internal keys are carried as render context for the component.
+          const args = context && context.args ? context.args : {};
+          const { componentMetadata, defaultAttributes, ...storyArgs } = args;
+          const slotKeys = ${JSON.stringify(Object.keys(slots ?? {}))};
+          const props = {};
+          const slots = {};
+          for (const key of Object.keys(storyArgs)) {
+            (slotKeys.indexOf(key) !== -1 ? slots : props)[key] = storyArgs[key];
+          }
+          const _story = _sdcMakeStory(
+            ${JSON.stringify(componentId)},
+            props,
+            slots,
+            {
+              context: { componentMetadata, defaultAttributes },
+              render: COMPONENT,
+            }
+          );
 
           const placeholder = '___SDC_STORY___';
           const rendered = _sdcRenderInline(
             wrapper.replace(/\\{\\{\\s*_story\\s*\\}\\}/g, placeholder),
-            {}
+            { _story }
           );
           return rendered.split(placeholder).join(Story());
         }

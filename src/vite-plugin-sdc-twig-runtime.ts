@@ -125,6 +125,144 @@ function _sdcBuildIconContext(DrupalAttribute, pack, iconId, settings) {
 }
 `
 
+// ---------------------------------------------------------------------------
+// "Render array" support (story library_wrapper).
+//
+// A *.story.yml library_wrapper may treat `_story` as a render array and merge
+// #props/#slots into it, re-rendering in a loop, e.g.:
+//   {{ color_story|merge({'#props': _story['#props']|merge({...})}) }}
+// We model `_story` as a plain object shaped like the UI Patterns convention
+// ({ '#component', '#props', '#slots' }) so native Twig map ops work, give it a
+// non-enumerable toString() that renders #component, and override the `merge`
+// filter so merging render arrays keeps producing printable render arrays.
+//
+// Shared between the twig.js and twing modules; each module supplies its own
+// `_sdcRenderStory(story, base)` (referenced lazily from toString()).
+const STORY_HELPERS = /* js */ `
+var _sdcStoryBase = new WeakMap();
+
+// Normalise any Twig/JS iterable-ish value to an array of [key, value] entries.
+function _sdcEntries(value) {
+  if (value == null) return [];
+  if (value instanceof Map) return Array.from(value.entries());
+  // DrupalAttribute (and other [key,value] iterables) — but not plain arrays/strings.
+  if (
+    typeof value === 'object' &&
+    typeof value.addClass === 'function' &&
+    typeof value[Symbol.iterator] === 'function'
+  ) {
+    return Array.from(value);
+  }
+  if (Array.isArray(value)) return value.map(function (v, i) { return [i, v]; });
+  if (typeof value === 'object') return Object.entries(value);
+  return [];
+}
+
+// Deep-convert Twing Maps to plain objects so they can be used as a render
+// context. DrupalAttribute is a Map subclass but must be preserved as-is (it
+// carries addClass()/toString() the templates rely on), so only convert plain
+// Twing Maps.
+function _sdcToPlain(value) {
+  if (value instanceof Map && typeof value.addClass !== 'function') {
+    var out = {};
+    value.forEach(function (v, k) { out[k] = _sdcToPlain(v); });
+    return out;
+  }
+  return value;
+}
+
+function _sdcIsStory(value) {
+  if (value == null) return false;
+  if (typeof value === 'object' && value.__sdcStory) return true;
+  if (value instanceof Map) return value.has('#component');
+  if (typeof value === 'object') {
+    return Object.prototype.hasOwnProperty.call(value, '#component');
+  }
+  return false;
+}
+
+// Build a printable render-array object. \`_sdcRenderStory\` is module-specific
+// (it renders through the active Twig/Twing environment) and defined below.
+function _sdcMakeStoryObject(data, base) {
+  var obj = {};
+  var entries = _sdcEntries(data);
+  for (var i = 0; i < entries.length; i++) obj[entries[i][0]] = entries[i][1];
+  Object.defineProperty(obj, '__sdcStory', { value: true, enumerable: false });
+  Object.defineProperty(obj, 'toString', {
+    enumerable: false,
+    value: function () {
+      return _sdcRenderStory(obj, _sdcStoryBase.get(obj));
+    },
+  });
+  if (base) _sdcStoryBase.set(obj, base);
+  return obj;
+}
+
+// Public factory used by the story decorator.
+export function makeStory(component, props, slots, base) {
+  return _sdcMakeStoryObject(
+    { '#component': component, '#props': props || {}, '#slots': slots || {} },
+    base
+  );
+}
+
+// Shallow-merge two operands (one of which is/has #component) into a fresh,
+// printable render array — used to override the native \`merge\` filter so the
+// printable wrapper survives merges (native merge returns a plain Map).
+function _sdcMergeStory(a, b) {
+  var data = {};
+  var ea = _sdcEntries(a);
+  for (var i = 0; i < ea.length; i++) data[ea[i][0]] = ea[i][1];
+  var eb = _sdcEntries(b);
+  for (var j = 0; j < eb.length; j++) data[eb[j][0]] = eb[j][1];
+  var base = _sdcStoryBase.get(a) || _sdcStoryBase.get(b) || null;
+  return _sdcMakeStoryObject(data, base);
+}
+
+// Resolve the render context for a render array: { ...#props, ...#slots } plus
+// the base internal keys (componentMetadata, defaultAttributes) the component
+// template may rely on.
+function _sdcStoryContext(story, base) {
+  var props = _sdcToPlain(story['#props']) || {};
+  var slots = _sdcToPlain(story['#slots']) || {};
+  return Object.assign({}, base && base.context, props, slots);
+}
+
+// ---------------------------------------------------------------------------
+// Make DrupalAttribute tolerant of a scalar \`class\` (general Drupal behaviour).
+//
+// In Drupal/PHP, Attribute::addClass() casts the existing class to (array)
+// before appending, so \`{'class': 'foo'}\` then \`.addClass('bar')\` works. The
+// JS drupal-attribute lib only arrays the *new* value, not the *existing* one,
+// so a scalar class (e.g. create_attribute({'class': 'modal-dialog'}) or an
+// attributes map carrying a string class) crashes with "push is not a function".
+//
+// drupal-attribute is a single ESM singleton shared by create_attribute and the
+// component render functions, so patching its prototype once fixes every path.
+// ---------------------------------------------------------------------------
+function _sdcPatchDrupalAttribute(AttrClass) {
+  if (!AttrClass || !AttrClass.prototype || AttrClass.prototype.__sdcClassPatched) return;
+  var proto = AttrClass.prototype;
+  var normalize = function (self) {
+    if (typeof self.get !== 'function') return;
+    var existing = self.get('class');
+    if (typeof existing === 'string') {
+      self.set('class', existing === '' ? [] : [existing]);
+    }
+  };
+  ['addClass', 'removeClass', 'hasClass'].forEach(function (name) {
+    var orig = proto[name];
+    if (typeof orig !== 'function') return;
+    proto[name] = function () {
+      normalize(this);
+      return orig.apply(this, arguments);
+    };
+  });
+  Object.defineProperty(proto, '__sdcClassPatched', { value: true, enumerable: false });
+}
+_sdcPatchDrupalAttribute(DrupalAttribute);
+`
+
 function packImports(paths: string[]): { imports: string; mergeExpr: string } {
   const imports = paths
     .map((p, i) => `import _p${i} from '${PACK_PREFIX}${p}';`)
@@ -144,6 +282,8 @@ ${SHARED_HELPERS}
 
 var _sdcIconPacks = ${mergeExpr};
 var _sdcTwig = null;
+
+${STORY_HELPERS}
 
 // Render an icon node (type: icon) the same way the icon() Twig function does.
 export function renderIcon(packId, iconId, settings) {
@@ -169,8 +309,32 @@ export function renderInline(template, context) {
   }
 }
 
+// Render a render array (story) through the component's own render() function,
+// which for Twig.js builds attributes from defaultAttributes and lets an
+// explicit (create_attribute) attributes override it — exactly what we want.
+function _sdcRenderStory(story, base) {
+  var ctx = _sdcStoryContext(story, base);
+  if (base && typeof base.render === 'function') {
+    try { return base.render(ctx); } catch (e) {
+      console.error('[SDC] render story "' + story['#component'] + '" error:', e);
+    }
+  }
+  return '';
+}
+
 export function registerSdcRuntime(Twig) {
   _sdcTwig = Twig;
+  // Override the \`merge\` filter so merging render arrays keeps a printable
+  // render array; non-story operands delegate to the native merge.
+  if (!Twig.__sdcMergeOverridden) {
+    Twig.__sdcMergeOverridden = true;
+    var _origMerge = Twig.filters && Twig.filters.merge;
+    Twig.extendFilter('merge', function (value, params) {
+      var other = params && params[0];
+      if (_sdcIsStory(value) || _sdcIsStory(other)) return _sdcMergeStory(value, other);
+      return _origMerge ? _origMerge.call(this, value, params) : value;
+    });
+  }
   if (Twig.__sdcIconRegistered) return;
   Twig.__sdcIconRegistered = true;
 
@@ -202,6 +366,8 @@ ${SHARED_HELPERS}
 
 var _sdcIconPacks = ${mergeExpr};
 var _sdcIconEnv = null;
+
+${STORY_HELPERS}
 
 // Render an icon node (type: icon) the same way the icon() Twig function does.
 export function renderIcon(packId, iconId, settings) {
@@ -238,8 +404,52 @@ export function renderInline(template, context) {
   }
 }
 
+// Render a render array (story) through the captured SDC environment. Twing's
+// component render() helper re-wraps \`attributes\` via Object.entries(), which
+// silently drops a DrupalAttribute produced by create_attribute(), so we render
+// by component id directly here and normalise attributes ourselves.
+function _sdcRenderStory(story, base) {
+  var id = story['#component'];
+  var ctx = _sdcStoryContext(story, base);
+  var attrs = ctx.attributes;
+  if (!(attrs && typeof attrs.addClass === 'function')) {
+    ctx.attributes = new DrupalAttribute(_sdcEntries(attrs));
+  }
+  if (_sdcIconEnv) {
+    try {
+      return _sdcIconEnv.render(id, ctx);
+    } catch (e) {
+      console.error('[SDC] render story "' + id + '" error:', e);
+    }
+  }
+  // Fallback to the component's own render() function if the env is unavailable.
+  if (base && typeof base.render === 'function') {
+    try { return base.render(ctx); } catch (e2) { /* ignore */ }
+  }
+  return '';
+}
+
 export function registerSdcRuntime(env) {
   _sdcIconEnv = env;
+  // Override the \`merge\` filter so merging render arrays (operands that are/have
+  // #component) keeps a printable render array; everything else delegates to the
+  // native merge so normal component templates are unaffected.
+  if (!env.__sdcMergeOverridden && env.filters && typeof env.filters.get === 'function') {
+    var _origMerge = env.filters.get('merge');
+    if (_origMerge) {
+      env.__sdcMergeOverridden = true;
+      env.addFilter(
+        createSynchronousFilter(
+          'merge',
+          function (_execCtx, a, b) {
+            if (_sdcIsStory(a) || _sdcIsStory(b)) return _sdcMergeStory(a, b);
+            return _origMerge.callable(_execCtx, a, b);
+          },
+          [{ name: 'source' }]
+        )
+      );
+    }
+  }
   // Register icon templates into the existing loader so env.render() finds them.
   // createSynchronousArrayLoader (used by vite-plugin-twing-drupal's SDC loader)
   // stores templates by reference — setTemplate() propagates to both the wrapper

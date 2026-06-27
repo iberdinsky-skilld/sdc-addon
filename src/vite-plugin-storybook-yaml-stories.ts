@@ -328,8 +328,9 @@ export default ({
         ? baseArgs
         : { ...baseArgs, ...generatedArgs }
 
+      const componentId = namespaces.pathToNamespace(dirname(id), true)
       const stories = previewsStories
-        ? storiesGenerator(previewsStories, componentGlobals)
+        ? storiesGenerator(previewsStories, componentGlobals, componentId)
         : ''
 
       const assetInjection =
@@ -344,7 +345,7 @@ export default ({
 import COMPONENT from '${namespace}/${componentBaseName}.twig';
 void import.meta.glob('./*.css', { eager: true });
 import { injectAssets } from '${VIRTUAL_ASSET_INJECTOR}';
-import { renderIcon as _sdcRenderIcon, renderInline as _sdcRenderInline } from '${iconModule}';
+import { renderIcon as _sdcRenderIcon, renderInline as _sdcRenderInline, makeStory as _sdcMakeStory } from '${iconModule}';
 ${storiesImports}
 ${twigImports}
 ${assetInjection}
