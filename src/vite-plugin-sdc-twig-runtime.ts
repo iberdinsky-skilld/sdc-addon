@@ -358,7 +358,7 @@ function generateTwingModule(packFilePaths: string[]): string {
   const { imports, mergeExpr } = packImports(packFilePaths)
 
   return `
-import { createSynchronousFunction } from 'twing';
+import { createSynchronousFunction, createSynchronousFilter } from 'twing';
 import DrupalAttribute from 'drupal-attribute';
 ${imports}
 
