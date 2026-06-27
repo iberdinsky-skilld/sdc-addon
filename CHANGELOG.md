@@ -1,3 +1,15 @@
+# v0.24.12 (Sat Jun 27 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Fix import (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.11 (Sat Jun 27 2026)
 
 #### ⚠️ Pushed to `main`
