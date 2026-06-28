@@ -1,5 +1,21 @@
 import { describe, expect, test } from 'vitest'
-import { storyNodeRenderer } from '../storyNodeRender.ts'
+import { storyNodeRenderer, generateArgs } from '../storyNodeRender.ts'
+
+describe('generateArgs slot wrapping', () => {
+  test('single slot value is wrapped so `is not sequence ? [X] : X` stays printable', () => {
+    expect(generateArgs({ col_1_content: '.col-md-6 .offset-md-3' }, true)).toBe(
+      'col_1_content: new TwigSafeArray(".col-md-6 .offset-md-3"),'
+    )
+  })
+  test('single PROP value is NOT wrapped', () => {
+    expect(generateArgs({ title: 'Hi' }, false)).toBe('title: "Hi",')
+  })
+  test('nested array slot wraps the inner array too', () => {
+    expect(generateArgs({ items: [['a'], 'b'] }, true)).toContain(
+      'new TwigSafeArray(new TwigSafeArray("a"), "b")'
+    )
+  })
+})
 
 describe('storyNodeRenderer (merged)', () => {
   test('renders component with primitive props', () => {

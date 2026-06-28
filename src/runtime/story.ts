@@ -2,6 +2,7 @@
 // plain object ({ '#component', '#props', '#slots' }) with a non-enumerable
 // toString() that renders #component through the host's `renderStory`.
 import { entries } from './collections.ts'
+import { PrintableArray } from './nodes.ts'
 
 // Per-story data carried past the Twig context (a function can't be a Twig var):
 // internal render context (componentMetadata, defaultAttributes) and the
@@ -35,8 +36,12 @@ export function storyContext(
   resolveValue: (value: unknown) => unknown = (v) => v
 ): Record<string, unknown> {
   const ctx: Record<string, unknown> = Object.assign({}, base && base.context)
-  for (const src of [story['#props'], story['#slots']]) {
-    for (const [k, v] of entries(src)) ctx[k as string] = resolveValue(v)
+  for (const [k, v] of entries(story['#props']))
+    ctx[k as string] = resolveValue(v)
+  for (const [k, v] of entries(story['#slots'])) {
+    const r = resolveValue(v)
+    ctx[k as string] =
+      r != null && !(r instanceof PrintableArray) ? new PrintableArray(r) : r
   }
   return ctx
 }

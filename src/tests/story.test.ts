@@ -55,15 +55,14 @@ describe('createStoryFactory', () => {
     expect(isStory('x')).toBe(false)
   })
 
-  test('storyContext spreads base context + #props + #slots (slots win)', () => {
+  test('storyContext spreads base context + #props + #slots (slots win, slot wrapped)', () => {
     const ctx = storyContext(
       { '#props': { a: 1, x: 'p' }, '#slots': { x: 's' } },
       { context: { componentMetadata: { path: '/p' } } }
     )
-    expect(ctx).toEqual({
-      componentMetadata: { path: '/p' },
-      a: 1,
-      x: 's',
-    })
+    expect(ctx.componentMetadata).toEqual({ path: '/p' })
+    expect(ctx.a).toBe(1)
+    // slot wins over prop; a single slot value is wrapped into a printable list
+    expect(String(ctx.x)).toBe('s')
   })
 })

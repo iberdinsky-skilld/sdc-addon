@@ -215,6 +215,19 @@ describe('printing a list renders items, not "Array" (twing)', () => {
     expect(String(story)).toBe('AB')
   })
 
+  test('single slot value survives `is not sequence ? [X] : X` (offset-class idiom)', () => {
+    const rt = seqRuntime({
+      g: '{% set c = c and c is not sequence ? [c] : c %}{{ c }}',
+    })
+    const story = rt.makeStory(
+      'g',
+      {},
+      { c: '.col-md-6 .offset-md-3' },
+      { context: {} }
+    )
+    expect(String(story)).toBe('.col-md-6 .offset-md-3')
+  })
+
   test('nested list item renders (list--unstyled idiom)', () => {
     const rt = seqRuntime({
       l: '<ul>{% for item in items %}<li>{{ item }}</li>{% endfor %}</ul>',
