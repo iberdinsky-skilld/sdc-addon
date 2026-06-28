@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import componentMetadata from '../componentMetadata'
+import componentMetadata from '../generate/componentMetadata'
 import { cwd } from 'node:process'
 import { dirname, relative } from 'node:path'
 

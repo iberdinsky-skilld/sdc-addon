@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import DrupalAttribute from 'drupal-attribute'
-import { entries, toPlain } from '../runtime/collections.ts'
+import { entries } from '../renderer/collections.ts'
 
 describe('entries', () => {
   test('null / undefined → []', () => {
@@ -40,28 +40,5 @@ describe('entries', () => {
   test('primitive → []', () => {
     expect(entries('x')).toEqual([])
     expect(entries(5)).toEqual([])
-  })
-})
-
-describe('toPlain', () => {
-  test('deep-converts Twing Maps to plain objects', () => {
-    const m = new Map<string, unknown>([
-      ['x', new Map([['y', 1]])],
-      ['z', 2],
-    ])
-    expect(toPlain(m)).toEqual({ x: { y: 1 }, z: 2 })
-  })
-
-  test('preserves a DrupalAttribute (Map subclass) — does NOT flatten it', () => {
-    const a = new DrupalAttribute([['class', ['x']]])
-    const out = toPlain(a)
-    expect(out).toBe(a)
-    expect(typeof (out as DrupalAttribute).addClass).toBe('function')
-  })
-
-  test('leaves arrays and primitives as-is', () => {
-    expect(toPlain([1, 2])).toEqual([1, 2])
-    expect(toPlain('s')).toBe('s')
-    expect(toPlain(null)).toBe(null)
   })
 })

@@ -1,7 +1,7 @@
 import { generate } from 'json-schema-faker'
 import type { GenerateOptions } from 'json-schema-faker'
 import type { Args } from '@storybook/html-vite'
-import type { SDCSchema, SlotDefinition } from './sdc.d.ts'
+import type { SDCSchema, SlotDefinition } from '../sdc.d.ts'
 
 const createGenerateOptions = (
   defs: SDCSchema['$defs'],
@@ -30,7 +30,6 @@ const createGenerateOptions = (
   }
 }
 
-// Helper to generate argument strings (for props, slots, or variants)
 const generateArgs = (
   schema:
     | NonNullable<SDCSchema['props']>['properties']
@@ -61,7 +60,6 @@ const generateArgs = (
   )
 }
 
-// Convert slot definitions to schema properties
 const slotsToSchemaProperties = (
   slots: SlotDefinition
 ): Record<string, { type: string } & SlotDefinition[string]> => {
@@ -80,7 +78,6 @@ export default async function generateStorybookArgs(
   const { props, slots, $defs } = content
   const generateOptions = createGenerateOptions($defs, jsonSchemaFakerOptions)
 
-  // Generate arguments from properties and slots
   const generatedArgs: Args = {
     ...(props?.properties &&
       (await generateArgs(props.properties, $defs, generateOptions))),

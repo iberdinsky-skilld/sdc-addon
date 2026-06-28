@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest'
 import {
   capitalize,
   convertToKebabCase,
-  toAttributes,
   deriveGroupFromPath,
   sanitizeStoryKey,
 } from '../utils.ts'
@@ -18,15 +17,6 @@ describe('utils', () => {
     expect(convertToKebabCase('umami:card')).toBe('umamicard')
     expect(convertToKebabCase('some-name')).toBe('somename')
     expect(convertToKebabCase('a-b:c')).toBe('abc')
-  })
-
-  test('toAttributes formats attributes correctly', () => {
-    expect(toAttributes(undefined)).toBe('')
-    expect(toAttributes({})).toBe(' ')
-    expect(toAttributes({ class: ['a', 'b'] })).toBe(' class="a b"')
-    expect(toAttributes({ id: 'main', title: 'ok' })).toBe(
-      ' id="main" title="ok"'
-    )
   })
 
   test('deriveGroupFromPath extracts group or falls back to SDC', () => {

@@ -9,7 +9,7 @@ import type {
   SvgIconData,
   PathIconData,
   ResolveIconSource,
-} from './sdc.d.ts'
+} from '../sdc.d.ts'
 
 export type { IconPack, IconPacks, IconPackSettings, SvgIconData, PathIconData }
 

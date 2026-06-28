@@ -1,12 +1,14 @@
 import { describe, expect, test } from 'vitest'
 import twing from 'twing'
+// @ts-ignore — @christianwiedemann/drupal-twig-extensions ships no types
 import { addDrupalExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
 import {
   createNodeResolver,
   PrintableArray,
   nodeGet,
-} from '../runtime/nodes.ts'
-import { createTwingRuntime } from '../runtime/twing.ts'
+  registerCustomNodes,
+} from '../renderer/nodes.ts'
+import { createTwingWrapperRuntime } from '../renderer/twingWrapper.ts'
 
 const resolver = createNodeResolver({
   renderComponent: (node) => `<comp:${String(nodeGet(node, 'component'))}>`,
@@ -50,6 +52,50 @@ describe('createNodeResolver', () => {
     )
   })
 
+  test('custom node returning a string renders at runtime', () => {
+    registerCustomNodes([
+      {
+        match: (item) => nodeGet(item, 'type') === 'youtube',
+        render: (item) =>
+          `<iframe src="https://www.youtube.com/embed/${String(
+            nodeGet(item, 'id')
+          )}"></iframe>`,
+      },
+    ])
+    try {
+      expect(html({ type: 'youtube', id: 'abc' })).toBe(
+        '<iframe src="https://www.youtube.com/embed/abc"></iframe>'
+      )
+    } finally {
+      registerCustomNodes([])
+    }
+  })
+
+  test('custom node returning a node resolves through the pipeline', () => {
+    registerCustomNodes([
+      {
+        match: (item) => nodeGet(item, 'type') === 'link',
+        render: (item) => ({
+          type: 'element',
+          tag: 'a',
+          attributes: { href: nodeGet(item, 'url') },
+          value: nodeGet(item, 'value'),
+        }),
+      },
+    ])
+    try {
+      expect(
+        html({
+          type: 'link',
+          url: '#',
+          value: ['hi ', { type: 'icon', pack_id: 'p', icon_id: 'i' }],
+        })
+      ).toBe('<a href="#">hi <icon:p:i></a>')
+    } finally {
+      registerCustomNodes([])
+    }
+  })
+
   test('array → PrintableArray that prints joined and recurses (nested)', () => {
     expect(
       html([{ markup: 'a' }, { type: 'html_tag', tag: 'b', value: 'c' }])
@@ -86,7 +132,7 @@ function makeRuntime(templates: Record<string, string>) {
     createSynchronousArrayLoader(templates)
   )
   addDrupalExtensions(env as never)
-  const rt = createTwingRuntime({})
+  const rt = createTwingWrapperRuntime({})
   rt.registerSdcRuntime(env as never)
   return rt
 }
@@ -164,7 +210,9 @@ function isSequence(value: unknown): boolean {
   if (Array.isArray(value)) return true
   if (value instanceof Map) return false
   if (typeof value === 'object') {
-    if (typeof (value as Record<symbol, unknown>)[Symbol.iterator] === 'function')
+    if (
+      typeof (value as Record<symbol, unknown>)[Symbol.iterator] === 'function'
+    )
       return true
     const keys = Object.keys(value)
     return keys.length > 0 && keys.every((k, i) => String(i) === k)
@@ -180,14 +228,16 @@ function seqRuntime(templates: Record<string, string>) {
   ;(env as unknown as { addTest: (t: unknown) => void }).addTest(
     createSynchronousTest('sequence', (_c, v) => isSequence(v), [])
   )
-  const rt = createTwingRuntime({})
+  const rt = createTwingWrapperRuntime({})
   rt.registerSdcRuntime(env as never)
   return rt
 }
 
 describe('printing a list renders items, not "Array" (twing)', () => {
   test('{{ slot }} of nodes prints joined (grid-row-1 idiom)', () => {
-    const rt = seqRuntime({ g: '{% set c = c is not sequence ? [c] : c %}{{ c }}' })
+    const rt = seqRuntime({
+      g: '{% set c = c is not sequence ? [c] : c %}{{ c }}',
+    })
     const story = rt.makeStory(
       'g',
       {},
@@ -205,10 +255,7 @@ describe('printing a list renders items, not "Array" (twing)', () => {
       'g',
       {},
       {
-        regions: [
-          [{ markup: 'A' }],
-          [{ markup: 'B' }],
-        ],
+        regions: [[{ markup: 'A' }], [{ markup: 'B' }]],
       },
       { context: {} }
     )

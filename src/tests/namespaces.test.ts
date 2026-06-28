@@ -6,7 +6,7 @@ import {
   toNamespaces,
   resolveComponentPath,
   getProjectName,
-} from '../namespaces.ts'
+} from '../generate/namespaces.ts'
 
 describe('Namespaces - pathToNamespace (integration)', () => {
   test('produces expected namespace strings for component paths', () => {

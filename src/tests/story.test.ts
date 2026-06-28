@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest'
-import { isStory, storyContext, createStoryFactory } from '../runtime/story.ts'
+import { isStory, storyContext, createStoryFactory } from '../renderer/story.ts'
 
 describe('createStoryFactory', () => {
   test('makeStory builds a render array with #component/#props/#slots', () => {

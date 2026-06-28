@@ -1,5 +1,5 @@
 import { dirname, relative } from 'node:path'
-import type { SDCSchema } from './sdc.d.ts'
+import type { SDCSchema } from '../sdc.d.ts'
 import { cwd } from 'node:process'
 
 export interface ComponentMetadata {

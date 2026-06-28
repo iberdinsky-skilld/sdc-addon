@@ -17,8 +17,8 @@
   "author": "Ivan Berdinsky <iberdinsky@skilld.cloud>",
   "exports": {
     "./preset": "./dist/preset.js",
-    "./runtime/twing": "./dist/runtime/twing.js",
-    "./runtime/twig": "./dist/runtime/twig.js"
+    "./renderer/twing": "./dist/renderer/twing.js",
+    "./renderer/twig": "./dist/renderer/twig.js"
   },
   "files": [
     "dist/**/*",

@@ -1,10 +1,10 @@
 import { describe, expect, test, vi } from 'vitest'
-import { toNamespaces } from '../namespaces.ts'
+import { toNamespaces } from '../generate/namespaces.ts'
 import {
   sdcTwigRuntimePlugin,
   VIRTUAL_TWIG,
   VIRTUAL_TWING,
-} from '../vite-plugin-sdc-twig-runtime.ts'
+} from '../vite/sdcTwigRuntime.ts'
 
 const RESOLVED_TWIG = '\0' + VIRTUAL_TWIG
 const RESOLVED_TWING = '\0' + VIRTUAL_TWING

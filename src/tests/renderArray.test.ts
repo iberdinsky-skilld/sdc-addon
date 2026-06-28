@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'vitest'
 import twing from 'twing'
 import TwigJs from 'twig'
+// @ts-ignore — @christianwiedemann/drupal-twig-extensions ships no types
 import { addDrupalExtensions as addTwing } from '@christianwiedemann/drupal-twig-extensions/twing'
+// @ts-ignore — drupal-twig-extensions ships no types
 import { addDrupalExtensions as addTwig } from 'drupal-twig-extensions/twig'
 import DrupalAttribute from 'drupal-attribute'
-import { createTwingRuntime } from '../runtime/twing.ts'
-import { createTwigRuntime } from '../runtime/twig.ts'
+import { createTwingWrapperRuntime } from '../renderer/twingWrapper.ts'
+import { createTwigWrapperRuntime } from '../renderer/twigWrapper.ts'
 
 const { createSynchronousEnvironment, createSynchronousArrayLoader } =
   twing as unknown as {
@@ -32,7 +34,7 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
     })
     const env = createSynchronousEnvironment(loader)
     addTwing(env as never)
-    const rt = createTwingRuntime({})
+    const rt = createTwingWrapperRuntime({})
     rt.registerSdcRuntime(env as never)
 
     const story = rt.makeStory('badge', {}, { label: 'base' }, { context: {} })
@@ -48,7 +50,7 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
 
   test('twig.js: merge override + base.render render each variant', () => {
     addTwig(TwigJs)
-    const rt = createTwigRuntime({})
+    const rt = createTwigWrapperRuntime({})
     rt.registerSdcRuntime(TwigJs)
 
     // Twig.js renders a render array via the component's own render(): mimic the
@@ -79,7 +81,7 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
   })
 
   test('twing: renderInline renders a template string (and no-ops before register)', () => {
-    const rt = createTwingRuntime({})
+    const rt = createTwingWrapperRuntime({})
     // before registerSdcRuntime the env is unavailable → returns the input
     expect(rt.renderInline("{{ 'a' ~ 'b' }}", {})).toBe("{{ 'a' ~ 'b' }}")
     expect(rt.renderInline('', {})).toBe('')
@@ -100,7 +102,7 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
       svgIcons: {},
       pathIcons: {},
     }
-    const rt = createTwingRuntime({ heart: pack as never })
+    const rt = createTwingWrapperRuntime({ heart: pack as never })
     // before register → ''
     expect(rt.renderIcon('heart', 'love', {})).toBe('')
 
@@ -114,7 +116,7 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
   })
 
   test('twig.js: renderInline renders a template string (no-op before register)', () => {
-    const rt = createTwigRuntime({})
+    const rt = createTwigWrapperRuntime({})
     expect(rt.renderInline("{{ 'a' ~ 'b' }}", {})).toBe("{{ 'a' ~ 'b' }}")
     rt.registerSdcRuntime(TwigJs)
     expect(rt.renderInline("{{ 'a' ~ 'b' }}", {})).toBe('ab')
@@ -130,7 +132,7 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
       svgIcons: {},
       pathIcons: {},
     }
-    const rt = createTwigRuntime({ heart: pack as never })
+    const rt = createTwigWrapperRuntime({ heart: pack as never })
     expect(rt.renderIcon('heart', 'love', {})).toBe('')
     rt.registerSdcRuntime(TwigJs)
     expect(rt.renderIcon('heart', 'love', {})).toBe('<i>love</i>')

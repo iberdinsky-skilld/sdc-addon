@@ -4,7 +4,7 @@ import { describe, expect, test, vi } from 'vitest'
 vi.mock('node-fetch', () => ({ default: vi.fn() }))
 import fetch from 'node-fetch'
 
-import { loadAndMergeDefinitions } from '../definitions.ts'
+import { loadAndMergeDefinitions } from '../generate/definitions.ts'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

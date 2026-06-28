@@ -4,7 +4,7 @@ import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 vi.mock('node-fetch', () => ({ default: vi.fn() }))
 
 import fetch from 'node-fetch'
-import { validateJson } from '../validateJson.ts'
+import { validateJson } from '../generate/validate.ts'
 import { logger } from '../logger.ts'
 
 const fetchMock = fetch as unknown as any

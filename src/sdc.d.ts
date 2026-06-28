@@ -3,6 +3,15 @@ import type { GenerateOptions } from 'json-schema-faker'
 import type { Parameters } from '@storybook/html-vite'
 import type { Globals } from 'storybook/internal/types'
 
+// A user-defined render-array node type. `match` selects the node; `render`
+// returns either an HTML string (a leaf) or another node — a built-in node or
+// array — which the pipeline resolves the same way everywhere (plain and
+// wrapper slots). One registry serves both the build codegen and the runtime.
+export interface CustomNode {
+  match: (item: any) => boolean
+  render: (item: any) => string | object
+}
+
 export interface SDCSchema {
   $schema?: string
   $defs?: JSONSchema4
@@ -108,7 +117,7 @@ export type ResolveIconSource = (
 export interface SDCStorybookOptions extends NamespaceDefinition {
   experimentalVariants?: boolean
   useBasicArgsForStories?: boolean
-  storyNodesRenderer?: StoryNodeRenderer[]
+  customNodes?: CustomNode[]
   dependencyMap?: Record<string, ExternalAsset[]>
   resolveIconSource?: ResolveIconSource
   twigLib?: 'twing' | 'twig'
@@ -117,14 +126,6 @@ export interface SDCStorybookOptions extends NamespaceDefinition {
   }
   externalDefs?: string[]
   validate?: string | boolean
-}
-
-export type StoryNodeRenderer = {
-  appliesTo: (item: any) => boolean
-  // `renderValue` renders a nested value (node, array of nodes, or primitive)
-  // through the shared pipeline — the same way component slots are rendered.
-  render: (item: any, renderValue: (value: any) => string) => string
-  priority?: number
 }
 
 export interface Component {

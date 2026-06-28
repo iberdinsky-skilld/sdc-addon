@@ -1,5 +1,5 @@
 {
-  // Extra-strict gate for the browser runtime (src/runtime/**) — beyond the
+  // Extra-strict gate for the browser runtime (src/renderer/**) — beyond the
   // project-wide `strict`. Run via `npm run typecheck:runtime`.
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -11,5 +11,5 @@
     "noUnusedParameters": true,
     "noImplicitOverride": true
   },
-  "include": ["src/runtime/**/*"]
+  "include": ["src/renderer/**/*"]
 }

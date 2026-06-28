@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import generateStorybookArgs from '../argsGenerator'
+import generateStorybookArgs from '../generate/args'
 import type { SDCSchema } from '../sdc.d.ts'
 
 describe('generateStorybookArgs', () => {

@@ -1,11 +1,10 @@
 import type { JSONSchema4 } from 'json-schema'
-import { logger } from './logger.ts'
-import type { SDCStorybookOptions } from './sdc.d.ts'
+import { logger } from '../logger.ts'
+import type { SDCStorybookOptions } from '../sdc.d.ts'
 import { parse } from 'yaml'
 import { readFileSync } from 'node:fs'
 import fetch from 'node-fetch'
 
-// Load external definitions (local or remote)
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
   try {
     if (defPath.startsWith('http://') || defPath.startsWith('https://')) {
@@ -25,14 +24,12 @@ async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
   }
 }
 
-// Helper to load and merge definitions
 export async function loadAndMergeDefinitions(
   externalDefs: SDCStorybookOptions['externalDefs'] | undefined,
   customDefs: SDCStorybookOptions['customDefs'] | undefined
 ): Promise<JSONSchema4> {
   const globalDefs: JSONSchema4 = {}
 
-  // Load external definitions
   if (externalDefs) {
     await Promise.all(
       externalDefs.map(async (defPath) => {
@@ -44,7 +41,6 @@ export async function loadAndMergeDefinitions(
     )
   }
 
-  // Merge custom definitions
   if (customDefs) {
     Object.entries(customDefs).forEach(([component, schema]) => {
       globalDefs[component] = schema

@@ -2,20 +2,19 @@ import { existsSync, statSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
-} from './vite-plugin-storybook-yaml-stories.ts'
+} from './vite/storybookYamlStories.ts'
 import { mergeConfig } from 'vite'
 import type { HtmlTagDescriptor, UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
 import type { StorybookConfig } from '@storybook/html-vite'
 import type { SDCAddonOptions } from './sdc.d.ts'
-import { toNamespaces } from './namespaces.ts'
-import { loadAndMergeDefinitions } from './definitions.ts'
+import { toNamespaces } from './generate/namespaces.ts'
+import { loadAndMergeDefinitions } from './generate/definitions.ts'
 import { DEFAULT_ADDON_OPTIONS, DEFAULT_DEPENDENCY_MAP } from './constants.ts'
 import { merge as lodashMerge } from 'lodash-es'
-import { sdcTwigRuntimePlugin } from './vite-plugin-sdc-twig-runtime.ts'
-import { loadIconPackFile } from './icon-packs.ts'
+import { sdcTwigRuntimePlugin } from './vite/sdcTwigRuntime.ts'
+import { loadIconPackFile } from './generate/iconPacks.ts'
 
-// Main function to merge Vite configuration
 export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
   options = lodashMerge({}, DEFAULT_ADDON_OPTIONS, options)
 
@@ -99,7 +98,6 @@ export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
   })
 }
 
-// Optional: Indexer support
 export const experimental_indexers: StorybookConfig['experimental_indexers'] =
   async (existingIndexers: Indexer[] | undefined) => [
     ...(existingIndexers || []),

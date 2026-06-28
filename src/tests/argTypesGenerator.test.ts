@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import generateArgTypes from '../argTypesGenerator'
+import generateArgTypes from '../generate/argTypes'
 import type { SDCSchema } from '../sdc'
 
 describe('generateArgTypes', () => {

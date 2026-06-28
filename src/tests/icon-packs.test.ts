@@ -2,17 +2,17 @@ import { describe, expect, test } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { toNamespaces } from '../namespaces.ts'
+import { toNamespaces } from '../generate/namespaces.ts'
 import {
   discoverIconPacks,
   loadIconPackFile,
   collectIconIdsFromData,
   fetchRemoteSvgIcons,
   fetchRemoteSprite,
-} from '../icon-packs.ts'
-import type { IconPack } from '../icon-packs.ts'
-import { sdcTwigRuntimePlugin } from '../vite-plugin-sdc-twig-runtime.ts'
-import { buildIconContext } from '../runtime/iconContext.ts'
+} from '../generate/iconPacks.ts'
+import type { IconPack } from '../generate/iconPacks.ts'
+import { sdcTwigRuntimePlugin } from '../vite/sdcTwigRuntime.ts'
+import { buildIconContext } from '../renderer/icons.ts'
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -472,7 +472,7 @@ tvns:
         '\0virtual:sdc-twig-runtime:twig'
       )
 
-      expect(twigCode).toContain("from 'storybook-addon-sdc/runtime/twig'")
+      expect(twigCode).toContain("from 'storybook-addon-sdc/renderer/twig'")
       expect(twigCode).toContain('createTwigRuntime(')
       expect(twigCode).toContain('registerSdcRuntime')
       expect(twigCode).toContain('\0icons-pack:')
@@ -510,11 +510,9 @@ tvns:
       // addon consumes. Runtime BEHAVIOUR is covered in renderArray.test.ts /
       // includeAttributes.test.ts against the real factory.
       expect(code).toContain('\0icons-pack:')
-      expect(code).toContain("from 'storybook-addon-sdc/runtime/twing'")
+      expect(code).toContain("from 'storybook-addon-sdc/renderer/twing'")
       expect(code).toContain('createTwingRuntime(')
       expect(code).toContain('renderIcon')
-      expect(code).toContain('renderInline')
-      expect(code).toContain('makeStory')
       expect(code).toContain('registerSdcRuntime')
     } finally {
       cleanup()
@@ -697,7 +695,7 @@ _sdcRegisterRuntime(Twig);
 
       // Structural/wiring smoke only (see renderArray.test.ts for behaviour).
       expect(code).toContain('\0icons-pack:')
-      expect(code).toContain("from 'storybook-addon-sdc/runtime/twig'")
+      expect(code).toContain("from 'storybook-addon-sdc/renderer/twig'")
       expect(code).toContain('createTwigRuntime(')
       expect(code).toContain('renderIcon')
       expect(code).toContain('registerSdcRuntime')

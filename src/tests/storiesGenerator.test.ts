@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import type { Component } from '../sdc.d.ts'
-import generate from '../storiesGenerator'
+import generate from '../generate/stories'
 
 describe('storiesGenerator', () => {
   test('generates export with capitalized key, description, props, slots and variants', () => {
@@ -72,67 +72,32 @@ describe('storiesGenerator', () => {
     expect(out).toContain('[\'id\', "x"]')
   })
 
-  test('includes library_wrapper as decorator when provided', () => {
-    const wrapper = '<div class="wrap">{{ _story }}</div>'
-    const stories: Record<
-      string,
-      Partial<Component> & { props?: Record<string, any> }
-    > = {
+  test('library_wrapper stories emit a static render, no browser decorator', () => {
+    const stories: Record<string, Partial<Component>> = {
       wrapped: {
         component: 'my-component',
-        props: { title: 'W' },
-        library_wrapper: wrapper,
-        description: 'wrapped story',
+        library_wrapper: '<div class="wrap">{{ _story }}</div>',
       },
     }
-
     const out = generate(stories as unknown as Component[])
-
-    expect(out).toContain('decorators')
-    // JSON.stringify wraps and escapes quotes; assert the placeholder exists instead
-    expect(out).toContain('{{ _story }}')
-    expect(out).toContain('_sdcRenderInline(')
-    expect(out).toContain('___SDC_STORY___')
-    expect(out).toContain('.join(Story())')
+    expect(out).toContain('render: () =>')
+    expect(out).not.toContain('decorators')
+    expect(out).not.toContain('_sdcMakeStory')
   })
 
-  test('builds a _story render array (with component id and slot partition) for the wrapper', () => {
-    const wrapper =
-      "{{ _story }}{{ _story|merge({'#props': _story['#props']|merge({label: 'X'})}) }}"
-    const stories: Record<
-      string,
-      Partial<Component> & {
-        props?: Record<string, any>
-        slots?: Record<string, any>
-      }
-    > = {
+  test('uses the pre-rendered wrapper HTML when provided', () => {
+    const stories: Record<string, Partial<Component>> = {
       wrapped: {
         component: 'my-component',
-        props: { color: 'primary' },
-        slots: { label: { type: 'markup', markup: 'Hi' } },
-        library_wrapper: wrapper,
-        description: 'render array story',
+        library_wrapper: '<div>{{ _story }}</div>',
       },
     }
-
-    const out = generate(
-      stories as unknown as Component[],
-      {},
-      'ui_suite_bootstrap:badge'
-    )
-
-    // _story is built from the resolved args via the runtime factory.
-    expect(out).toContain('_sdcMakeStory(')
-    expect(out).toContain('"ui_suite_bootstrap:badge"')
-    // slot keys drive the props/slots partition at runtime.
-    expect(out).toContain('const slotKeys = ["label"]')
-    // internal keys are stripped from _story but carried as render context.
+    const out = generate(stories as unknown as Component[], {}, 'ns:c', {
+      wrapped: '<div class="wrap">RENDERED</div>',
+    })
     expect(out).toContain(
-      'const { componentMetadata, defaultAttributes, ...storyArgs }'
+      'render: () => "<div class=\\"wrap\\">RENDERED</div>"'
     )
-    // context (second decorator arg) and { _story } passed to the inline render.
-    expect(out).toContain('(Story, context) =>')
-    expect(out).toContain('{ _story }')
   })
 
   test('renders complex variants with multiple keys and special titles', () => {

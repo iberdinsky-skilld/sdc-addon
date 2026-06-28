@@ -8,9 +8,9 @@ import {
   collectIconIdsFromData,
   fetchRemoteSvgIcons,
   fetchRemoteSprite,
-} from './icon-packs.ts'
-import type { Namespaces } from './namespaces.ts'
-import type { ResolveIconSource } from './sdc.d.ts'
+} from '../generate/iconPacks.ts'
+import type { Namespaces } from '../generate/namespaces.ts'
+import type { ResolveIconSource } from '../sdc.d.ts'
 
 const remoteSvgCache = new Map<string, string | null>()
 
@@ -89,12 +89,11 @@ function generateRuntimeGlue(
 
   return `
 ${imports}
-import { ${factory} } from 'storybook-addon-sdc/runtime/${lib}';
+import { ${factory} } from 'storybook-addon-sdc/renderer/${lib}';
 
-export { PrintableArray } from 'storybook-addon-sdc/runtime/${lib}';
+export { PrintableArray } from 'storybook-addon-sdc/renderer/${lib}';
 
-export const { renderIcon, renderInline, makeStory, registerSdcRuntime } =
-  ${factory}(${mergeExpr});
+export const { renderIcon, registerSdcRuntime } = ${factory}(${mergeExpr});
 `
 }
 

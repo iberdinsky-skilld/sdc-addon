@@ -1,11 +1,14 @@
-import { describe, expect, test } from 'vitest'
-import { storyNodeRenderer, generateArgs } from '../storyNodeRender.ts'
+import { afterEach, describe, expect, test } from 'vitest'
+import { renderStoryNode, generateArgs } from '../generate/nodeCodegen.ts'
+import { registerCustomNodes } from '../renderer/nodes.ts'
+
+afterEach(() => registerCustomNodes([]))
 
 describe('generateArgs slot wrapping', () => {
   test('single slot value is wrapped so `is not sequence ? [X] : X` stays printable', () => {
-    expect(generateArgs({ col_1_content: '.col-md-6 .offset-md-3' }, true)).toBe(
-      'col_1_content: new TwigSafeArray(".col-md-6 .offset-md-3"),'
-    )
+    expect(
+      generateArgs({ col_1_content: '.col-md-6 .offset-md-3' }, true)
+    ).toBe('col_1_content: new TwigSafeArray(".col-md-6 .offset-md-3"),')
   })
   test('single PROP value is NOT wrapped', () => {
     expect(generateArgs({ title: 'Hi' }, false)).toBe('title: "Hi",')
@@ -17,14 +20,32 @@ describe('generateArgs slot wrapping', () => {
   })
 })
 
-describe('storyNodeRenderer (merged)', () => {
+describe('html_tag node (build-time, aligned with runtime)', () => {
+  test('renders as <tag attrs>value</tag>', () => {
+    expect(
+      renderStoryNode({
+        type: 'html_tag',
+        tag: 'a',
+        attributes: { href: '#' },
+        value: 'x',
+      })
+    ).toBe('("<a href=\\"#\\">" + "x" + "</a>")')
+  })
+  test('defaults to div and empty children', () => {
+    expect(renderStoryNode({ type: 'html_tag' })).toBe(
+      '("<div>" + "" + "</div>")'
+    )
+  })
+})
+
+describe('renderStoryNode (build codegen)', () => {
   test('renders component with primitive props', () => {
     const item = {
       type: 'component',
       component: 'umami:card',
       props: { title: 'Hello' },
     }
-    const out = storyNodeRenderer.render(item)
+    const out = renderStoryNode(item)
     expect(out).toContain('umamicard.default.component(')
     expect(out).toContain('title: "Hello"')
   })
@@ -41,7 +62,7 @@ describe('storyNodeRenderer (merged)', () => {
       },
     }
 
-    const out = storyNodeRenderer.render(item)
+    const out = renderStoryNode(item)
     expect(out).toContain('new TwigSafeArray(')
     expect(out).toContain('umamititle.default.component(')
     expect(out).toContain('umamisubtitle.default.component(')
@@ -55,7 +76,7 @@ describe('storyNodeRenderer (merged)', () => {
       slots: { items: ['a', 'b'] },
     }
 
-    const out = storyNodeRenderer.render(item)
+    const out = renderStoryNode(item)
     expect(out).toContain('new TwigSafeArray')
     expect(out).toContain('"a"')
     expect(out).toContain('"b"')
@@ -63,7 +84,7 @@ describe('storyNodeRenderer (merged)', () => {
 
   test('unknown object falls back to JSON string', () => {
     const obj = { foo: 'bar' }
-    expect(storyNodeRenderer.render(obj)).toBe(JSON.stringify(obj))
+    expect(renderStoryNode(obj)).toBe(JSON.stringify(obj))
   })
 
   test('mixed array slot of primitives and components', () => {
@@ -75,7 +96,7 @@ describe('storyNodeRenderer (merged)', () => {
       },
     }
 
-    const out = storyNodeRenderer.render(item)
+    const out = renderStoryNode(item)
     expect(out).toContain('new TwigSafeArray(')
     expect(out).toContain('"x"')
     expect(out).toContain('umamititle.default.component(')
@@ -83,7 +104,7 @@ describe('storyNodeRenderer (merged)', () => {
 
   test('component with no props or slots produces empty args sections', () => {
     const item = { type: 'component', component: 'umami:card' }
-    const out = storyNodeRenderer.render(item)
+    const out = renderStoryNode(item)
     // should include base component invocation and empty story/props placeholders
     expect(out).toContain('umamicard.default.component(')
     expect(out).toContain('...{},')
@@ -118,7 +139,7 @@ describe('storyNodeRenderer (merged)', () => {
 
     [
       { type: 'image', uri: 'https://placehold.co/600x400' },
-      '"<img src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
+      '"<img src=\\"https://placehold.co/600x400\\" />"',
     ],
     [
       {
@@ -126,9 +147,9 @@ describe('storyNodeRenderer (merged)', () => {
         uri: 'https://placehold.co/600x400',
         attributes: { class: ['class-1', 'class-2'] },
       },
-      '"<img class=\\"class-1 class-2\\" src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
+      '"<img class=\\"class-1 class-2\\" src=\\"https://placehold.co/600x400\\" />"',
     ],
-    [{ type: 'element', value: 'sample' }, '"<div> sample </div>"'],
+    [{ type: 'element', value: 'sample' }, '("<div>" + "sample" + "</div>")'],
     [
       {
         type: 'element',
@@ -136,7 +157,7 @@ describe('storyNodeRenderer (merged)', () => {
         tag: 'span',
         attributes: { class: 'class-1' },
       },
-      '"<span class=\\"class-1\\"> sample </span>"',
+      '("<span class=\\"class-1\\">" + "sample" + "</span>")',
     ],
     [
       { type: 'markup', markup: '<div> sample </div>' },
@@ -145,11 +166,11 @@ describe('storyNodeRenderer (merged)', () => {
     ['sample string', '"sample string"'],
     [1, '1'],
   ])('Render(%s) -> expected: %s', (storyArray, expected: string) => {
-    expect(storyNodeRenderer.render(storyArray)).toBe(expected)
+    expect(renderStoryNode(storyArray)).toBe(expected)
   })
 
   test('theme:image maps uri/width/height/alt onto the <img> like Drupal', () => {
-    const out = storyNodeRenderer.render({
+    const out = renderStoryNode({
       theme: 'image',
       uri: 'https://placehold.co/600x400',
       alt: 'Shoes',
@@ -162,7 +183,7 @@ describe('storyNodeRenderer (merged)', () => {
   })
 
   test('theme:image alt variable overrides attributes.alt (Drupal behavior)', () => {
-    const out = storyNodeRenderer.render({
+    const out = renderStoryNode({
       theme: 'image',
       uri: 'x',
       alt: 'A',
@@ -172,7 +193,7 @@ describe('storyNodeRenderer (merged)', () => {
   })
 
   test('theme:image defaults alt to "" and joins srcset', () => {
-    const out = storyNodeRenderer.render({
+    const out = renderStoryNode({
       theme: 'image',
       uri: 'x',
       srcset: [
@@ -181,36 +202,47 @@ describe('storyNodeRenderer (merged)', () => {
       ],
     })
     expect(out).toBe(
-      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" alt=\\"\\" />"'
+      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" />"'
     )
   })
 
-  test('custom renderer receives renderValue to render nested values like a slot', () => {
-    storyNodeRenderer.register([
+  test('custom node returning a string is emitted as a literal', () => {
+    registerCustomNodes([
       {
-        appliesTo: (item) => item?.type === 'wrap_tag',
-        render: (item, renderValue) =>
-          `("<a>" + ${renderValue(item.value)} + "</a>")`,
-        priority: 10,
+        match: (item: any) => item?.type === 'youtube',
+        render: (item: any) => `<iframe src="${item.id}"></iframe>`,
       },
     ])
-
-    // primitive value -> rendered as a quoted string
-    expect(storyNodeRenderer.render({ type: 'wrap_tag', value: 'hi' })).toBe(
-      '("<a>" + "hi" + "</a>")'
+    expect(renderStoryNode({ type: 'youtube', id: 'x' })).toBe(
+      JSON.stringify('<iframe src="x"></iframe>')
     )
+  })
 
-    // array of nodes -> TwigSafeArray through the shared pipeline
-    expect(
-      storyNodeRenderer.render({
-        type: 'wrap_tag',
-        value: [{ type: 'icon', pack_id: 'p', icon_id: 'i' }],
-      })
-    ).toBe('("<a>" + new TwigSafeArray(_sdcRenderIcon("p", "i", {})) + "</a>")')
+  test('custom node returning a node is fed back through codegen', () => {
+    registerCustomNodes([
+      {
+        match: (item: any) => item?.type === 'link',
+        render: (item: any) => ({
+          type: 'element',
+          tag: 'a',
+          attributes: { href: item.url },
+          value: item.value,
+        }),
+      },
+    ])
+    const out = renderStoryNode({
+      type: 'link',
+      url: '#',
+      value: ['hi ', { type: 'icon', pack_id: 'p', icon_id: 'i' }],
+    })
+    expect(out).toContain('"<a href=\\"#\\">"')
+    expect(out).toContain(
+      'new TwigSafeArray("hi ", _sdcRenderIcon("p", "i", {}))'
+    )
   })
 
   test('renders a type:icon node via the Icon API helper', () => {
-    const out = storyNodeRenderer.render({
+    const out = renderStoryNode({
       type: 'icon',
       pack_id: 'hero_outline_24',
       icon_id: 'heart',
@@ -220,7 +252,7 @@ describe('storyNodeRenderer (merged)', () => {
   })
 
   test('type:icon node without settings defaults to {}', () => {
-    const out = storyNodeRenderer.render({
+    const out = renderStoryNode({
       type: 'icon',
       pack_id: 'p',
       icon_id: 'i',
@@ -228,19 +260,18 @@ describe('storyNodeRenderer (merged)', () => {
     expect(out).toBe('_sdcRenderIcon("p", "i", {})')
   })
 
-  test('a user-provided icon renderer overrides the built-in one', () => {
-    storyNodeRenderer.register([
+  test('a custom node matching a built-in type takes precedence', () => {
+    registerCustomNodes([
       {
-        appliesTo: (item) => item?.type === 'icon',
-        render: () => '"CUSTOM"',
-        priority: 10,
+        match: (item: any) => item?.type === 'icon',
+        render: () => '<custom-icon></custom-icon>',
       },
     ])
-    const out = storyNodeRenderer.render({
+    const out = renderStoryNode({
       type: 'icon',
       pack_id: 'p',
       icon_id: 'i',
     })
-    expect(out).toBe('"CUSTOM"')
+    expect(out).toBe(JSON.stringify('<custom-icon></custom-icon>'))
   })
 })

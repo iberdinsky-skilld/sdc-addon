@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname } from 'node:path'
-import { logger } from './logger.ts'
-import { sanitizeStoryKey } from './utils.ts'
+import { logger } from '../logger.ts'
+import { sanitizeStoryKey } from '../utils.ts'
 
 import type {
   Args,
@@ -10,11 +10,18 @@ import type {
   Indexer,
   IndexInput,
 } from 'storybook/internal/types'
-import argsGenerator from './argsGenerator.ts'
-import argTypesGenerator from './argTypesGenerator.ts'
-import storiesGenerator from './storiesGenerator.ts'
-import { storyNodeRenderer } from './storyNodeRender.ts'
-import componentMetadata from './componentMetadata.ts'
+import argsGenerator from '../generate/args.ts'
+import argTypesGenerator from '../generate/argTypes.ts'
+import storiesGenerator from '../generate/stories.ts'
+import { registerCustomNodes } from '../renderer/nodes.ts'
+import {
+  createBuildWrapperEnv,
+  renderWrapperStories,
+} from '../generate/wrapperBuild.ts'
+import type { WrapperEnv } from '../renderer/wrapper.ts'
+
+let _wrapperEnv: Promise<WrapperEnv> | undefined
+import componentMetadata from '../generate/componentMetadata.ts'
 import type {
   Component,
   CssFileOptions,
@@ -25,19 +32,22 @@ import type {
   LibraryDefinition,
   SDCSchema,
   SDCStorybookOptions,
-} from './sdc.d.ts'
+} from '../sdc.d.ts'
 import type { GenerateOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
-import { validateJson } from './validateJson.ts'
-import { capitalize, convertToKebabCase, deriveGroupFromPath } from './utils.ts'
+import { validateJson } from '../generate/validate.ts'
+import {
+  capitalize,
+  convertToKebabCase,
+  deriveGroupFromPath,
+} from '../utils.ts'
 import {
   Namespaces,
   getProjectName,
   resolveComponentPath,
-} from './namespaces.ts'
-import { VIRTUAL_TWIG, VIRTUAL_TWING } from './vite-plugin-sdc-twig-runtime.ts'
+} from '../generate/namespaces.ts'
+import { VIRTUAL_TWIG, VIRTUAL_TWING } from './sdcTwigRuntime.ts'
 
-// Helper to read and validate SDC YAML files
 const readSDC = (
   filePath: string,
   defs?: JSONSchema4,
@@ -85,7 +95,6 @@ export async function injectAssets(assets) {
 }
 `
 
-// Dynamically generate component imports from story configurations
 const dynamicImports = (
   stories: Component[],
   namespaces: Namespaces
@@ -269,7 +278,6 @@ export const twigDependencyImports = (
   return Array.from(imports).join('\n')
 }
 
-// Helper to create story index
 const createStoryIndex = (
   fileName: string,
   baseTitle: string,
@@ -278,11 +286,8 @@ const createStoryIndex = (
   tags: string[]
 ): IndexInput[] => {
   const storiesIndex: IndexInput[] = []
-
-  // Check if all stories are disabled
   const isAllDisabled = disabledStories.includes('all')
 
-  // Add Basic story if not disabled
   if (!isAllDisabled && !disabledStories.includes('basic')) {
     storiesIndex.push({
       type: 'story',
@@ -293,10 +298,8 @@ const createStoryIndex = (
     })
   }
 
-  // Add custom stories if not all disabled
   if (stories && !isAllDisabled) {
     Object.keys(stories).forEach((storyKey) => {
-      // Skip if this specific story is disabled
       if (!disabledStories.includes(storyKey)) {
         const capitalizedKey = capitalize(storyKey)
         const exportName =
@@ -324,6 +327,10 @@ export default ({
   sdcStorybookOptions = {} as SDCStorybookOptions,
   globalDefs = {} as JSONSchema4,
   namespaces = {} as Namespaces,
+  vitePluginTwingDrupalOptions = undefined as { hooks?: string } | undefined,
+  vitePluginTwigDrupalOptions = undefined as
+    | { functions?: Record<string, unknown> }
+    | undefined,
 }) => ({
   name: 'vite-plugin-storybook-yaml-stories',
   resolveId(id: string) {
@@ -333,8 +340,8 @@ export default ({
     if (id === VIRTUAL_ASSET_INJECTOR_ID) return assetInjectorModule
 
     if (id.endsWith('story.yml')) {
-      // We need to load the story.yml to support reload.
-      // But we ignore to load them.
+      // Indexed and watched, but their content is emitted by the component.yml
+      // load — resolve the module itself to empty.
       return ''
     }
 
@@ -362,7 +369,7 @@ export default ({
         ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
         ...loadStoryFilesSync(id),
       }
-      storyNodeRenderer.register(sdcStorybookOptions.storyNodesRenderer ?? [])
+      registerCustomNodes(sdcStorybookOptions.customNodes)
 
       const storiesImports = dynamicImports(previewsStories, namespaces)
       const componentBaseName = basename(id, '.component.yml')
@@ -406,8 +413,37 @@ export default ({
         : { ...baseArgs, ...generatedArgs }
 
       const componentId = namespaces.pathToNamespace(dirname(id), true)
+
+      let wrapperHtml: Record<string, string> = {}
+      const hasWrapper = Object.values(previewsStories).some(
+        (s) => (s as { library_wrapper?: string }).library_wrapper
+      )
+      if (hasWrapper) {
+        if (!_wrapperEnv)
+          _wrapperEnv = createBuildWrapperEnv(
+            namespaces,
+            {
+              ...sdcStorybookOptions,
+              vitePluginTwingDrupalOptions,
+              vitePluginTwigDrupalOptions,
+            },
+            sdcStorybookOptions.resolveIconSource
+          )
+        wrapperHtml = renderWrapperStories(
+          await _wrapperEnv,
+          componentId,
+          previewsStories,
+          generatedArgs
+        )
+      }
+
       const stories = previewsStories
-        ? storiesGenerator(previewsStories, componentGlobals, componentId)
+        ? storiesGenerator(
+            previewsStories,
+            componentGlobals,
+            componentId,
+            wrapperHtml
+          )
         : ''
 
       // Local CSS without `media`: eager static imports (no global deps,
@@ -460,7 +496,7 @@ void import.meta.glob('./*.css', { eager: true });
 ${localCssImports}
 ${localCssUrlImports}
 import { injectAssets } from '${VIRTUAL_ASSET_INJECTOR}';
-import { renderIcon as _sdcRenderIcon, renderInline as _sdcRenderInline, makeStory as _sdcMakeStory, PrintableArray as TwigSafeArray } from '${iconModule}';
+import { renderIcon as _sdcRenderIcon, PrintableArray as TwigSafeArray } from '${iconModule}';
 ${storiesImports}
 ${twigImports}
 ${assetInjection}
@@ -583,7 +619,6 @@ const collectStoryFilesSync = (rootDir: string): string[] => {
   return out
 }
 
-// Load *.story.yml files.
 const loadStoryFilesSync = (fileName: string) => {
   const folderPath = dirname(fileName)
   const storyFiles = collectStoryFilesSync(folderPath)

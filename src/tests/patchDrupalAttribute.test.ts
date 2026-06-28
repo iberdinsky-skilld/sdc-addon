@@ -1,8 +1,9 @@
 import { describe, expect, test, beforeAll } from 'vitest'
 import DrupalAttribute from 'drupal-attribute'
 import twing from 'twing'
+// @ts-ignore — @christianwiedemann/drupal-twig-extensions ships no types
 import { addDrupalExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
-import { patchDrupalAttribute } from '../runtime/attributes.ts'
+import { patchDrupalAttribute } from '../renderer/attributes.ts'
 
 describe('patchDrupalAttribute', () => {
   beforeAll(() => {

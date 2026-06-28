@@ -7,8 +7,8 @@ import YamlStoriesPlugin, {
   twigDependencyImports,
   libraryOverridesImports,
   libraryOverridesLocalImports,
-} from '../vite-plugin-storybook-yaml-stories.ts'
-import { toNamespaces } from '../namespaces.ts'
+} from '../vite/storybookYamlStories.ts'
+import { toNamespaces } from '../generate/namespaces.ts'
 import { logger } from '../logger'
 
 describe('vite-plugin-storybook-yaml-stories (integration)', () => {
@@ -405,7 +405,9 @@ thirdPartySettings:
       // Use a non-existent file to provoke read error
       const missing = join(compDir, 'does-not-exist.component.yml')
       await expect(
-        yamlStoriesIndexer.createIndex(missing, { makeTitle: (s?: string) => s ?? '' })
+        yamlStoriesIndexer.createIndex(missing, {
+          makeTitle: (s?: string) => s ?? '',
+        })
       ).rejects.toThrow()
       expect(spy).toHaveBeenCalled()
     } finally {

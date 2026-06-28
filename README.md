@@ -244,33 +244,67 @@ pipeline as the `icon()` Twig function (inline SVG, recolorable):
     color: '#e53935'
 ```
 
-### You can add custom renderers for additional `story` node types.
+### Custom node types
 
-For example, to render a custom `youtube` type:
+Story slots are filled with **render-array nodes** — the built-in `component`,
+`element`, `image`, `icon` and `markup` types you saw above. `customNodes` lets
+you teach the addon **your own node type**, so a recurring piece of markup
+becomes a short, declarative node instead of raw HTML copy-pasted into every
+story.
+
+`match` decides which nodes a renderer handles. `render` returns **either an
+HTML string** (a leaf) **or another node** — a built-in node or array — which the
+addon resolves the same way as everything else. Because it goes through the same
+pipeline, a custom type works wherever a node can appear and supports nesting.
+
+A leaf, returning HTML — e.g. a YouTube embed reused across stories:
+
+```js
+sdcStorybookOptions: {
+  customNodes: [
+    {
+      match: item => item?.type === 'youtube',
+      render: item =>
+        `<iframe src="https://www.youtube.com/embed/${item.id}" allowfullscreen></iframe>`,
+    },
+  ],
+}
+```
 
 ```yaml
 - type: youtube
   id: aqz-KE-bpKQ
 ```
 
-Add the following to your `sdcStorybookOptions`:
+A structural node, returning another node — its `value` may hold nested
+render-array content (a string plus an `icon`, another component, …), resolved by
+the pipeline:
 
 ```js
-sdcStorybookOptions: {
-  ...
-  storyNodesRenderer: [
-    {
-      appliesTo: item => item?.type === 'youtube',
-      render: item =>
-        JSON.stringify(
-          `<iframe src="https://www.youtube.com/embed/${item.id}" allowfullscreen></iframe>`
-        ),
-      priority: -4,
-    },
-  ],
-  ...
-}
+customNodes: [
+  {
+    match: (item) => item?.type === 'link',
+    render: (item) => ({
+      type: 'element',
+      tag: 'a',
+      attributes: { class: 'custom-link', href: item.url ?? '#' },
+      value: item.value,
+    }),
+  },
+]
 ```
+
+```yaml
+- type: link
+  url: 'https://example.com'
+  value:
+    - 'Read the docs '
+    - type: icon
+      pack_id: heroicons_cdn
+      icon_id: arrow-long-right
+```
+
+> **Deprecated:** the previous `storyNodesRenderer` option has been replaced by `customNodes`.
 
 ## Docs addon?
 

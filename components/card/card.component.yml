@@ -71,7 +71,7 @@ thirdPartySettings:
         name: Custom Node (YouTube)
         description: >
           A custom story node type. `type: youtube` is rendered by a
-          storyNodesRenderer defined in .storybook/main.ts into an <iframe>
+          customNodes renderer defined in .storybook/main.ts into an <iframe>
           embed — showing how to add your own node types.
         slots:
           content:
@@ -81,9 +81,9 @@ thirdPartySettings:
       custom_node_nested:
         name: Custom Node (nested value)
         description: >
-          A custom `type: link` node whose `value` is rendered through the
-          shared pipeline (the renderValue argument) — exactly like a slot, so
-          it can hold a string plus a nested `type: icon` node.
+          A custom `type: link` node (defined in .storybook/main.ts) that expands
+          to an <a> element. Its `value` holds nested render-array content — a
+          string plus a `type: icon` node — resolved by the normal node pipeline.
         slots:
           content:
             - type: link

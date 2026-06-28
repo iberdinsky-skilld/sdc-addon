@@ -5,10 +5,10 @@ import type {
   NamespaceDefinition,
   VitePluginTwigDrupalOptions,
   VitePluginTwingDrupalOptions,
-} from './sdc.d.ts'
+} from '../sdc.d.ts'
 import type { Alias } from 'vite'
 import { normalizePath } from 'vite'
-import { logger } from './logger.ts'
+import { logger } from '../logger.ts'
 
 export const getProjectName = (p: string): string => {
   const fullPath = resolve(p)
@@ -76,9 +76,7 @@ export class Namespaces {
   constructor(namespaceDefinition: NamespaceDefinition) {
     this.namespaces = namespaceDefinition.namespaces ?? {}
 
-    // If a namespace option is provided, use it;
-    // otherwise, use the current directory name as the namespace.
-    // Common case in Drupal themes.
+    // Explicit namespace, else the cwd directory name (the Drupal theme case).
     if (namespaceDefinition.namespace) {
       this.namespaces[namespaceDefinition.namespace] = cwd()
     } else {
@@ -152,7 +150,7 @@ export class Namespaces {
       )
     }
 
-    const rootPath = resolve(this.namespaces[ns]) // z.B. "/root/ds-a"
+    const rootPath = resolve(this.namespaces[ns])
     const componentsDir = join(rootPath, 'components')
 
     if (existsSync(componentsDir)) {
@@ -165,7 +163,7 @@ export class Namespaces {
         )
       }
 
-      let rel = relative(componentsDir, fsPath) // z.B. "component-a/sub-component-b"
+      let rel = relative(componentsDir, fsPath)
 
       if (sep !== '/') {
         rel = rel.split(sep).join('/')

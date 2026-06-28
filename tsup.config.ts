@@ -34,11 +34,11 @@ export default defineConfig(async (options) => {
   // twing/drupal-attribute external — they must resolve to the consumer's copies
   // (the same singletons the component render uses).
   configs.push({
-    entry: ['src/runtime/twing.ts', 'src/runtime/twig.ts'],
+    entry: ['src/renderer/twing.ts', 'src/renderer/twig.ts'],
     format: ['esm'],
     target: 'es2020',
     platform: 'browser',
-    outDir: 'dist/runtime',
+    outDir: 'dist/renderer',
     clean: false,
     shims: false,
     splitting: false,

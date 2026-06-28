@@ -1,11 +1,12 @@
-import type { Component } from './sdc.d.ts'
-import { capitalize } from './utils.ts'
-import { generateArgs } from './storyNodeRender.ts'
+import type { Component } from '../sdc.d.ts'
+import { capitalize } from '../utils.ts'
+import { generateArgs } from './nodeCodegen.ts'
 
 export default (
   stories: Component[],
   componentGlobals: Record<string, any> = {},
-  componentId = ''
+  componentId = '',
+  wrapperHtml: Record<string, string> = {}
 ): string =>
   Object.entries(stories)
     .map(
@@ -36,7 +37,7 @@ export default (
             ? `  globals: ${JSON.stringify(mergedGlobals, null, 2)},`
             : ''
         const capitalizedKey = capitalize(storyKey)
-        // Add prefix if conflicts with reserved 'Basic' story
+        // 'Basic' is reserved (it carries baseArgs), so prefix a clashing story.
         const exportName =
           capitalizedKey === 'Basic'
             ? `Variant_${capitalizedKey}`
@@ -55,39 +56,7 @@ ${globalsBlock}
   },
   ${
     library_wrapper
-      ? `decorators: [
-        (Story, context) => {
-          const wrapper = ${JSON.stringify(library_wrapper)};
-          if (!wrapper) return Story();
-
-          // Build \`_story\` (UI Patterns render array) from the resolved args,
-          // partitioned into props/slots by the story's slot keys.
-          const args = context && context.args ? context.args : {};
-          const { componentMetadata, defaultAttributes, ...storyArgs } = args;
-          const slotKeys = ${JSON.stringify(Object.keys(slots ?? {}))};
-          const props = {};
-          const slots = {};
-          for (const key of Object.keys(storyArgs)) {
-            (slotKeys.indexOf(key) !== -1 ? slots : props)[key] = storyArgs[key];
-          }
-          const _story = _sdcMakeStory(
-            ${JSON.stringify(componentId)},
-            props,
-            slots,
-            {
-              context: { componentMetadata, defaultAttributes },
-              render: COMPONENT,
-            }
-          );
-
-          const placeholder = '___SDC_STORY___';
-          const rendered = _sdcRenderInline(
-            wrapper.replace(/\\{\\{\\s*_story\\s*\\}\\}/g, placeholder),
-            { _story }
-          );
-          return rendered.split(placeholder).join(Story());
-        }
-      ],`
+      ? `render: () => ${JSON.stringify(wrapperHtml[storyKey] ?? '')},`
       : ''
   }
   play: async ({ canvasElement }) => {
@@ -99,7 +68,6 @@ ${globalsBlock}
     )
     .join('\n')
 
-// Helper to generate variants args
 const generateVariants = (
   variants: Record<string, { title: string }>
 ): string => {
@@ -111,7 +79,8 @@ const generateVariants = (
     .join('\n')
 }
 
-// Processes the 'attributes' prop to convert it to defaultAttributes array format
+// An `attributes` prop becomes a `defaultAttributes` array-of-tuples
+// ([['key', 'value'], ...]) — the shape Twig's Attribute object expects.
 const processPropsAttributes = (props: Record<string, any>): string => {
   if (
     !props ||
@@ -121,12 +90,9 @@ const processPropsAttributes = (props: Record<string, any>): string => {
     return generateArgs(props, false)
   }
 
-  // Clone props without attributes
   const { attributes, ...otherProps } = props
   const propsArgs = generateArgs(otherProps, false)
 
-  // Convert attributes object to array-of-tuples format for Twig Attribute
-  // Same format as defaultAttributes: [['key', 'value'], ['key2', 'value2']]
   const attributeEntries = Object.entries(attributes)
     .map(([key, value]) => `['${key}', ${JSON.stringify(value)}]`)
     .join(', ')

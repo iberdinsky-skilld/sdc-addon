@@ -23,29 +23,29 @@ const sdcStorybookOptions: SDCStorybookOptions = {
     }
     return source
   },
-  storyNodesRenderer: [
+  // Custom node types: `match` selects the node, `render` returns its HTML. The
+  // same renderer is used in plain slots and in library_wrapper slots.
+  customNodes: [
     {
-      appliesTo: (item) => item?.type === 'sample',
-      render: (item) => `'SAMPLE'`,
-      priority: -4,
+      match: (item) => item?.type === 'sample',
+      render: () => 'SAMPLE',
     },
     {
-      // Custom story node type — render a YouTube embed from { type: youtube, id }.
-      appliesTo: (item) => item?.type === 'youtube',
+      // Render a YouTube embed from { type: youtube, id }.
+      match: (item) => item?.type === 'youtube',
       render: (item) =>
-        JSON.stringify(
-          `<iframe width="${item.width ?? 560}" height="${item.height ?? 315}" src="https://www.youtube.com/embed/${item.id}" title="YouTube video" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
-        ),
-      priority: -4,
+        `<iframe width="${item.width ?? 560}" height="${item.height ?? 315}" src="https://www.youtube.com/embed/${item.id}" title="YouTube video" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`,
     },
     {
-      // Custom node that wraps arbitrary nested story-nodes: `value` is rendered
-      // through the shared pipeline (renderValue) — exactly like a component slot,
-      // so it may be a string, a node, or an array of nodes.
-      appliesTo: (item) => item?.type === 'link',
-      render: (item, renderValue) =>
-        `('<a class="custom-link" href="${item.url ?? '#'}">' + ${renderValue(item.value)} + '</a>')`,
-      priority: -4,
+      // Expand { type: link, url, value } to an <a> element; `value` (a string
+      // plus nested nodes) is resolved by the pipeline.
+      match: (item) => item?.type === 'link',
+      render: (item) => ({
+        type: 'element',
+        tag: 'a',
+        attributes: { class: 'custom-link', href: item.url ?? '#' },
+        value: item.value,
+      }),
     },
   ],
   customDefs: CUSTOM_TEST_DEFS as SDCStorybookOptions['customDefs'],
