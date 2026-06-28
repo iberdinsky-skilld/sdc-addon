@@ -1,7 +1,7 @@
 // UI Patterns "render array" support for story library_wrappers. `_story` is a
 // plain object ({ '#component', '#props', '#slots' }) with a non-enumerable
 // toString() that renders #component through the host's `renderStory`.
-import { entries, toPlain } from './collections.ts'
+import { entries } from './collections.ts'
 
 // Per-story data carried past the Twig context (a function can't be a Twig var):
 // internal render context (componentMetadata, defaultAttributes) and the
@@ -26,14 +26,19 @@ export function isStory(value: unknown): boolean {
   return false
 }
 
-// Render context for a render array: base internal keys + #props + #slots.
+// Render context for a render array: base internal keys + #props + #slots, with
+// each prop/slot value run through `resolveValue` (renders nested render-nodes
+// to HTML; base.context internal keys are left as-is).
 export function storyContext(
   story: Record<string, unknown>,
-  base: StoryBase | undefined
+  base: StoryBase | undefined,
+  resolveValue: (value: unknown) => unknown = (v) => v
 ): Record<string, unknown> {
-  const props = (toPlain(story['#props']) as Record<string, unknown>) || {}
-  const slots = (toPlain(story['#slots']) as Record<string, unknown>) || {}
-  return Object.assign({}, base && base.context, props, slots)
+  const ctx: Record<string, unknown> = Object.assign({}, base && base.context)
+  for (const src of [story['#props'], story['#slots']]) {
+    for (const [k, v] of entries(src)) ctx[k as string] = resolveValue(v)
+  }
+  return ctx
 }
 
 // Story factory bound to a host `renderStory` (own WeakMap of bases per runtime).

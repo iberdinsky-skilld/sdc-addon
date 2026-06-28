@@ -460,17 +460,12 @@ void import.meta.glob('./*.css', { eager: true });
 ${localCssImports}
 ${localCssUrlImports}
 import { injectAssets } from '${VIRTUAL_ASSET_INJECTOR}';
-import { renderIcon as _sdcRenderIcon, renderInline as _sdcRenderInline, makeStory as _sdcMakeStory } from '${iconModule}';
+import { renderIcon as _sdcRenderIcon, renderInline as _sdcRenderInline, makeStory as _sdcMakeStory, PrintableArray as TwigSafeArray } from '${iconModule}';
 ${storiesImports}
 ${twigImports}
 ${assetInjection}
 ${localJsImports}
 await Promise.all(Object.values(import.meta.glob('./*.{js,mjs}')).map(fn => fn()));
-class TwigSafeArray extends Array {
-  toString() {
-    return this.join('');
-  }
-}
 
 export default {
   component: COMPONENT,

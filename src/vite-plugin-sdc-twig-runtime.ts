@@ -91,6 +91,8 @@ function generateRuntimeGlue(
 ${imports}
 import { ${factory} } from 'storybook-addon-sdc/runtime/${lib}';
 
+export { PrintableArray } from 'storybook-addon-sdc/runtime/${lib}';
+
 export const { renderIcon, renderInline, makeStory, registerSdcRuntime } =
   ${factory}(${mergeExpr});
 `

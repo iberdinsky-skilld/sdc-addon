@@ -7,6 +7,7 @@ import {
 } from 'twing'
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
+import { entries } from './collections.ts'
 import { buildIconContext } from './iconContext.ts'
 import {
   patchDrupalAttribute,
@@ -19,6 +20,10 @@ import {
   createStoryFactory,
   type StoryBase,
 } from './story.ts'
+import { createNodeResolver, nodeGet } from './nodes.ts'
+
+// Re-exported so generated story modules share the runtime's array wrapper.
+export { PrintableArray } from './nodes.ts'
 
 // Native env + our idempotency markers + the SDC array loader's setTemplate.
 type SdcEnv = TwingSynchronousEnvironment & {
@@ -36,6 +41,29 @@ export function createTwingRuntime(iconPacks: IconPacks) {
 
   patchDrupalAttribute(DrupalAttribute)
 
+  // Render a nested `{type: component}` node through the SDC env.
+  function renderComponentNode(node: unknown): string {
+    const id = String(nodeGet(node, 'component') ?? '')
+    if (!iconEnv || !id) return ''
+    const ctx: Record<string, unknown> = {}
+    for (const src of [nodeGet(node, 'props'), nodeGet(node, 'slots')]) {
+      for (const [k, v] of entries(src)) ctx[k as string] = resolve(v)
+    }
+    ctx['attributes'] = toAttribute(ctx['attributes'])
+    try {
+      return iconEnv.render(id, ctx)
+    } catch (e) {
+      console.error('[SDC] render node component "' + id + '" error:', e)
+      return ''
+    }
+  }
+
+  const { resolve } = createNodeResolver({
+    renderComponent: renderComponentNode,
+    renderIcon: (packId, iconId, settings) =>
+      renderIcon(packId, iconId, settings),
+  })
+
   // Render by component id (not Twing's render(), which re-wraps `attributes`
   // via Object.entries() and would drop a create_attribute() DrupalAttribute).
   function renderStory(
@@ -43,7 +71,7 @@ export function createTwingRuntime(iconPacks: IconPacks) {
     base: StoryBase | undefined
   ): string {
     const id = story['#component'] as string
-    const ctx = storyContext(story, base)
+    const ctx = storyContext(story, base, resolve)
     ctx['attributes'] = toAttribute(ctx['attributes'])
     if (iconEnv) {
       try {
