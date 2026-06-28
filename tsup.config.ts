@@ -14,7 +14,7 @@ export default defineConfig(async (options) => {
     target: 'node22',
     platform: 'node',
     outDir: 'dist',
-    clean: true,
+    clean: false,
     shims: true,
     external: ['vite', 'fs', 'vite-plugin-node-polyfills'],
   }
@@ -27,6 +27,22 @@ export default defineConfig(async (options) => {
     format: ['esm'],
     target: NODE_TARGET,
     platform: 'node',
+  })
+
+  // Browser runtime modules. These are imported into the consumer's Storybook
+  // preview bundle (not the node preset), so build them for the browser and keep
+  // twing/drupal-attribute external — they must resolve to the consumer's copies
+  // (the same singletons the component render uses).
+  configs.push({
+    entry: ['src/runtime/twing.ts', 'src/runtime/twig.ts'],
+    format: ['esm'],
+    target: 'es2020',
+    platform: 'browser',
+    outDir: 'dist/runtime',
+    clean: false,
+    shims: false,
+    splitting: false,
+    external: ['twing', 'drupal-attribute'],
   })
 
   return configs

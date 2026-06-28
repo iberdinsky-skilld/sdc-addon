@@ -7,7 +7,7 @@ export interface ComponentMetadata {
   machineName: string
   status: string
   name: string
-  group: string
+  group: string | undefined
 }
 
 export default (id: string, content: SDCSchema): ComponentMetadata => {

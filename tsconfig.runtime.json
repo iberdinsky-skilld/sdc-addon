@@ -1,0 +1,15 @@
+{
+  // Extra-strict gate for the browser runtime (src/runtime/**) — beyond the
+  // project-wide `strict`. Run via `npm run typecheck:runtime`.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true
+  },
+  "include": ["src/runtime/**/*"]
+}

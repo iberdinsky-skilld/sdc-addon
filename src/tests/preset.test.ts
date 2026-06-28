@@ -106,7 +106,9 @@ describe('preset.viteFinal and helpers', () => {
   })
 
   test('experimental_indexers includes yamlStoriesIndexer', async () => {
-    const arr = await experimental_indexers(undefined)
+    const arr = await (
+      experimental_indexers as (e?: unknown) => Promise<unknown[]>
+    )(undefined)
     expect(Array.isArray(arr)).toBe(true)
     // should have an indexer with a test regexp for component.yml
     expect(
@@ -178,7 +180,7 @@ describe('preset.viteFinal and helpers', () => {
         d.to?.startsWith(`/sdc-icons/${ns}/`)
       )
       expect(entry).toBeDefined()
-      expect(entry.from).toContain('img')
+      expect((entry as { from: string }).from).toContain('img')
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }

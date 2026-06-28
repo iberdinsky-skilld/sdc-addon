@@ -33,13 +33,13 @@ const createGenerateOptions = (
 // Helper to generate argument strings (for props, slots, or variants)
 const generateArgs = (
   schema:
-    | SDCSchema['props']['properties']
+    | NonNullable<SDCSchema['props']>['properties']
     | SlotDefinition
     | Record<string, any>,
   defs: SDCSchema['$defs'],
   jsonSchemaFakerOptions: GenerateOptions
 ): Promise<Args> => {
-  return Object.entries(schema).reduce<Promise<Args>>(
+  return Object.entries(schema ?? {}).reduce<Promise<Args>>(
     async (accPromise, [key, property]) => {
       const acc = await accPromise
       const schemaWithDefs = {

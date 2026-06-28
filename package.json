@@ -6,7 +6,7 @@
     "SDC",
     "storybook",
     "Drupal",
-    "storybook-addons"
+    "storybook-addon"
   ],
   "repository": {
     "type": "git",
@@ -16,7 +16,9 @@
   "license": "MIT",
   "author": "Ivan Berdinsky <iberdinsky@skilld.cloud>",
   "exports": {
-    "./preset": "./dist/preset.js"
+    "./preset": "./dist/preset.js",
+    "./runtime/twing": "./dist/runtime/twing.js",
+    "./runtime/twig": "./dist/runtime/twig.js"
   },
   "files": [
     "dist/**/*",
@@ -25,6 +27,8 @@
     "*.d.ts"
   ],
   "scripts": {
+    "prebuild": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.runtime.json --noEmit",
     "build": "tsup",
     "build:watch": "npm run build -- --watch",
     "test": "vitest",
@@ -47,9 +51,16 @@
     "vite-plugin-twig-drupal": "^1.7.0",
     "vite-plugin-twing-drupal": "^1.1.2"
   },
+  "peerDependencies": {
+    "storybook": "^10.0.0",
+    "@storybook/html-vite": "^10.0.0",
+    "drupal-attribute": "^1.2.1",
+    "twing": "^7.3.1"
+  },
   "devDependencies": {
+    "drupal-attribute": "^1.2.1",
+    "twing": "^7.3.1",
     "@storybook/addon-docs": "^10.3.6",
-    "@storybook/addon-links": "^10.3.6",
     "@storybook/html-vite": "^10.3.6",
     "@types/json-schema": "^7.0.15",
     "@types/lodash-es": "^4.17.12",

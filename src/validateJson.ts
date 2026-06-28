@@ -36,7 +36,7 @@ const fetchSchema = async (url: string): Promise<JSONSchema4> => {
 
     return schema
   } catch (error) {
-    logger.error('Error fetching schema:', error)
+    logger.error({ err: error }, 'Error fetching schema')
     throw new Error(`Could not fetch schema from ${url}`)
   }
 }

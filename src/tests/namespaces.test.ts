@@ -84,10 +84,10 @@ describe('Namespaces - utilities (unit/integration)', () => {
       )
 
       const twing = ns.toTwingNamespaces()
-      expect(twing['pkg1'][0]).toContain('/components')
+      expect(twing!['pkg1'][0]).toContain('/components')
 
       const twigjs = ns.toTwigJsNamespaces()
-      expect(twigjs['pkg2']).toBeDefined()
+      expect(twigjs!['pkg2']).toBeDefined()
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }

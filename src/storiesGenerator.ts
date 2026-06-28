@@ -60,10 +60,8 @@ ${globalsBlock}
           const wrapper = ${JSON.stringify(library_wrapper)};
           if (!wrapper) return Story();
 
-          // Build \`_story\` as a UI Patterns render array so wrappers can do
-          // \`_story['#props']|merge({...})\` and re-render in a loop. Props/slots
-          // come from the resolved story args, partitioned by the story's slot
-          // keys; internal keys are carried as render context for the component.
+          // Build \`_story\` (UI Patterns render array) from the resolved args,
+          // partitioned into props/slots by the story's slot keys.
           const args = context && context.args ? context.args : {};
           const { componentMetadata, defaultAttributes, ...storyArgs } = args;
           const slotKeys = ${JSON.stringify(Object.keys(slots ?? {}))};

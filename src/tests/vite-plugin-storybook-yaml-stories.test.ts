@@ -213,7 +213,7 @@ thirdPartySettings:
       )
 
       const index = await yamlStoriesIndexer.createIndex(file, {
-        makeTitle: (s: string) => s,
+        makeTitle: (s?: string) => s ?? '',
       })
       expect(Array.isArray(index)).toBe(true)
       expect(index[0]).toHaveProperty('importPath', file)
@@ -333,7 +333,7 @@ thirdPartySettings:
       )
 
       const index = await yamlStoriesIndexer.createIndex(file, {
-        makeTitle: (s: string) => s,
+        makeTitle: (s?: string) => s ?? '',
       })
       const exportNames = index.map((i: { exportName: string }) => i.exportName)
       expect(exportNames).toContain('Basic')
@@ -361,7 +361,7 @@ thirdPartySettings:
       )
 
       const index = await yamlStoriesIndexer.createIndex(file, {
-        makeTitle: (s: string) => s,
+        makeTitle: (s?: string) => s ?? '',
       })
       const exportNames = index.map((i: { exportName: string }) => i.exportName)
       expect(exportNames).not.toContain('Special')
@@ -383,7 +383,7 @@ thirdPartySettings:
       )
 
       const index = await yamlStoriesIndexer.createIndex(file, {
-        makeTitle: (s: string) => s,
+        makeTitle: (s?: string) => s ?? '',
       })
       expect(Array.isArray(index)).toBe(true)
       expect(index.length).toBe(0)
@@ -405,7 +405,7 @@ thirdPartySettings:
       // Use a non-existent file to provoke read error
       const missing = join(compDir, 'does-not-exist.component.yml')
       await expect(
-        yamlStoriesIndexer.createIndex(missing, { makeTitle: (s: string) => s })
+        yamlStoriesIndexer.createIndex(missing, { makeTitle: (s?: string) => s ?? '' })
       ).rejects.toThrow()
       expect(spy).toHaveBeenCalled()
     } finally {
@@ -427,7 +427,7 @@ thirdPartySettings:
       )
 
       const index = await yamlStoriesIndexer.createIndex(file, {
-        makeTitle: (s: string) => s,
+        makeTitle: (s?: string) => s ?? '',
       })
 
       // Should have Basic + Variant_Basic + Other
@@ -1414,7 +1414,9 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
       const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'carousel.component.yml'))
+      const result = (await plugin.load(
+        join(compDir, 'carousel.component.yml')
+      )) as string
 
       expect(result).toContain("import './styles/carousel.css';")
       expect(result).toContain("await import('./js/carousel.js');")

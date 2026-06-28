@@ -12,6 +12,7 @@ import {
 } from '../icon-packs.ts'
 import type { IconPack } from '../icon-packs.ts'
 import { sdcTwigRuntimePlugin } from '../vite-plugin-sdc-twig-runtime.ts'
+import { buildIconContext } from '../runtime/iconContext.ts'
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -471,8 +472,8 @@ tvns:
         '\0virtual:sdc-twig-runtime:twig'
       )
 
-      expect(twigCode).toContain("from 'drupal-attribute'")
-      expect(twigCode).toContain('Twig.extendFunction')
+      expect(twigCode).toContain("from 'storybook-addon-sdc/runtime/twig'")
+      expect(twigCode).toContain('createTwigRuntime(')
       expect(twigCode).toContain('registerSdcRuntime')
       expect(twigCode).toContain('\0icons-pack:')
       expect(twigCode).toContain('tvns')
@@ -489,7 +490,7 @@ tvns:
     }
   })
 
-  test('twing virtual module: imports from icons-pack, uses setTemplate and env.render', async () => {
+  test('twing virtual module: thin glue importing the runtime factory with icon-pack data', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('tgvns')
     try {
       writeFileSync(
@@ -504,14 +505,17 @@ tvns:
         '\0virtual:sdc-twig-runtime:twing'
       )
 
-      expect(code).toContain("from 'twing'")
-      expect(code).toContain("from 'drupal-attribute'")
+      // Structural/wiring smoke only: asserts the glue imports the pack data,
+      // delegates to the factory, and re-exports the surface the rest of the
+      // addon consumes. Runtime BEHAVIOUR is covered in renderArray.test.ts /
+      // includeAttributes.test.ts against the real factory.
       expect(code).toContain('\0icons-pack:')
-      expect(code).toContain('createSynchronousFunction')
+      expect(code).toContain("from 'storybook-addon-sdc/runtime/twing'")
+      expect(code).toContain('createTwingRuntime(')
+      expect(code).toContain('renderIcon')
+      expect(code).toContain('renderInline')
+      expect(code).toContain('makeStory')
       expect(code).toContain('registerSdcRuntime')
-      expect(code).toContain('loader.setTemplate')
-      expect(code).toContain("env.render('_sdc_icon_")
-      expect(code).toContain('function(_twingCtx, packId, iconId, settings)')
     } finally {
       cleanup()
     }
@@ -587,48 +591,23 @@ _sdcRegisterRuntime(Twig);
     }
   })
 
-  describe('_sdcBuildIconContext settings resolution', () => {
-    class MockDrupalAttribute {
-      constructor(_entries: any) {}
-    }
-
+  describe('buildIconContext settings resolution', () => {
     const spritePack = {
       extractor: 'svg_sprite',
       sourceUrls: ['/sdc-icons/sprite.svg'],
       settings: { size: { default: 'md' }, color: { default: 'black' } },
       svgIcons: {},
       pathIcons: {},
-    }
+    } as unknown as IconPack
 
-    async function getBuildCtx() {
-      const ns = toNamespaces({ namespace: '', namespaces: {} })
-      const p = sdcTwigRuntimePlugin(ns) as any
-      const code = await p.load.call(
-        { addWatchFile: () => {} },
-        '\0virtual:sdc-twig-runtime:twig'
-      )
-      const match = code.match(
-        /(function _sdcBuildIconContext[\s\S]+?)\nvar _sdcIconPacks/
-      )
-      if (!match)
-        throw new Error('_sdcBuildIconContext not found in generated code')
-      // eslint-disable-next-line no-new-func
-      return new Function(match[1] + '\nreturn _sdcBuildIconContext;')()
-    }
-
-    test('plain object settings override defaults', async () => {
-      const buildCtx = await getBuildCtx()
-      const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', {
-        size: 'lg',
-      })
+    test('plain object settings override defaults', () => {
+      const ctx = buildIconContext(spritePack, 'home', { size: 'lg' })
       expect(ctx.size).toBe('lg')
       expect(ctx.color).toBe('black')
     })
 
-    test('Map settings are applied (Twing passes Map instead of plain object)', async () => {
-      const buildCtx = await getBuildCtx()
-      const ctx = buildCtx(
-        MockDrupalAttribute,
+    test('Map settings are applied (Twing passes Map instead of plain object)', () => {
+      const ctx = buildIconContext(
         spritePack,
         'home',
         new Map([
@@ -640,10 +619,8 @@ _sdcRegisterRuntime(Twig);
       expect(ctx.color).toBe('blue')
     })
 
-    test('partial Map uses defaults for missing keys', async () => {
-      const buildCtx = await getBuildCtx()
-      const ctx = buildCtx(
-        MockDrupalAttribute,
+    test('partial Map uses defaults for missing keys', () => {
+      const ctx = buildIconContext(
         spritePack,
         'home',
         new Map([['size', 'xl']])
@@ -652,41 +629,58 @@ _sdcRegisterRuntime(Twig);
       expect(ctx.color).toBe('black')
     })
 
-    test('empty settings object uses all defaults', async () => {
-      const buildCtx = await getBuildCtx()
-      const ctx = buildCtx(MockDrupalAttribute, spritePack, 'home', {})
+    test('empty settings object uses all defaults', () => {
+      const ctx = buildIconContext(spritePack, 'home', {})
       expect(ctx.size).toBe('md')
       expect(ctx.color).toBe('black')
     })
 
-    test('path extractor substitutes {icon_id} in a remote source URL', async () => {
-      const buildCtx = await getBuildCtx()
+    test('path extractor substitutes {icon_id} in a remote source URL', () => {
       const pack = {
         extractor: 'path',
         sourceUrls: ['https://cdn.example/icons/{icon_id}.svg'],
         settings: {},
         svgIcons: {},
         pathIcons: {},
-      }
-      const ctx = buildCtx(MockDrupalAttribute, pack, 'heart', {})
+      } as unknown as IconPack
+      const ctx = buildIconContext(pack, 'heart', {})
       expect(ctx.source).toBe('https://cdn.example/icons/heart.svg')
     })
 
-    test('path extractor appends id when there is no placeholder', async () => {
-      const buildCtx = await getBuildCtx()
+    test('path extractor appends id when there is no placeholder', () => {
       const pack = {
         extractor: 'path',
         sourceUrls: ['https://cdn.example/icons'],
         settings: {},
         svgIcons: {},
         pathIcons: {},
-      }
-      const ctx = buildCtx(MockDrupalAttribute, pack, 'heart', {})
+      } as unknown as IconPack
+      const ctx = buildIconContext(pack, 'heart', {})
       expect(ctx.source).toBe('https://cdn.example/icons/heart')
+    })
+
+    test('builds attributes (DrupalAttribute) and group', () => {
+      const pack = {
+        extractor: 'svg',
+        sourceUrls: [],
+        settings: {},
+        svgIcons: {
+          heart: {
+            sourceUrl: 's',
+            content: '<path/>',
+            attrs: { viewBox: '0 0 24 24' },
+            group: 'shapes',
+          },
+        },
+        pathIcons: {},
+      } as unknown as IconPack
+      const ctx = buildIconContext(pack, 'heart', {})
+      expect(ctx.group).toBe('shapes')
+      expect(String(ctx.attributes)).toContain('viewBox="0 0 24 24"')
     })
   })
 
-  test('_sdcBuildIconContext available in twig module with attributes and group', async () => {
+  test('twig virtual module: thin glue importing the runtime factory with icon-pack data', async () => {
     const { tmpRoot, cleanup } = makeTmpNs('ctx')
     try {
       writeFileSync(
@@ -701,10 +695,12 @@ _sdcRegisterRuntime(Twig);
         '\0virtual:sdc-twig-runtime:twig'
       )
 
-      expect(code).toContain('_sdcBuildIconContext')
-      expect(code).toContain('attributes')
-      expect(code).toContain('group')
-      expect(code).toContain('new DrupalAttribute')
+      // Structural/wiring smoke only (see renderArray.test.ts for behaviour).
+      expect(code).toContain('\0icons-pack:')
+      expect(code).toContain("from 'storybook-addon-sdc/runtime/twig'")
+      expect(code).toContain('createTwigRuntime(')
+      expect(code).toContain('renderIcon')
+      expect(code).toContain('registerSdcRuntime')
     } finally {
       cleanup()
     }

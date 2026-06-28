@@ -136,6 +136,11 @@ export interface Component {
   slots?: SlotDefinition
   story?: string
   library_wrapper?: string
+  parameters?: Parameters
+  globals?: Globals
+  thirdPartySettings?: {
+    sdcStorybook?: SDCStorybookSettings
+  }
 }
 
 export interface TwigPluginOptions {}

@@ -6,7 +6,7 @@ export const generateArgs = (
   args: Component['props'] | Component['slots'],
   isSlot = false
 ): string =>
-  Object.entries(args)
+  Object.entries(args ?? {})
     .map(([key, value]) => `${key}: ${formatArgValue(value, isSlot)},`)
     .join('\n')
 

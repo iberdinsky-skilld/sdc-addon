@@ -70,7 +70,7 @@ export const resolveComponentPath = (
 }
 
 export class Namespaces {
-  private namespaces?: Record<string, string>
+  private namespaces: Record<string, string> = {}
   private stripTrailingSlash = (p: string) => p.replace(/\/+$/g, '')
 
   constructor(namespaceDefinition: NamespaceDefinition) {
@@ -88,49 +88,31 @@ export class Namespaces {
     logger.info(`REGISTER NAMESPACES: ${JSON.stringify(this.namespaces)}`)
   }
 
+  // The namespace's components/ dir when present, else the root itself.
+  private componentsRoot(path: string): string {
+    const componentsPath = join(path, 'components')
+    return existsSync(componentsPath) ? componentsPath : path
+  }
+
   public toViteAlias(): Alias[] {
-    const aliases: Alias[] = []
-
-    Object.entries(this.namespaces).forEach(([namespace, path]) => {
-      const hasComponents = existsSync(join(path, 'components'))
-      aliases.push({
-        find: '@' + namespace,
-        replacement: normalizePath(
-          hasComponents ? join(path, 'components') : path
-        ),
-      })
-    })
-
+    const aliases: Alias[] = this.entries().map(([namespace, path]) => ({
+      find: '@' + namespace,
+      replacement: normalizePath(this.componentsRoot(path)),
+    }))
     logger.info(`REGISTER VITE ALIASES: ${JSON.stringify(aliases)}`)
     return aliases
   }
 
   public toTwigJsNamespaces(): VitePluginTwigDrupalOptions['namespaces'] {
-    let namespaces: VitePluginTwigDrupalOptions['namespaces'] = {}
-    for (const [ns, path] of Object.entries(this.namespaces)) {
-      const componentsPath = join(path, 'components')
-      if (existsSync(componentsPath)) {
-        namespaces[ns] = componentsPath
-      } else {
-        // Allow non-components namespaces.
-        namespaces[ns] = path
-      }
-    }
-    return namespaces
+    return Object.fromEntries(
+      this.entries().map(([ns, path]) => [ns, this.componentsRoot(path)])
+    )
   }
 
   public toTwingNamespaces(): VitePluginTwingDrupalOptions['namespaces'] {
-    let namespaces: VitePluginTwingDrupalOptions['namespaces'] = {}
-    for (const [ns, path] of Object.entries(this.namespaces)) {
-      const componentsPath = join(path, 'components')
-      if (existsSync(componentsPath)) {
-        namespaces[ns] = [componentsPath]
-      } else {
-        // Allow non-components namespaces.
-        namespaces[ns] = [path]
-      }
-    }
-    return namespaces
+    return Object.fromEntries(
+      this.entries().map(([ns, path]) => [ns, [this.componentsRoot(path)]])
+    )
   }
 
   public entries(): [string, string][] {
@@ -144,8 +126,8 @@ export class Namespaces {
   public find = (fsPath: string): string => {
     const fp = this.stripTrailingSlash(fsPath)
 
-    let bestPath: string
-    let bestNs: string
+    let bestPath = ''
+    let bestNs = ''
     for (const [ns, path] of Object.entries(this.namespaces)) {
       const base = this.stripTrailingSlash(path)
       // prefix match with segment boundary

@@ -82,7 +82,6 @@ const config: StorybookConfig = {
     '../stories/*.stories.js',
   ],
   addons: [
-    '@storybook/addon-links',
     '@storybook/addon-docs',
     {
       name: join(cwd(), 'src/preset.ts'),
