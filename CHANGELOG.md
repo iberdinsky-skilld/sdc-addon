@@ -1,3 +1,15 @@
+# v0.24.17 (Sun Jun 28 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Render refactor. (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.16 (Sun Jun 28 2026)
 
 #### ⚠️ Pushed to `main`
