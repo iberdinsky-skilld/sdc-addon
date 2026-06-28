@@ -36,6 +36,26 @@ describe('html_tag node (build-time, aligned with runtime)', () => {
       '("<div>" + "" + "</div>")'
     )
   })
+  test('renders a child under a non-standard key (Drupal parity)', () => {
+    expect(
+      renderStoryNode({
+        type: 'html_tag',
+        tag: 'a',
+        attributes: { href: '#' },
+        icon: { type: 'icon', pack_id: 'p', icon_id: 'i' },
+      })
+    ).toBe('("<a href=\\"#\\">" + _sdcRenderIcon("p", "i", {}) + "</a>")')
+  })
+  test('renders value first, then extra-key children in order', () => {
+    expect(
+      renderStoryNode({
+        type: 'html_tag',
+        tag: 'div',
+        value: 'X',
+        extra: { markup: 'Y' },
+      })
+    ).toBe('("<div>" + "X" + "Y" + "</div>")')
+  })
 })
 
 describe('renderStoryNode (build codegen)', () => {

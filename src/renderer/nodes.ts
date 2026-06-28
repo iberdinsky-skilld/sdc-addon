@@ -1,4 +1,5 @@
 import { toAttribute } from './attributes.ts'
+import { entries } from './collections.ts'
 import type { CustomNode } from '../sdc.d.ts'
 export class PrintableArray {
   readonly length: number;
@@ -45,6 +46,18 @@ export function matchCustomNode(node: unknown): CustomNode | undefined {
     }
   })
 }
+
+// Keys of an element/html_tag node that are its own properties; every other
+// renderable key is a child (mirrors UI Patterns' html_tag known-properties).
+export const TAG_RESERVED = new Set([
+  'type',
+  'theme',
+  'tag',
+  'value',
+  'children',
+  'attributes',
+  'attached',
+])
 
 export type NodeKind =
   | 'custom'
@@ -129,10 +142,17 @@ export function createNodeResolver(renderers: NodeRenderers) {
         return String(nodeGet(node, 'markup') ?? '')
       case 'tag': {
         const tag = String(nodeGet(node, 'tag') ?? 'div')
-        const children = toHtml(
-          nodeGet(node, 'value') ?? nodeGet(node, 'children')
-        )
-        return `<${tag}${attributesString(node)}>${children}</${tag}>`
+        const parts: string[] = []
+        const main = nodeGet(node, 'value') ?? nodeGet(node, 'children')
+        if (main != null) parts.push(toHtml(main))
+        for (const [key, value] of entries(node))
+          if (
+            !TAG_RESERVED.has(key as string) &&
+            value !== null &&
+            typeof value === 'object'
+          )
+            parts.push(toHtml(value))
+        return `<${tag}${attributesString(node)}>${parts.join('')}</${tag}>`
       }
       default:
         return ''

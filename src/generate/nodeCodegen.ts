@@ -1,6 +1,6 @@
 import { capitalize, convertToKebabCase } from '../utils.ts'
 import { toAttribute } from '../renderer/attributes.ts'
-import { nodeKind, matchCustomNode } from '../renderer/nodes.ts'
+import { nodeKind, matchCustomNode, TAG_RESERVED } from '../renderer/nodes.ts'
 import type { Component } from '../sdc.d.ts'
 
 // drupal-attribute intentionally drops empty values (canonical Drupal).
@@ -83,14 +83,20 @@ const renderImage = (item: any): string => {
   return JSON.stringify(`<img${attrStr(attrs)} />`)
 }
 
-// element / html_tag → <tag attrs>children</tag>; children from value/children.
+// element / html_tag → <tag attrs>children</tag>. Like Drupal, children are
+// `value` plus every other renderable key (an icon under `icon:`, a numeric `0`),
+// not just `value`/`children`.
 const renderTag = (item: any): string => {
   const tag = item.tag ?? 'div'
-  const inner = item.value ?? item.children
-  const children = inner != null ? formatArgValue(inner, false) : '""'
+  const parts: string[] = []
+  const main = item.value ?? item.children
+  if (main != null) parts.push(formatArgValue(main, false))
+  for (const [key, value] of Object.entries(item))
+    if (!TAG_RESERVED.has(key) && value !== null && typeof value === 'object')
+      parts.push(formatArgValue(value, false))
   const open = JSON.stringify(`<${tag}${attrStr(item.attributes)}>`)
   const close = JSON.stringify(`</${tag}>`)
-  return `(${open} + ${children} + ${close})`
+  return `(${open} + ${parts.length ? parts.join(' + ') : '""'} + ${close})`
 }
 
 const renderIcon = (item: any): string =>
