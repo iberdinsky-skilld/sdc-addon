@@ -1,3 +1,15 @@
+# v0.24.19 (Wed Sep 02 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Fix npm audit vulnerabilities in transitive deps ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.24.18 (Sun Jun 28 2026)
 
 #### ⚠️ Pushed to `main`
