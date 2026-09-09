@@ -135,8 +135,10 @@ export function loadIconPackFile(
   }
   if (!raw || typeof raw !== 'object') return { packs, watchFiles }
 
+  // Relative (no leading slash): resolved against the preview iframe URL, so
+  // it works when Storybook is served from a sub-path (e.g. GitHub Pages).
   const toUrl = (absPath: string) =>
-    `/sdc-icons/${ns}/${relative(nsRoot, absPath).replace(/\\/g, '/')}`
+    `sdc-icons/${ns}/${relative(nsRoot, absPath).replace(/\\/g, '/')}`
 
   for (const [packId, packDef] of Object.entries(raw)) {
     if (!packDef || typeof packDef !== 'object') continue

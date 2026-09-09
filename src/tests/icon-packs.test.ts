@@ -96,7 +96,7 @@ sprite:
 
       expect(pack.extractor).toBe('svg_sprite')
       expect(pack.label).toBe('Sprite Pack')
-      expect(pack.sourceUrls[0]).toMatch(/^\/sdc-icons\//)
+      expect(pack.sourceUrls[0]).toMatch(/^sdc-icons\//)
       expect(pack.sourceUrls[0]).toContain('sprite.svg')
       expect(pack.svgIcons).toEqual({})
       expect(pack.pathIcons).toEqual({})
@@ -147,7 +147,7 @@ svgext:
       expect(star.content).toBe('<path d="M12 2"/>')
       expect(star.attrs['viewBox']).toBe('0 0 24 24')
       expect(star.attrs['class']).toBe('my-icon')
-      expect(star.sourceUrl).toMatch(/^\/sdc-icons\//)
+      expect(star.sourceUrl).toMatch(/^sdc-icons\//)
       expect(star.group).toBe('')
 
       // home.svg
@@ -275,7 +275,7 @@ pathext:
 
       expect(pack.extractor).toBe('path')
       expect(pack.pathIcons['arrow']).toBeDefined()
-      expect(pack.pathIcons['arrow'].sourceUrl).toMatch(/^\/sdc-icons\//)
+      expect(pack.pathIcons['arrow'].sourceUrl).toMatch(/^sdc-icons\//)
       expect(pack.pathIcons['arrow'].sourceUrl).toContain('arrow.png')
       expect(pack.pathIcons['star']).toBeDefined()
     } finally {
@@ -592,7 +592,7 @@ _sdcRegisterRuntime(Twig);
   describe('buildIconContext settings resolution', () => {
     const spritePack = {
       extractor: 'svg_sprite',
-      sourceUrls: ['/sdc-icons/sprite.svg'],
+      sourceUrls: ['sdc-icons/sprite.svg'],
       settings: { size: { default: 'md' }, color: { default: 'black' } },
       svgIcons: {},
       pathIcons: {},
