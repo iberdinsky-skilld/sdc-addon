@@ -1,18 +1,4 @@
-# v0.24.20 (Wed Sep 09 2026)
-
-#### ⚠️ Pushed to `main`
-
-- Fix icons path for static build (iberdinsky@skilld.cloud)
-- Fix GH action ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
-
-#### Authors: 2
-
-- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
-- iberdinsky-skilld (iberdinsky@skilld.cloud)
-
----
-
-# v0.24.20 (Wed Sep 09 2026)
+# v0.24.21 (Wed Sep 09 2026)
 
 #### ⚠️ Pushed to `main`
 
