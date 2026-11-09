@@ -26,7 +26,7 @@ slots:
   logo:
     title: Logo
     examples:
-      - <img src="https://placehold.co/64x64"/>
+      - <img src="https://placehold.co/64x64" alt="Site logo"/>
   dropdown:
     title: Dropdown
     examples:

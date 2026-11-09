@@ -30,7 +30,7 @@ slots:
     # A description.
     description: This is the banner image
     examples:
-      - <img src="https://placehold.co/600x400"/>
+      - <img src="https://placehold.co/600x400" alt="Placeholder banner image"/>
 thirdPartySettings:
   sdcStorybook:
     disabledStories:
@@ -38,7 +38,7 @@ thirdPartySettings:
     stories:
       preview:
         slots:
-          image: <img src="https://placehold.co/1200x400"/>
+          image: <img src="https://placehold.co/1200x400" alt="Placeholder banner image"/>
           content:
             - type: component
               component: 'umami:title'

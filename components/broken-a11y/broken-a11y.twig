@@ -1,0 +1,25 @@
+{# Every rule violation below is on purpose: this component feeds the Accessibility panel demo. #}
+<section{{ attributes.addClass('broken-a11y') }}>
+  <h2 class="broken-a11y__title">{{ title }}</h2>
+
+  {# image-alt: no alt attribute #}
+  <img class="broken-a11y__image" src="https://placehold.co/320x180">
+
+  <div class="broken-a11y__toolbar">
+    {# button-name: icon only, no accessible name #}
+    <button type="button" class="broken-a11y__button">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+
+    {# link-name: icon only, no accessible name #}
+    <a class="broken-a11y__link" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+
+    {# label: input without a label (a placeholder would count as a name for axe) #}
+    <input class="broken-a11y__input" type="text">
+  </div>
+
+  {# color-contrast: light grey on white #}
+  <p class="broken-a11y__muted">This paragraph fails the contrast check.</p>
+</section>

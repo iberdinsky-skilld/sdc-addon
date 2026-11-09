@@ -1,0 +1,34 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+
+name: Broken a11y
+description: >
+  Deliberately inaccessible markup for demonstrating the Accessibility panel.
+  Every violation in this component is intentional; do not copy it.
+group: Addon
+status: experimental
+
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Title
+      examples:
+        - Five things axe will not let you ship
+
+thirdPartySettings:
+  sdcStorybook:
+    disabledStories:
+      - basic
+    parameters:
+      layout: centered
+    stories:
+      violations:
+        name: Five violations
+        description: >
+          Open the Accessibility panel. The template contains an image without
+          alt text, an icon-only button and an icon-only link without an
+          accessible name, a form field without a label and text with
+          insufficient contrast.
+        props:
+          title: Five things axe will not let you ship
