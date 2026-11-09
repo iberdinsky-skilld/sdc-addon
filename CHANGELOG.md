@@ -1,3 +1,19 @@
+# v0.25.0 (Mon Nov 09 2026)
+
+#### 🚀 Enhancement
+
+- Allow Storybook 11 in peerDependencies [#134](https://github.com/iberdinsky-skilld/sdc-addon/pull/134) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
+- Update GitHub Actions to current majors, add Dependabot for actions, build for node22 ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.24.22 (Mon Nov 09 2026)
 
 #### ⚠️ Pushed to `main`
