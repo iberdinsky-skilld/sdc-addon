@@ -1,3 +1,15 @@
+# v0.24.22 (Mon Nov 09 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Bump Storybook to 10.6.6 and Vite to 7.3.7, fix npm audit, CI on Node 24 (iberdinsky@skilld.cloud)
+
+#### Authors: 1
+
+- iberdinsky-skilld (iberdinsky@skilld.cloud)
+
+---
+
 # v0.24.21 (Wed Sep 09 2026)
 
 #### ⚠️ Pushed to `main`
