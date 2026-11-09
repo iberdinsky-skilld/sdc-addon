@@ -1,3 +1,27 @@
+# v0.25.1 (Mon Nov 09 2026)
+
+#### ⚠️ Pushed to `main`
+
+- Keep PrintableArray.length out of Twig loops ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Put block tags at column zero in demo templates for clean HTML output ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Escape line separators in generated story code ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Drop stale yarn packageManager field ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### 🏠 Internal
+
+- Fix accessibility of demo components, add a deliberately broken one [#137](https://github.com/iberdinsky-skilld/sdc-addon/pull/137) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Run the demo Storybook on 11.0.0-beta.0 with the a11y addon [#136](https://github.com/iberdinsky-skilld/sdc-addon/pull/136) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### 🔩 Dependency Updates
+
+- Update dev dependencies: tsup 9, boxen 9, @types/node 24 [#135](https://github.com/iberdinsky-skilld/sdc-addon/pull/135) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.25.0 (Mon Nov 09 2026)
 
 #### 🚀 Enhancement
