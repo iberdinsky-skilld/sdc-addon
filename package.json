@@ -62,7 +62,7 @@
     "@storybook/html-vite": "^10.4.6",
     "@types/json-schema": "^7.0.15",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "@types/node-fetch": "^2.6.13",
     "@types/twig": "^1.12.17",
     "auto": "^11.3.6",
