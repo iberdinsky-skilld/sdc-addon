@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname } from 'node:path'
 import { logger } from '../logger.ts'
-import { sanitizeStoryKey } from '../utils.ts'
+import { sanitizeStoryKey, jsLiteral } from '../utils.ts'
 
 import type {
   Args,
@@ -463,7 +463,7 @@ export default ({
       const localMediaAssets = mediaCss
         .map(
           (c, i) =>
-            `{ type: 'css', url: _sdcLocalCss${i}, media: ${JSON.stringify(c.media)} }`
+            `{ type: 'css', url: _sdcLocalCss${i}, media: ${jsLiteral(c.media)} }`
         )
         .join(', ')
 
@@ -472,7 +472,7 @@ export default ({
       // media CSS references the `?url` import bindings, so it can't be
       // JSON-stringified.
       const injectParts = [
-        externalAssets.length > 0 ? `...${JSON.stringify(externalAssets)}` : '',
+        externalAssets.length > 0 ? `...${jsLiteral(externalAssets)}` : '',
         localMediaAssets,
       ].filter(Boolean)
       const assetInjection =
@@ -506,22 +506,22 @@ await Promise.all(Object.values(import.meta.glob('./*.{js,mjs}')).map(fn => fn()
 export default {
   component: COMPONENT,
   parameters: {
-    ...${JSON.stringify(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, null, 2)},
-    docs: {description: {component: ${JSON.stringify(content.description, null, 2)}}},
+    ...${jsLiteral(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, 2)},
+    docs: {description: {component: ${jsLiteral(content.description, 2)}}},
   },
   ${
     Object.keys(componentGlobals).length > 0
-      ? `globals: ${JSON.stringify(componentGlobals, null, 2)},`
+      ? `globals: ${jsLiteral(componentGlobals, 2)},`
       : ''
   }
-  argTypes: ${JSON.stringify(argTypes, null, 2)},
-  args: ${JSON.stringify(args, null, 2)},
+  argTypes: ${jsLiteral(argTypes, 2)},
+  args: ${jsLiteral(args, 2)},
 };
 
 export const Basic = {
 
-  args: ${JSON.stringify(basicArgs, null, 2)},
-  baseArgs: ${JSON.stringify(args, null, 2)},
+  args: ${jsLiteral(basicArgs, 2)},
+  baseArgs: ${jsLiteral(args, 2)},
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },

@@ -1,5 +1,5 @@
 import type { Component } from '../sdc.d.ts'
-import { capitalize } from '../utils.ts'
+import { capitalize, jsLiteral } from '../utils.ts'
 import { generateArgs } from './nodeCodegen.ts'
 
 export default (
@@ -34,7 +34,7 @@ export default (
         }
         const globalsBlock =
           Object.keys(mergedGlobals).length > 0
-            ? `  globals: ${JSON.stringify(mergedGlobals, null, 2)},`
+            ? `  globals: ${jsLiteral(mergedGlobals, 2)},`
             : ''
         const capitalizedKey = capitalize(storyKey)
         // 'Basic' is reserved (it carries baseArgs), so prefix a clashing story.
@@ -45,9 +45,9 @@ export default (
 
         return `
 export const ${exportName} = {
-  parameters:  {...${JSON.stringify(storyParameters, null, 2)}, ...{docs: {description: {story: ${JSON.stringify(description, null, 2)}}}}},
+  parameters:  {...${jsLiteral(storyParameters, 2)}, ...{docs: {description: {story: ${jsLiteral(description, 2)}}}}},
 ${globalsBlock}
-  name: ${JSON.stringify(name ?? capitalizedKey, null, 2)},
+  name: ${jsLiteral(name ?? capitalizedKey, 2)},
   args: {
     ...Basic.baseArgs,
     ${processPropsAttributes(props)}
@@ -56,7 +56,7 @@ ${globalsBlock}
   },
   ${
     library_wrapper
-      ? `render: () => ${JSON.stringify(wrapperHtml[storyKey] ?? '')},`
+      ? `render: () => ${jsLiteral(wrapperHtml[storyKey] ?? '')},`
       : ''
   }
   play: async ({ canvasElement }) => {
@@ -74,7 +74,7 @@ const generateVariants = (
   return Object.entries(variants)
     .map(
       ([variantKey, variantValue]) =>
-        `${variantKey}: ${JSON.stringify(variantValue.title)},`
+        `${variantKey}: ${jsLiteral(variantValue.title)},`
     )
     .join('\n')
 }
@@ -94,7 +94,7 @@ const processPropsAttributes = (props: Record<string, any>): string => {
   const propsArgs = generateArgs(otherProps, false)
 
   const attributeEntries = Object.entries(attributes)
-    .map(([key, value]) => `['${key}', ${JSON.stringify(value)}]`)
+    .map(([key, value]) => `['${key}', ${jsLiteral(value)}]`)
     .join(', ')
 
   return (

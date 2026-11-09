@@ -29,3 +29,15 @@ export const sanitizeStoryKey = (key: string): string => {
   }
   return key
 }
+
+// Serialize a value as a JavaScript literal for generated source code.
+// JSON.stringify leaves the U+2028 / U+2029 line separators unescaped; they
+// are legal inside JS string literals only since ES2019 and still confuse some
+// tooling, so escape them (also satisfies CodeQL js/bad-code-sanitization).
+// `<` and `>` are left alone: the output is an ES module, never inline HTML.
+export const jsLiteral = (value: unknown, indent?: number): string => {
+  const json = JSON.stringify(value, null, indent)
+  // JSON.stringify(undefined) is undefined; keep emitting the `undefined` literal.
+  if (json === undefined) return 'undefined'
+  return json.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
+}

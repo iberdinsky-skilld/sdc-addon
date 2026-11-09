@@ -2,6 +2,7 @@ import { capitalize, convertToKebabCase } from '../utils.ts'
 import { toAttribute } from '../renderer/attributes.ts'
 import { nodeKind, matchCustomNode, TAG_RESERVED } from '../renderer/nodes.ts'
 import type { Component } from '../sdc.d.ts'
+import { jsLiteral } from '../utils.ts'
 
 // drupal-attribute intentionally drops empty values (canonical Drupal).
 const attrStr = (value: unknown): string => toAttribute(value).toString()
@@ -31,7 +32,7 @@ export const renderStoryNode = (item: any): string => {
     case 'custom': {
       const out = matchCustomNode(item)!.render(item)
       return typeof out === 'string'
-        ? JSON.stringify(out)
+        ? jsLiteral(out)
         : formatArgValue(out, false)
     }
     case 'component':
@@ -41,11 +42,11 @@ export const renderStoryNode = (item: any): string => {
     case 'image':
       return renderImage(item)
     case 'markup':
-      return JSON.stringify(`${item.markup}`)
+      return jsLiteral(`${item.markup}`)
     case 'tag':
       return renderTag(item)
     default:
-      return JSON.stringify(item)
+      return jsLiteral(item)
   }
 }
 
@@ -80,7 +81,7 @@ const renderImage = (item: any): string => {
   for (const key of ['width', 'height', 'alt', 'sizes', 'title']) {
     if (mapped[key] != null) attrs[key] = mapped[key]
   }
-  return JSON.stringify(`<img${attrStr(attrs)} />`)
+  return jsLiteral(`<img${attrStr(attrs)} />`)
 }
 
 // element / html_tag → <tag attrs>children</tag>. Like Drupal, children are
@@ -94,12 +95,12 @@ const renderTag = (item: any): string => {
   for (const [key, value] of Object.entries(item))
     if (!TAG_RESERVED.has(key) && value !== null && typeof value === 'object')
       parts.push(formatArgValue(value, false))
-  const open = JSON.stringify(`<${tag}${attrStr(item.attributes)}>`)
-  const close = JSON.stringify(`</${tag}>`)
+  const open = jsLiteral(`<${tag}${attrStr(item.attributes)}>`)
+  const close = jsLiteral(`</${tag}>`)
   return `(${open} + ${parts.length ? parts.join(' + ') : '""'} + ${close})`
 }
 
 const renderIcon = (item: any): string =>
-  `_sdcRenderIcon(${JSON.stringify(item.pack_id)}, ${JSON.stringify(
+  `_sdcRenderIcon(${jsLiteral(item.pack_id)}, ${jsLiteral(
     item.icon_id
-  )}, ${JSON.stringify(item.settings ?? {})})`
+  )}, ${jsLiteral(item.settings ?? {})})`

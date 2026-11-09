@@ -98,6 +98,7 @@ export const { renderIcon, registerSdcRuntime } = ${factory}(${mergeExpr});
 }
 
 const TWIG_JS_MARKER = "from 'drupal-twig-extensions/twig'"
+import { jsLiteral } from '../utils.ts'
 const TWIG_JS_INJECT_AFTER = 'addDrupalExtensions(Twig);'
 const TWING_MARKER = 'createSynchronousEnvironment'
 const TWING_INJECT_AFTER = 'addDrupalExtensions(env);'
@@ -171,7 +172,7 @@ export function sdcTwigRuntimePlugin(
           Object.keys(sprites).length > 0
             ? `
 if (typeof document !== 'undefined') {
-  var _sdcSprites = ${JSON.stringify(sprites)};
+  var _sdcSprites = ${jsLiteral(sprites)};
   for (var _k in _sdcSprites) {
     var _elId = 'sdc-sprite-' + _k;
     if (!document.getElementById(_elId)) {
@@ -187,7 +188,7 @@ if (typeof document !== 'undefined') {
 `
             : ''
 
-        return `${injection}export default ${JSON.stringify(packs)};`
+        return `${injection}export default ${jsLiteral(packs)};`
       }
     },
 
