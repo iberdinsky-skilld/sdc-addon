@@ -1,26 +1,21 @@
 {% if items %}
-  {% set attributes = attributes.addClass('breadcrumbs') %}
-
-  {% if max_width %}
-    {% set attributes = attributes.addClass('max-w-xs') %}
-  {% endif %}
-
-  <div{{attributes}}>
-    <ul class="breadcrumbs__list">
-      {% if variant %}<li>Variant: {{ variant }}</li>{% endif %}
-
-      {% for item in items %}
-        {% if item.url %}
-          <li>
-            <a href="{{ item.url }}">{{ item.title }}</a>
-          </li>
-        {% else %}
-          <li>
-            {{ item.title }}
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
+{% set attributes = attributes.addClass('breadcrumbs') %}
+{% if max_width %}
+{% set attributes = attributes.addClass('max-w-xs') %}
+{% endif %}
+<div{{ attributes }}>
+  <ul class="breadcrumbs__list">
+{% if variant %}
+    <li>Variant: {{ variant }}</li>
+{% endif %}
+{% for item in items %}
+{% if item.url %}
+    <li><a href="{{ item.url }}">{{ item.title }}</a></li>
+{% else %}
+    <li>{{ item.title }}</li>
+{% endif %}
+{% endfor %}
+  </ul>
+</div>
 {% endif %}
 

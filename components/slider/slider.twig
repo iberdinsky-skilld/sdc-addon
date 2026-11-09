@@ -5,14 +5,12 @@
   ]
 %}
 
-<div
-  {{ attributes.addClass(classes).setAttribute('data-slider', true).setAttribute('data-items-per-view', itemsPerView|default(2)) }}
->
+<div{{ attributes.addClass(classes).setAttribute('data-slider', true).setAttribute('data-items-per-view', itemsPerView|default(2)) }}>
   <div class="swiper o-slider__swiper">
     <div class="swiper-wrapper o-slider__wrapper">
-      {% for slide in slides %}
-        <div class="swiper-slide o-slider__slide">{{ slide }}</div>
-      {% endfor %}
+{% for slide in slides %}
+      <div class="swiper-slide o-slider__slide">{{ slide }}</div>
+{% endfor %}
     </div>
   </div>
   <button type="button" class="swiper-button-prev o-slider__nav--prev" aria-label="Previous slide">
