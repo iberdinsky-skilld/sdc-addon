@@ -6,6 +6,11 @@ on:
   push:
     branches: ['main']
 
+  # Release commits made by `auto` carry [skip ci], which suppresses the push
+  # trigger for the whole push. Redeploy when the GitHub release is published.
+  release:
+    types: [published]
+
   # Allows manual triggering from the Actions tab
   workflow_dispatch:
 
@@ -31,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '23'
+          node-version: '24'
 
       - name: Install dependencies
         run: npm install
