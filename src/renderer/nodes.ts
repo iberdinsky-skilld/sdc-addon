@@ -2,11 +2,17 @@ import { toAttribute } from './attributes.ts'
 import { entries } from './collections.ts'
 import type { CustomNode } from '../sdc.d.ts'
 export class PrintableArray {
-  readonly length: number;
+  declare readonly length: number;
   [index: number]: unknown
   constructor(...items: unknown[]) {
     for (let i = 0; i < items.length; i++) this[i] = items[i]
-    this.length = items.length
+    // Non-enumerable: twig.js iterates plain objects with Object.keys(), so an
+    // enumerable `length` would show up as an extra loop item.
+    Object.defineProperty(this, 'length', {
+      value: items.length,
+      enumerable: false,
+      writable: false,
+    })
   }
   [Symbol.iterator](): Iterator<unknown> {
     let i = 0

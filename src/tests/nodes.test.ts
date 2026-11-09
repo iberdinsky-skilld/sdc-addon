@@ -129,6 +129,15 @@ describe('createNodeResolver', () => {
     expect(resolver.resolve(data)).toBe(data)
   })
 
+  test('PrintableArray exposes only its items to key-based iteration', () => {
+    // twig.js loops over non-arrays with Object.keys(); `length` must not leak
+    // in as an extra item.
+    const pa = new PrintableArray('a', 'b', 'c')
+    expect(Object.keys(pa)).toEqual(['0', '1', '2'])
+    expect(pa.length).toBe(3)
+    expect(String(pa)).toBe('abc')
+  })
+
   test('PrintableArray stays iterable with its resolved items', () => {
     const pa = resolver.resolve([{ markup: 'a' }, { markup: 'b' }])
     expect([...(pa as PrintableArray)]).toEqual(['a', 'b'])
