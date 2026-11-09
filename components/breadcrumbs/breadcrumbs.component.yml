@@ -27,6 +27,8 @@ props:
 
 thirdPartySettings:
   sdcStorybook:
+    disabledStories:
+      - basic
     stories:
       previewVariant:
         props:
