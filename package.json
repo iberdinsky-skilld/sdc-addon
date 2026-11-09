@@ -68,7 +68,7 @@
     "@types/node-fetch": "^2.6.13",
     "@types/twig": "^1.12.17",
     "auto": "^11.3.6",
-    "boxen": "^8.0.1",
+    "boxen": "^9.0.0",
     "dedent": "^1.7.2",
     "prettier": "^3.8.3",
     "prompts": "^2.4.2",
