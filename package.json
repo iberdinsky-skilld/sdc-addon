@@ -58,8 +58,9 @@
     "twing": "^7.3.1"
   },
   "devDependencies": {
-    "@storybook/addon-docs": "^10.4.6",
-    "@storybook/html-vite": "^10.4.6",
+    "@storybook/addon-a11y": "^11.0.0-beta.0",
+    "@storybook/addon-docs": "^11.0.0-beta.0",
+    "@storybook/html-vite": "^11.0.0-beta.0",
     "@types/json-schema": "^7.0.15",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.19.2",
@@ -73,7 +74,7 @@
     "prompts": "^2.4.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "storybook": "^10.4.6",
+    "storybook": "^11.0.0-beta.0",
     "tsup": "^9.0.0",
     "twing": "^7.3.1",
     "typescript": "^5.9.3",
