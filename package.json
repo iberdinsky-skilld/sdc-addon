@@ -38,18 +38,15 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "serve": "npx http-server ./storybook-static",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
-    "json-schema-faker": "^0.6.2",
+    "json-schema-faker": "^0.6.4",
     "jsonschema": "^1.5.0",
-    "lodash-es": "^4.18.1",
-    "node-fetch": "^3.3.2",
-    "pino": "^10.3.1",
-    "pino-pretty": "^13.1.3",
     "vite-plugin-twig-drupal": "^1.7.0",
-    "vite-plugin-twing-drupal": "^1.1.2",
-    "yaml": "^2.8.4"
+    "vite-plugin-twing-drupal": "^1.1.4",
+    "yaml": "^2.9.1"
   },
   "peerDependencies": {
     "@storybook/html-vite": "^10.4.6 || ^11.0.0-beta.0",
@@ -58,28 +55,27 @@
     "twing": "^7.3.1"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "^11.0.0-beta.0",
-    "@storybook/addon-docs": "^11.0.0-beta.0",
-    "@storybook/html-vite": "^11.0.0-beta.0",
+    "@storybook/addon-a11y": "^11.0.0-beta.1",
+    "@storybook/addon-docs": "^11.0.0-beta.1",
+    "@storybook/html-vite": "^11.0.0-beta.1",
     "@types/json-schema": "^7.0.15",
-    "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.19.2",
-    "@types/node-fetch": "^2.6.13",
     "@types/twig": "^1.12.17",
     "auto": "^11.3.6",
     "boxen": "^9.0.0",
     "dedent": "^1.7.2",
     "drupal-attribute": "^1.2.1",
-    "prettier": "^3.8.3",
+    "playwright": "^1.65.0",
+    "prettier": "^3.9.10",
     "prompts": "^2.4.2",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "storybook": "^11.0.0-beta.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "storybook": "^11.0.0-beta.1",
     "tsup": "^9.0.0",
     "twing": "^7.3.1",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.3",
-    "vitest": "^4.1.5",
+    "typescript": "^6.0.3",
+    "vite": "^7.3.8",
+    "vitest": "^5.1.0",
     "zx": "^8.8.5"
   },
   "publishConfig": {

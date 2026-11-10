@@ -1,4 +1,4 @@
-import { capitalize, convertToKebabCase } from '../utils.ts'
+import { capitalize, toIdentifier } from '../utils.ts'
 import { toAttribute } from '../renderer/attributes.ts'
 import { nodeKind, matchCustomNode, TAG_RESERVED } from '../renderer/nodes.ts'
 import type { Component } from '../sdc.d.ts'
@@ -51,12 +51,12 @@ export const renderStoryNode = (item: any): string => {
 }
 
 const renderComponent = (item: Component): string => {
-  const kebabCaseName = convertToKebabCase(item.component)
+  const identifier = toIdentifier(item.component)
   const componentProps = `...{ ${generateArgs(item.props ?? {}, false)}}, ...{${generateArgs(item.slots ?? {}, true)}}`
   const storyArgs = item.story
-    ? `...${kebabCaseName}.${capitalize(item.story)}.args`
+    ? `...${identifier}.${capitalize(item.story)}.args`
     : '...{}'
-  return `${kebabCaseName}.default.component({...${kebabCaseName}.Basic.baseArgs, ${storyArgs}, ${componentProps}})`
+  return `${identifier}.default.component({...${identifier}.Basic.baseArgs, ${storyArgs}, ${componentProps}})`
 }
 
 const renderImage = (item: any): string => {

@@ -52,6 +52,85 @@ thirdPartySettings:
     }
   })
 
+  test('load() with validate warns about schema errors and still returns the module', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    try {
+      const compDir = join(tmpRoot, 'components', 'badge')
+      mkdirSync(compDir, { recursive: true })
+      writeFileSync(
+        join(compDir, 'badge.component.yml'),
+        'name: Badge\nstatus: bogus\n'
+      )
+      writeFileSync(join(compDir, 'badge.twig'), '<div>badge</div>')
+
+      // A tiny Drupal-like schema: status must be one of the known values.
+      const schema = {
+        type: 'object',
+        properties: {
+          status: {
+            enum: ['experimental', 'stable', 'deprecated', 'obsolete'],
+          },
+        },
+      }
+      fetchMock.mockResolvedValue({ ok: true, json: async () => schema })
+
+      const namespaces = toNamespaces({
+        namespace: '',
+        namespaces: { umami: tmpRoot },
+      })
+      const plugin = YamlStoriesPlugin({
+        namespaces,
+        sdcStorybookOptions: { validate: 'https://example.com/schema.json' },
+      })
+
+      const result = await plugin.load(join(compDir, 'badge.component.yml'))
+
+      expect(result).toContain('export const Basic')
+      expect(fetchMock).toHaveBeenCalledWith('https://example.com/schema.json')
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+      expect(String(warnSpy.mock.calls[0][0])).toMatch(/instance\.status/)
+    } finally {
+      vi.unstubAllGlobals()
+      warnSpy.mockRestore()
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test('load() with an unreachable schema warns and still returns the module', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
+    const fetchMock = vi.fn().mockRejectedValue(new Error('offline'))
+    vi.stubGlobal('fetch', fetchMock)
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    try {
+      const compDir = join(tmpRoot, 'components', 'card')
+      mkdirSync(compDir, { recursive: true })
+      writeFileSync(join(compDir, 'card.component.yml'), 'name: Card\n')
+      writeFileSync(join(compDir, 'card.twig'), '<div>card</div>')
+
+      const namespaces = toNamespaces({
+        namespace: '',
+        namespaces: { umami: tmpRoot },
+      })
+      const plugin = YamlStoriesPlugin({
+        namespaces,
+        sdcStorybookOptions: { validate: true },
+      })
+
+      const result = await plugin.load(join(compDir, 'card.component.yml'))
+
+      expect(result).toContain('export const Basic')
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+      expect(String(warnSpy.mock.calls[0][0])).toMatch(/Could not validate/)
+    } finally {
+      vi.unstubAllGlobals()
+      warnSpy.mockRestore()
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
   test('load() keeps docs description when sdcStorybook.parameters is empty', async () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
     try {

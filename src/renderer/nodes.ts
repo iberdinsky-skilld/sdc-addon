@@ -66,13 +66,7 @@ export const TAG_RESERVED = new Set([
 ])
 
 export type NodeKind =
-  | 'custom'
-  | 'component'
-  | 'icon'
-  | 'image'
-  | 'markup'
-  | 'tag'
-  | null
+  'custom' | 'component' | 'icon' | 'image' | 'markup' | 'tag' | null
 
 // Single source of truth for classifying a render-array node.
 export function nodeKind(node: unknown): NodeKind {

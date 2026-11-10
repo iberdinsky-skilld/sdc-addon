@@ -1,9 +1,9 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parse as parseYaml } from 'yaml'
-import fetch from 'node-fetch'
 import type { Plugin } from 'vite'
 import {
+  iconPackFiles,
   loadIconPackFile,
   collectIconIdsFromData,
   fetchRemoteSvgIcons,
@@ -11,6 +11,8 @@ import {
 } from '../generate/iconPacks.ts'
 import type { Namespaces } from '../generate/namespaces.ts'
 import type { ResolveIconSource } from '../sdc.d.ts'
+import { isRemoteUrl, jsLiteral, listDir } from '../utils.ts'
+import { TWIG_FILE_RE } from '../constants.ts'
 
 const remoteSvgCache = new Map<string, string | null>()
 
@@ -31,33 +33,24 @@ async function fetchSvgFromUrl(url: string): Promise<string | null> {
   }
 }
 
-function readNamespaceYamlData(namespaces: Namespaces): unknown[] {
+// Parsed content of every *.component.yml and *.story.yml under each
+// namespace's components/ folder; unparseable files are skipped.
+export function readNamespaceYamlData(namespaces: Namespaces): unknown[] {
   const out: unknown[] = []
-  const walk = (dir: string) => {
-    let entries
-    try {
-      entries = readdirSync(dir, { withFileTypes: true })
-    } catch {
-      return
-    }
-    for (const entry of entries) {
-      const full = join(dir, entry.name)
-      if (entry.isDirectory()) {
-        walk(full)
-      } else if (
-        entry.name.endsWith('.story.yml') ||
-        entry.name.endsWith('.component.yml')
-      ) {
-        try {
-          out.push(parseYaml(readFileSync(full, 'utf8')))
-        } catch {
-          /* skip unparseable */
-        }
+  for (const [, root] of namespaces.entries()) {
+    for (const entry of listDir(join(root, 'components'))) {
+      if (entry.isDirectory) continue
+      if (
+        !entry.name.endsWith('.story.yml') &&
+        !entry.name.endsWith('.component.yml')
+      )
+        continue
+      try {
+        out.push(parseYaml(readFileSync(entry.path, 'utf8')))
+      } catch {
+        /* skip unparseable */
       }
     }
-  }
-  for (const [, root] of namespaces.entries()) {
-    walk(join(root, 'components'))
   }
   return out
 }
@@ -97,8 +90,47 @@ export const { renderIcon, registerSdcRuntime } = ${factory}(${mergeExpr});
 `
 }
 
+// vite-plugin-twing-drupal >= 1.1.4 builds one shared environment in this
+// virtual module instead of one per compiled template.
+const TWING_ENV_ID = 'virtual:twing-env'
+const TWING_ENV_LOADER_LINE =
+  'const loader = createSDCLoader(allSources, twingNamespaces);'
+
+// Templates are rendered by absolute path, but the shared module only
+// registers an absolute key once that template's own module has been loaded,
+// so any template loaded after the environment was first served is missing.
+// Alias every template file's absolute path to the plugin's own relative key
+// (relative to the namespace's template directory), guarded so nothing is
+// overwritten and unknown keys are skipped.
+export function twingEnvAliases(
+  namespaces: Namespaces
+): Array<[string, string]> {
+  const pairs: Array<[string, string]> = []
+  for (const dirs of Object.values(namespaces.toTwingNamespaces() ?? {})) {
+    for (const dir of dirs) {
+      for (const entry of listDir(dir)) {
+        if (entry.isDirectory) continue
+        if (!/\.(twig|svg)$/.test(entry.name)) continue
+        pairs.push([entry.path, entry.relative])
+      }
+    }
+  }
+  return pairs
+}
+
+export function injectTwingEnvAliases(
+  code: string,
+  namespaces: Namespaces
+): string {
+  if (!code.includes(TWING_ENV_LOADER_LINE)) return code
+  const aliasCode = `for (const [abs, rel] of ${jsLiteral(twingEnvAliases(namespaces))}) {
+      if (!(abs in allSources) && rel in allSources) allSources[abs] = allSources[rel];
+    }
+    ${TWING_ENV_LOADER_LINE}`
+  return code.replace(TWING_ENV_LOADER_LINE, aliasCode)
+}
+
 const TWIG_JS_MARKER = "from 'drupal-twig-extensions/twig'"
-import { jsLiteral } from '../utils.ts'
 const TWIG_JS_INJECT_AFTER = 'addDrupalExtensions(Twig);'
 const TWING_MARKER = 'createSynchronousEnvironment'
 const TWING_INJECT_AFTER = 'addDrupalExtensions(env);'
@@ -119,10 +151,7 @@ export function sdcTwigRuntimePlugin(
 
     async load(id: string) {
       if (id === RESOLVED_TWIG || id === RESOLVED_TWING) {
-        const packFilePaths = namespaces
-          .entries()
-          .map(([ns, root]) => join(root, `${ns}.icons.yml`))
-          .filter((p) => existsSync(p))
+        const packFilePaths = iconPackFiles(namespaces).map(([, file]) => file)
         return generateRuntimeGlue(
           packFilePaths,
           id === RESOLVED_TWIG ? 'twig' : 'twing'
@@ -140,9 +169,7 @@ export function sdcTwigRuntimePlugin(
         // For svg packs with remote (CDN) sources, fetch and inline only the
         // icons actually referenced by stories/components.
         const remotePacks = Object.values(packs).filter(
-          (p) =>
-            p.extractor === 'svg' &&
-            p.sources.some((s) => /^https?:\/\//.test(s))
+          (p) => p.extractor === 'svg' && p.sources.some((s) => isRemoteUrl(s))
         )
         if (remotePacks.length > 0) {
           const yamlData = readNamespaceYamlData(namespaces)
@@ -161,7 +188,7 @@ export function sdcTwigRuntimePlugin(
         for (const pack of Object.values(packs)) {
           if (
             pack.extractor === 'svg_sprite' &&
-            pack.sources.some((s) => /^https?:\/\//.test(s))
+            pack.sources.some((s) => isRemoteUrl(s))
           ) {
             const content = await fetchRemoteSprite(pack, fetchSvgFromUrl)
             if (content) sprites[pack.packId] = content
@@ -206,8 +233,10 @@ if (typeof document !== 'undefined') {
     },
 
     transform(code: string, id: string) {
-      if (!id.match(/\.twig(\?.*)?$/)) return null
+      const isSharedEnv = id === TWING_ENV_ID
+      if (!isSharedEnv && !TWIG_FILE_RE.test(id)) return null
       if (code.includes(INJECTED_GUARD)) return null
+      if (isSharedEnv) code = injectTwingEnvAliases(code, namespaces)
 
       // Inject registerSdcRuntime(<env>) right after the lib sets up its env.
       const variants = [

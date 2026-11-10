@@ -2,11 +2,12 @@ import { describe, expect, test } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { toNamespaces } from '../generate/namespaces.ts'
+import { toNamespaces, type Namespaces } from '../generate/namespaces.ts'
 import {
   discoverIconPacks,
   loadIconPackFile,
   collectIconIdsFromData,
+  iconPackFiles,
   fetchRemoteSvgIcons,
   fetchRemoteSprite,
 } from '../generate/iconPacks.ts'
@@ -831,5 +832,29 @@ describe('fetchRemoteSprite', () => {
       extractor: 'svg' as const,
     }
     expect(await fetchRemoteSprite(svgPack, async () => '<svg/>')).toBeNull()
+  })
+})
+
+describe('iconPackFiles', () => {
+  test('returns <ns>.icons.yml only for namespaces that have one', () => {
+    const withPack = mkdtempSync(join(tmpdir(), 'sdc-ipf-a-'))
+    const without = mkdtempSync(join(tmpdir(), 'sdc-ipf-b-'))
+    try {
+      writeFileSync(join(withPack, 'alpha.icons.yml'), 'p:\n  extractor: svg\n')
+      // A file under the wrong name does not count.
+      writeFileSync(join(without, 'other.icons.yml'), '')
+      const namespaces = {
+        entries: () => [
+          ['alpha', withPack],
+          ['beta', without],
+        ],
+      } as unknown as Namespaces
+      expect(iconPackFiles(namespaces)).toEqual([
+        ['alpha', join(withPack, 'alpha.icons.yml')],
+      ])
+    } finally {
+      rmSync(withPack, { recursive: true, force: true })
+      rmSync(without, { recursive: true, force: true })
+    }
   })
 })
