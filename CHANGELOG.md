@@ -1,3 +1,15 @@
+# v0.26.0 (Tue Nov 10 2026)
+
+#### 🚀 Enhancement
+
+- Storybook 11 beta.1, Twing plugin 1.1.4 support, schema validation fix, fewer dependencies, e2e on both engines [#138](https://github.com/iberdinsky-skilld/sdc-addon/pull/138) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.25.1 (Mon Nov 09 2026)
 
 #### ⚠️ Pushed to `main`
