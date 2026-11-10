@@ -1,33 +1,25 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createWrapperEnv, type WrapperEnv } from '../renderer/wrapper.ts'
 import { discoverIconPacks } from './iconPacks.ts'
 import type { Namespaces } from './namespaces.ts'
+import { listDir } from '../utils.ts'
 import type { SDCStorybookOptions, ResolveIconSource } from '../sdc.d.ts'
 
 // Collect every namespace's `.twig`/`.svg` templates, keyed `@ns/rel`, walking
 // `<path>/components` when it exists else `<path>` (mirrors the browser loader).
-function collectTemplates(namespaces: Namespaces): Record<string, string> {
+export function collectTemplates(
+  namespaces: Namespaces
+): Record<string, string> {
   const out: Record<string, string> = {}
   for (const [ns, root] of namespaces.entries()) {
     const componentsRoot = join(root, 'components')
     const base = existsSync(componentsRoot) ? componentsRoot : root
-    const walk = (dir: string, prefix = ''): void => {
-      let entries
-      try {
-        entries = readdirSync(dir, { withFileTypes: true })
-      } catch {
-        return
-      }
-      for (const e of entries) {
-        const full = join(dir, e.name)
-        const rel = prefix ? `${prefix}/${e.name}` : e.name
-        if (e.isDirectory()) walk(full, rel)
-        else if (/\.twig$/.test(e.name) || /\.svg/.test(e.name))
-          out[`@${ns}/${rel}`] = readFileSync(full, 'utf8')
-      }
+    for (const entry of listDir(base)) {
+      if (entry.isDirectory) continue
+      if (/\.twig$/.test(entry.name) || /\.svg/.test(entry.name))
+        out[`@${ns}/${entry.relative}`] = readFileSync(entry.path, 'utf8')
     }
-    walk(base)
   }
   return out
 }

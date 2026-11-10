@@ -1,7 +1,8 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve, basename, dirname, extname, relative } from 'node:path'
 import { parse as parseYaml } from 'yaml'
 import type { Namespaces } from './namespaces.ts'
+import { isRemoteUrl, listDir, posixDirname } from '../utils.ts'
 import type {
   IconPack,
   IconPacks,
@@ -53,37 +54,25 @@ function parseSvgFile(raw: string): {
   return { content, attrs }
 }
 
-function scanDir(
-  dir: string,
-  baseDir: string,
-  filterExt: string | null
-): ScannedFile[] {
+// Every file under baseDir (optionally by extension); `group` is the file's
+// directory relative to baseDir, '' at the root.
+function scanDir(baseDir: string, filterExt: string | null): ScannedFile[] {
   const results: ScannedFile[] = []
-  let entries
-  try {
-    entries = readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return results
-  }
-  for (const entry of entries) {
-    const fullPath = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      results.push(...scanDir(fullPath, baseDir, filterExt))
-    } else if (entry.isFile()) {
-      const ext = extname(entry.name)
-      if (filterExt && ext.toLowerCase() !== filterExt.toLowerCase()) continue
-      results.push({
-        absPath: fullPath,
-        iconId: basename(entry.name, ext),
-        group: relative(baseDir, dir),
-      })
-    }
+  for (const entry of listDir(baseDir)) {
+    if (entry.isDirectory) continue
+    const ext = extname(entry.name)
+    if (filterExt && ext.toLowerCase() !== filterExt.toLowerCase()) continue
+    results.push({
+      absPath: entry.path,
+      iconId: basename(entry.name, ext),
+      group: posixDirname(entry.relative),
+    })
   }
   return results
 }
 
 function resolveSourceEntry(rawSource: string, nsRoot: string): ScannedFile[] {
-  if (/^https?:\/\//.test(rawSource)) {
+  if (isRemoteUrl(rawSource)) {
     return [{ absPath: rawSource, iconId: '*', group: '' }]
   }
 
@@ -112,7 +101,7 @@ function resolveSourceEntry(rawSource: string, nsRoot: string): ScannedFile[] {
   }
 
   if (!existsSync(baseDir)) return []
-  return scanDir(baseDir, baseDir, filterExt)
+  return scanDir(baseDir, filterExt)
 }
 
 export function loadIconPackFile(
@@ -156,7 +145,7 @@ export function loadIconPackFile(
     const sourceUrls: string[] = []
 
     for (const src of resolvedSources) {
-      if (/^https?:\/\//.test(src)) {
+      if (isRemoteUrl(src)) {
         sources.push(src)
         sourceUrls.push(src)
       } else {
@@ -262,7 +251,7 @@ export async function fetchRemoteSvgIcons(
   usedIconIds: Iterable<string>,
   fetchSvg: (url: string) => Promise<string | null>
 ): Promise<void> {
-  const httpSources = pack.sources.filter((s) => /^https?:\/\//.test(s))
+  const httpSources = pack.sources.filter((s) => isRemoteUrl(s))
   if (httpSources.length === 0) return
   for (const iconId of usedIconIds) {
     if (pack.svgIcons[iconId]) continue
@@ -288,7 +277,7 @@ export async function fetchRemoteSprite(
   fetchSvg: (url: string) => Promise<string | null>
 ): Promise<string | null> {
   if (pack.extractor !== 'svg_sprite') return null
-  const remote = pack.sources.find((s) => /^https?:\/\//.test(s))
+  const remote = pack.sources.find((s) => isRemoteUrl(s))
   if (!remote) return null
   const content = await fetchSvg(remote)
   if (!content) return null
@@ -297,14 +286,20 @@ export async function fetchRemoteSprite(
   return content
 }
 
+// `<ns>.icons.yml` of every namespace that has one, as [namespace, path].
+export function iconPackFiles(namespaces: Namespaces): Array<[string, string]> {
+  return namespaces
+    .entries()
+    .map(([ns, root]): [string, string] => [ns, join(root, `${ns}.icons.yml`)])
+    .filter(([, file]) => existsSync(file))
+}
+
 export function discoverIconPacks(
   namespaces: Namespaces,
   resolveIconSource?: ResolveIconSource
 ): IconPacks {
   const packs: IconPacks = {}
-  for (const [ns, nsRoot] of namespaces.entries()) {
-    const iconsFile = join(nsRoot, `${ns}.icons.yml`)
-    if (!existsSync(iconsFile)) continue
+  for (const [, iconsFile] of iconPackFiles(namespaces)) {
     const { packs: filePacks } = loadIconPackFile(iconsFile, resolveIconSource)
     Object.assign(packs, filePacks)
   }

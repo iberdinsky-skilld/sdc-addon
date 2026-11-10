@@ -1,8 +1,14 @@
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { parse as parseYaml } from 'yaml'
 import { join, basename, dirname } from 'node:path'
 import { logger } from '../logger.ts'
-import { sanitizeStoryKey, jsLiteral } from '../utils.ts'
+import {
+  sanitizeStoryKey,
+  jsLiteral,
+  listDir,
+  posixDirname,
+  isRemoteUrl,
+} from '../utils.ts'
 
 import type {
   Args,
@@ -35,12 +41,8 @@ import type {
 } from '../sdc.d.ts'
 import type { GenerateOptions } from 'json-schema-faker'
 import type { JSONSchema4 } from 'json-schema'
-import { validateJson } from '../generate/validate.ts'
-import {
-  capitalize,
-  convertToKebabCase,
-  deriveGroupFromPath,
-} from '../utils.ts'
+import { schemaUrlFor, validateJson } from '../generate/validate.ts'
+import { capitalize, toIdentifier, deriveGroupFromPath } from '../utils.ts'
 import {
   Namespaces,
   getProjectName,
@@ -48,17 +50,24 @@ import {
 } from '../generate/namespaces.ts'
 import { VIRTUAL_TWIG, VIRTUAL_TWING } from './sdcTwigRuntime.ts'
 
-const readSDC = (
+// Validation only warns: a broken or unreachable schema must not take the
+// component out of Storybook.
+const readSDC = async (
   filePath: string,
   defs?: JSONSchema4,
   validate?: string | boolean
-): SDCSchema => {
+): Promise<SDCSchema> => {
   const sdcSchema = {
     $defs: defs,
     ...(parseYaml(readFileSync(filePath, 'utf8')) as SDCSchema),
   }
-  if (typeof validate === 'string' && validate.length > 0) {
-    validateJson(sdcSchema, sdcSchema['$schema'] || validate)
+  const schemaUrl = schemaUrlFor(sdcSchema, validate)
+  if (schemaUrl) {
+    try {
+      await validateJson(sdcSchema, schemaUrl)
+    } catch (error) {
+      logger.warn(`Could not validate ${filePath}: ${error}`)
+    }
   }
   return sdcSchema
 }
@@ -66,7 +75,8 @@ const readSDC = (
 const VIRTUAL_ASSET_INJECTOR = 'virtual:sdc-asset-injector'
 const VIRTUAL_ASSET_INJECTOR_ID = '\0' + VIRTUAL_ASSET_INJECTOR
 
-const assetInjectorModule = `
+// Exported for tests: evaluated in the browser, never on the server.
+export const assetInjectorModule = `
 function applyAttrs(el, attrs) {
   if (!attrs) return
   for (const [k, v] of Object.entries(attrs)) {
@@ -83,6 +93,9 @@ export async function injectAssets(assets) {
       if (asset.type === 'js') {
         const s = document.createElement('script')
         applyAttrs(s, asset.attributes)
+        // Inserted scripts run in load order unless async is off; dependencies
+        // (jquery before jquery-ui) must execute in the order they are listed.
+        s.async = false
         s.src = asset.url; s.onload = res; s.onerror = rej; document.head.appendChild(s)
       } else {
         const l = document.createElement('link'); l.rel = 'stylesheet'
@@ -108,9 +121,9 @@ const dynamicImports = (
       componentName,
       namespaces
     )
-    const kebabCaseName = convertToKebabCase(item.component)
+    const identifier = toIdentifier(item.component)
     if (resolvedPath) {
-      imports.add(`import * as ${kebabCaseName} from '${resolvedPath}';`)
+      imports.add(`import * as ${identifier} from '${resolvedPath}';`)
     }
   }
   const extractComponentImports = (args: Record<string, any>) => {
@@ -139,38 +152,30 @@ const dynamicImports = (
 
 const CSS_GROUPS = ['base', 'layout', 'component', 'state', 'theme'] as const
 
-const isExternalUrl = (s: string): boolean =>
-  s.startsWith('http://') || s.startsWith('https://')
-
 // Drupal `libraryOverrides` disables an asset when its value is `false`.
 const isDisabled = (opts: unknown): opts is false => opts === false
 
 const extractCssAssets = (library: LibraryDefinition): ExternalCssAsset[] =>
   CSS_GROUPS.flatMap((group) =>
     Object.entries(library.css?.[group] ?? {})
-      .filter(([url, opts]) => isExternalUrl(url) && !isDisabled(opts))
-      .map(
-        ([url, opts]): ExternalCssAsset => ({
-          type: 'css',
-          url,
-          media: (opts as CssFileOptions).media,
-          attributes: (opts as CssFileOptions).attributes,
-        })
-      )
+      .filter(([url, opts]) => isRemoteUrl(url) && !isDisabled(opts))
+      .map(([url, opts]): ExternalCssAsset => ({
+        type: 'css',
+        url,
+        media: (opts as CssFileOptions).media,
+        attributes: (opts as CssFileOptions).attributes,
+      }))
   )
 
 const extractJsAssets = (library: LibraryDefinition): ExternalJsAsset[] =>
   Object.entries(library.js ?? {})
-    .filter(([url, opts]) => isExternalUrl(url) && !isDisabled(opts))
-    .map(
-      ([url, opts]): ExternalJsAsset => ({
-        type: 'js',
-        url,
-        attributes: (opts as JsFileOptions).attributes as
-          | Record<string, string>
-          | undefined,
-      })
-    )
+    .filter(([url, opts]) => isRemoteUrl(url) && !isDisabled(opts))
+    .map(([url, opts]): ExternalJsAsset => ({
+      type: 'js',
+      url,
+      attributes: (opts as JsFileOptions).attributes as
+        Record<string, string> | undefined,
+    }))
 
 export const libraryOverridesImports = (
   content: SDCSchema,
@@ -223,7 +228,7 @@ export const libraryOverridesLocalImports = (
   const seenCss = new Set<string>()
   for (const group of CSS_GROUPS) {
     for (const [url, opts] of Object.entries(overrides.css?.[group] ?? {})) {
-      if (isDisabled(opts) || isExternalUrl(url)) continue
+      if (isDisabled(opts) || isRemoteUrl(url)) continue
       const path = normalizeLocalPath(url)
       if (isGlobCoveredCss(path) || seenCss.has(path)) continue
       seenCss.add(path)
@@ -234,7 +239,7 @@ export const libraryOverridesLocalImports = (
   const js: string[] = []
   const seenJs = new Set<string>()
   for (const [url, opts] of Object.entries(overrides.js ?? {})) {
-    if (isDisabled(opts) || isExternalUrl(url)) continue
+    if (isDisabled(opts) || isRemoteUrl(url)) continue
     const path = normalizeLocalPath(url)
     if (isGlobCoveredJs(path) || seenJs.has(path)) continue
     seenJs.add(path)
@@ -329,8 +334,7 @@ export default ({
   namespaces = {} as Namespaces,
   vitePluginTwingDrupalOptions = undefined as { hooks?: string } | undefined,
   vitePluginTwigDrupalOptions = undefined as
-    | { functions?: Record<string, unknown> }
-    | undefined,
+    { functions?: Record<string, unknown> } | undefined,
 }) => ({
   name: 'vite-plugin-storybook-yaml-stories',
   resolveId(id: string) {
@@ -348,7 +352,11 @@ export default ({
     if (!id.endsWith('component.yml')) return
 
     try {
-      const content = readSDC(id, globalDefs, sdcStorybookOptions.validate)
+      const content = await readSDC(
+        id,
+        globalDefs,
+        sdcStorybookOptions.validate
+      )
       const externalAssets = libraryOverridesImports(
         content,
         sdcStorybookOptions.dependencyMap ?? {}
@@ -540,7 +548,7 @@ export const yamlStoriesIndexer: Indexer = {
   test: /component\.yml$/,
   createIndex: async (fileName, { makeTitle }) => {
     try {
-      const content = readSDC(fileName)
+      const content = await readSDC(fileName)
 
       // Group set via metadata wins; else derive from path; else 'SDC'
       const group = content.group || deriveGroupFromPath(fileName)
@@ -587,36 +595,23 @@ export const yamlStoriesIndexer: Indexer = {
 // depth (e.g. a nested `stories/` subfolder). Subfolders that contain their own
 // *.component.yml are skipped so a nested component's stories don't leak into
 // its parent.
-const collectStoryFilesSync = (rootDir: string): string[] => {
-  const out: string[] = []
-  const walk = (dir: string, isRoot: boolean) => {
-    let entries
-    try {
-      entries = readdirSync(dir, { withFileTypes: true })
-    } catch {
-      return
-    }
-    // A nested directory that owns a *.component.yml belongs to another
-    // component; don't descend into it (the root itself is always walked).
-    if (
-      !isRoot &&
-      entries.some(
-        (entry) => entry.isFile() && entry.name.endsWith('.component.yml')
-      )
-    ) {
-      return
-    }
-    for (const entry of entries) {
-      const full = join(dir, entry.name)
-      if (entry.isDirectory()) {
-        walk(full, false)
-      } else if (entry.name.endsWith('.story.yml')) {
-        out.push(full)
-      }
-    }
-  }
-  walk(rootDir, true)
-  return out
+export const collectStoryFilesSync = (rootDir: string): string[] => {
+  const files = listDir(rootDir).filter((entry) => !entry.isDirectory)
+  // A nested directory that owns a *.component.yml belongs to another
+  // component; its stories are not ours (the root's own yml does not count).
+  const foreign = files
+    .filter(
+      (entry) =>
+        entry.name.endsWith('.component.yml') && entry.relative.includes('/')
+    )
+    .map((entry) => posixDirname(entry.relative) + '/')
+  return files
+    .filter(
+      (entry) =>
+        entry.name.endsWith('.story.yml') &&
+        !foreign.some((dir) => entry.relative.startsWith(dir))
+    )
+    .map((entry) => entry.path)
 }
 
 const loadStoryFilesSync = (fileName: string) => {

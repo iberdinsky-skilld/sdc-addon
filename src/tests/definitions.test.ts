@@ -1,16 +1,13 @@
 import { describe, expect, test, vi } from 'vitest'
 
-// Mock node-fetch before importing module under test
-vi.mock('node-fetch', () => ({ default: vi.fn() }))
-import fetch from 'node-fetch'
-
 import { loadAndMergeDefinitions } from '../generate/definitions.ts'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { logger } from '../logger.ts'
 
-const fetchMock = fetch as unknown as any
+const fetchMock = vi.fn()
+vi.stubGlobal('fetch', fetchMock)
 
 describe('definitions.loadExternalDef / loadAndMergeDefinitions', () => {
   test('loads local YAML file and merges definitions', async () => {

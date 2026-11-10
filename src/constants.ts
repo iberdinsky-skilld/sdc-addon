@@ -32,16 +32,21 @@ export const DEFAULT_DEPENDENCY_MAP: Record<string, ExternalAsset[]> = {
   ],
 }
 
+// A .twig module id, with or without a Vite query suffix.
+export const TWIG_FILE_RE = /\.twig(\?.*)?$/
+
+// Drupal core's component metadata schema; used when `validate: true`.
+export const DEFAULT_SCHEMA_URL =
+  'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json'
+
 export const DEFAULT_ADDON_OPTIONS: SDCAddonOptions = {
   sdcStorybookOptions: {
     useBasicArgsForStories: true,
     twigLib: 'twig',
     validate: false,
-    // validate:
-    //   'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json',
   },
   vitePluginTwingDrupalOptions: {
-    include: /\.twig(\?.*)?$/,
+    include: TWIG_FILE_RE,
   },
   vitePluginTwigDrupalOptions: {},
   jsonSchemaFakerOptions: {

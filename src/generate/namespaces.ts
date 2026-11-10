@@ -1,4 +1,4 @@
-import { readdirSync, existsSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { basename, join, resolve, sep, relative } from 'node:path'
 import { cwd } from 'node:process'
 import type {
@@ -9,6 +9,7 @@ import type {
 import type { Alias } from 'vite'
 import { normalizePath } from 'vite'
 import { logger } from '../logger.ts'
+import { listDir } from '../utils.ts'
 
 export const getProjectName = (p: string): string => {
   const fullPath = resolve(p)
@@ -20,27 +21,10 @@ export const getProjectName = (p: string): string => {
   return parts[i - 1]
 }
 
-const getAllSubdirectoriesRecursive = (baseDir: string): string[] => {
-  const result: string[] = []
-
-  const scan = (dir: string): void => {
-    try {
-      const entries = readdirSync(dir, { withFileTypes: true })
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const fullPath = join(dir, entry.name)
-          result.push(fullPath)
-          scan(fullPath)
-        }
-      }
-    } catch (error) {
-      // Ignore directory access errors
-    }
-  }
-
-  scan(baseDir)
-  return result
-}
+const getAllSubdirectoriesRecursive = (baseDir: string): string[] =>
+  listDir(baseDir)
+    .filter((entry) => entry.isDirectory)
+    .map((entry) => entry.path)
 
 export const resolveComponentPath = (
   namespace: string,

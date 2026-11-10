@@ -28,7 +28,11 @@ export function createTwigCore(iconPacks: IconPacks) {
     const ctx = buildIconContext(pack, iconId, settings || {})
     try {
       return twig.twig({ data: pack.template }).render(ctx)
-    } catch {
+    } catch (e) {
+      console.error(
+        '[SDC Icons] Error rendering icon "' + packId + ':' + iconId + '":',
+        e
+      )
       return ''
     }
   }
@@ -37,20 +41,9 @@ export function createTwigCore(iconPacks: IconPacks) {
     twig = Twig
     if (Twig.__sdcIconRegistered) return
     Twig.__sdcIconRegistered = true
-    Twig.extendFunction('icon', function (packId, iconId, settings) {
-      const pack = iconPacks[packId]
-      if (!pack || !iconId) return ''
-      const ctx = buildIconContext(pack, iconId, settings || {})
-      try {
-        return Twig.twig({ data: pack.template }).render(ctx)
-      } catch (e) {
-        console.error(
-          '[SDC Icons] Error rendering icon "' + packId + ':' + iconId + '":',
-          e
-        )
-        return ''
-      }
-    })
+    Twig.extendFunction('icon', (packId, iconId, settings) =>
+      renderIcon(packId, iconId, settings)
+    )
   }
 
   return { renderIcon, registerCore, getTwig: (): TwigJs | null => twig }

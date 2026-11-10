@@ -16,7 +16,7 @@ describe('componentMetadata', () => {
 
     const expectedPath = relative(cwd(), dirname(id))
     expect(meta.path).toBe(expectedPath)
-    expect(meta.machineName).toBe(id)
+    expect(meta.machineName).toBe('button')
     expect(meta.status).toBe('deprecated')
     expect(meta.name).toBe('Button')
     expect(meta.group).toBe('atoms')

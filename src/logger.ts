@@ -1,10 +1,2 @@
-import pino from 'pino'
-
-export const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-    },
-  },
-})
+// Storybook's own node logger: one output style with the rest of the dev server.
+export { logger } from 'storybook/internal/node-logger'

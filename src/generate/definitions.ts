@@ -1,13 +1,13 @@
 import type { JSONSchema4 } from 'json-schema'
 import { logger } from '../logger.ts'
+import { isRemoteUrl } from '../utils.ts'
 import type { SDCStorybookOptions } from '../sdc.d.ts'
 import { parse } from 'yaml'
 import { readFileSync } from 'node:fs'
-import fetch from 'node-fetch'
 
 async function loadExternalDef(defPath: string): Promise<Record<string, any>> {
   try {
-    if (defPath.startsWith('http://') || defPath.startsWith('https://')) {
+    if (isRemoteUrl(defPath)) {
       const response = await fetch(defPath)
       if (!response.ok) {
         throw new Error(`Failed to fetch ${defPath}: ${response.statusText}`)

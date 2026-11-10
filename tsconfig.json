@@ -2,7 +2,6 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "incremental": false,
@@ -16,10 +15,7 @@
     "strict": true,
     "skipLibCheck": true,
     "target": "ES2022",
-    "resolveJsonModule": true,
-    "paths": {
-      "@src/*": ["src/*"]
-    }
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "e2e/**/*"]
 }

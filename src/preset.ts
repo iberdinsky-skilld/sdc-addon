@@ -1,5 +1,5 @@
 import { existsSync, statSync } from 'node:fs'
-import { join, dirname, relative } from 'node:path'
+import { dirname, relative } from 'node:path'
 import YamlStoriesPlugin, {
   yamlStoriesIndexer,
 } from './vite/storybookYamlStories.ts'
@@ -8,15 +8,18 @@ import type { HtmlTagDescriptor, UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
 import type { StorybookConfig } from '@storybook/html-vite'
 import type { SDCAddonOptions } from './sdc.d.ts'
+import { isRemoteUrl, mergeOptions } from './utils.ts'
 import { toNamespaces } from './generate/namespaces.ts'
 import { loadAndMergeDefinitions } from './generate/definitions.ts'
 import { DEFAULT_ADDON_OPTIONS, DEFAULT_DEPENDENCY_MAP } from './constants.ts'
-import { merge as lodashMerge } from 'lodash-es'
 import { sdcTwigRuntimePlugin } from './vite/sdcTwigRuntime.ts'
-import { loadIconPackFile } from './generate/iconPacks.ts'
+import { iconPackFiles, loadIconPackFile } from './generate/iconPacks.ts'
 
-export async function viteFinal(config: UserConfig, options: SDCAddonOptions) {
-  options = lodashMerge({}, DEFAULT_ADDON_OPTIONS, options)
+export async function viteFinal(
+  config: UserConfig,
+  userOptions: SDCAddonOptions
+) {
+  const options = mergeOptions(DEFAULT_ADDON_OPTIONS, userOptions)
 
   const {
     sdcStorybookOptions,
@@ -108,15 +111,13 @@ export const staticDirs = async (
   existing: (string | { from: string; to: string })[],
   options: SDCAddonOptions
 ) => {
-  const merged = lodashMerge({}, DEFAULT_ADDON_OPTIONS, options)
+  const merged = mergeOptions(DEFAULT_ADDON_OPTIONS, options)
   const namespaces = toNamespaces(merged.sdcStorybookOptions)
 
   const iconDirs: { from: string; to: string }[] = []
 
-  for (const [ns, nsRoot] of namespaces.entries()) {
-    const iconsFile = join(nsRoot, `${ns}.icons.yml`)
-    if (!existsSync(iconsFile)) continue
-
+  for (const [ns, iconsFile] of iconPackFiles(namespaces)) {
+    const nsRoot = dirname(iconsFile)
     const { packs } = loadIconPackFile(iconsFile)
     const seen = new Set<string>()
 
@@ -124,8 +125,7 @@ export const staticDirs = async (
       if (pack.extractor === 'svg') continue
 
       for (const src of pack.sources) {
-        if (src.startsWith('http')) continue
-        if (!existsSync(src)) continue
+        if (isRemoteUrl(src) || !existsSync(src)) continue
 
         const dir = statSync(src).isDirectory() ? src : dirname(src)
         if (seen.has(dir)) continue

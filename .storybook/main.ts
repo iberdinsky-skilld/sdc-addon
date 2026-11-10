@@ -10,7 +10,8 @@ const sdcStorybookOptions: SDCStorybookOptions = {
     assets: join(cwd(), './assets'),
     'parent-namespace': resolve('./parent-namespace'),
   },
-  twigLib: 'twig', // Switch here to twing
+  // 'twig' (twig.js) or 'twing'; the e2e run sets SDC_TWIG_LIB for both.
+  twigLib: process.env.SDC_TWIG_LIB === 'twing' ? 'twing' : 'twig',
   // Remap Drupal /libraries/... icon sources to CDNs for the demo packs.
   resolveIconSource: (source) => {
     const cdn: Record<string, string> = {
