@@ -68,7 +68,7 @@
     "@storybook/addon-a11y": "^11.0.0-beta.1",
     "@storybook/addon-docs": "^11.0.0-beta.1",
     "@storybook/html-vite": "^11.0.0-beta.1",
-    "@types/node": "^24.19.2",
+    "@types/node": "^25.9.9",
     "auto": "^11.3.6",
     "boxen": "^9.0.0",
     "dedent": "^1.7.2",
