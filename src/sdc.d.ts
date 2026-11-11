@@ -19,6 +19,8 @@ export interface SDCSchema {
   description?: string
   group?: string
   status?: 'experimental' | 'stable' | 'deprecated' | 'obsolete'
+  // Drupal 11.3+: hidden from page builders; its stories get the `no-ui` tag.
+  noUi?: boolean
   props?: JSONSchema4
   slots?: SlotDefinition
   libraryOverrides?: LibraryDefinition
