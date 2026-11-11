@@ -12,19 +12,6 @@ import type {
 } from 'vite'
 import type { SDCAddonOptions } from '../sdc.d.ts'
 
-vi.mock('./definitions.ts', () => ({
-  loadAndMergeDefinitions: () => Promise.resolve({}),
-}))
-
-vi.mock('./namespaces.ts', () => ({
-  toNamespaces: () => ({
-    toTwingNamespaces: () => ({ t: ['p'] }),
-    toTwigJsNamespaces: () => ({ t: 'p' }),
-    toViteAlias: () => [{ find: '@ns', replacement: '/path/components' }],
-    entries: () => [['ns', '/path']],
-  }),
-}))
-
 vi.mock('vite-plugin-node-polyfills', () => ({
   nodePolyfills: (opts: unknown) => ({ name: 'nodePolyfills', opts }),
 }))

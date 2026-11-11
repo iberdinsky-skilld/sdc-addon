@@ -94,10 +94,10 @@ const config: StorybookConfig = {
     name: '@storybook/html-vite',
     options: {},
   },
+  // Builds only: in dev these paths would shadow Vite's modules.
   ...(process.env.NODE_ENV === 'production'
     ? {
         staticDirs: [
-          // TODO: Make this dynamic based on namespaces.
           { from: '../components', to: '/components' },
           {
             from: '../parent-namespace/components',

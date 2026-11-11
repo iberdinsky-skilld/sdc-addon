@@ -16,7 +16,12 @@ const sharedRules = {
 export default tseslint.config(
   { ignores: ['dist/**', 'storybook-static/**', 'node_modules/**'] },
   {
-    files: ['src/**/*.ts', 'e2e/**/*.ts', '.storybook/**/*.ts'],
+    files: [
+      'src/**/*.ts',
+      'e2e/**/*.ts',
+      'e2e/fixtures/**/.storybook/*.ts',
+      '.storybook/**/*.ts',
+    ],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
