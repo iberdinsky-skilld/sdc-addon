@@ -7,7 +7,6 @@ import type { ExternalAsset } from '../sdc.d.ts'
 
 export interface ComponentModuleInput {
   twigTemplate: string
-  // Exports renderIcon and PrintableArray.
   iconModule: string
   assetInjector: string
   localAssets: { css: LocalCssImport[]; js: string[] }
@@ -21,6 +20,8 @@ export interface ComponentModuleInput {
   args: Args
   basicArgs: Args
   stories: string
+  slotNames: string[]
+  propNames: string[]
 }
 
 export const componentModule = ({
@@ -38,6 +39,8 @@ export const componentModule = ({
   args,
   basicArgs,
   stories,
+  slotNames,
+  propNames,
 }: ComponentModuleInput): string => {
   // Plain local CSS is bundled like the glob CSS.
   const eagerCss = localAssets.css.filter((c) => !c.media)
@@ -78,7 +81,7 @@ void import.meta.glob('./*.css', { eager: true });
 ${localCssImports}
 ${localCssUrlImports}
 import { injectAssets } from '${assetInjector}';
-import { renderIcon as _sdcRenderIcon, PrintableArray as TwigSafeArray } from '${iconModule}';
+import { renderIcon as _sdcRenderIcon, twigArgs as _sdcTwigArgs } from '${iconModule}';
 ${componentImports}
 ${templateImports}
 ${assetInjection}
@@ -86,7 +89,7 @@ ${localJsImports}
 await Promise.all(Object.values(import.meta.glob('./*.{js,mjs}')).map(fn => fn()));
 
 export default {
-  component: COMPONENT,
+  component: (args) => COMPONENT(_sdcTwigArgs(args, ${jsLiteral(slotNames)}, ${jsLiteral(propNames)})),
   parameters: {
     ...${jsLiteral(parameters, 2)},
     docs: {description: {component: ${jsLiteral(description, 2)}}},

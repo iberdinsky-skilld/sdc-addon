@@ -24,7 +24,7 @@ describe('storiesRenderer', () => {
           ],
         },
       },
-      'umamicard.default.component({...umamicard.Basic.baseArgs, ...umamicard.Preview.args, ...{ }, ...{content: new TwigSafeArray(umamititle.default.component({...umamititle.Basic.baseArgs, ...{}, ...{ }, ...{}})),}})',
+      'umamicard.default.component({...umamicard.Basic.baseArgs, ...umamicard.Preview.args, ...{ }, ...{content: [umamititle.default.component({...umamititle.Basic.baseArgs, ...{}, ...{ }, ...{}})],}})',
     ],
 
     [
