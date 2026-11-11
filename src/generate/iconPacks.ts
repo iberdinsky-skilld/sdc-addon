@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
-import { join, resolve, basename, dirname, extname, relative } from 'node:path'
+import { resolve, basename, dirname, extname, relative } from 'node:path'
 import { parse as parseYaml } from 'yaml'
-import type { NamespaceRoots } from './namespaces.ts'
+import { namespaceFiles, type NamespaceRoots } from './namespaces.ts'
 import { isRemoteUrl, listDir, posixDirname } from '../utils.ts'
 import { isRecord, isString } from '../guards.ts'
 import type {
@@ -302,14 +302,9 @@ export async function fetchRemoteSprite(
 }
 
 // `<ns>.icons.yml` of every namespace that has one, as [namespace, path].
-export function iconPackFiles(
+export const iconPackFiles = (
   namespaces: NamespaceRoots
-): Array<[string, string]> {
-  return namespaces
-    .entries()
-    .map(([ns, root]): [string, string] => [ns, join(root, `${ns}.icons.yml`)])
-    .filter(([, file]) => existsSync(file))
-}
+): Array<[string, string]> => namespaceFiles(namespaces, 'icons')
 
 export function discoverIconPacks(
   namespaces: NamespaceRoots,

@@ -1,0 +1,28 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+name: Design tokens
+group: Addon
+description: Tokens from umami.tokens.yml (Drupal's experimental Design Tokens API) as CSS variables on :root. Semantic colors refer to the palette.
+props:
+  type: object
+  properties:
+    colors:
+      type: array
+      title: Color tokens
+      items:
+        type: string
+      examples:
+        - [
+            palette-blue-700,
+            palette-amber-700,
+            info-border,
+            warning-border,
+            info-background,
+            warning-background,
+          ]
+    spacing:
+      type: array
+      title: Spacing tokens
+      items:
+        type: string
+      examples:
+        - [sm, md]

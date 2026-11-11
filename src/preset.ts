@@ -3,12 +3,13 @@ import { dirname, relative } from 'node:path'
 import YamlStoriesPlugin from './vite/storybookYamlStories.ts'
 import { yamlStoriesIndexer } from './vite/storyIndexer.ts'
 import { mergeConfig } from 'vite'
-import type { HtmlTagDescriptor, UserConfig } from 'vite'
+import type { HtmlTagDescriptor, Plugin, UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
 import type { StorybookConfig } from '@storybook/html-vite'
 import type { ExternalAsset, SDCAddonOptions } from './sdc.d.ts'
 import { isRemoteUrl, mergeOptions } from './utils.ts'
-import { toNamespaces } from './generate/namespaces.ts'
+import { toNamespaces, type NamespaceRoots } from './generate/namespaces.ts'
+import { designTokensCss } from './generate/designTokens.ts'
 import { loadAndMergeDefinitions } from './generate/definitions.ts'
 import { DEFAULT_ADDON_OPTIONS, DEFAULT_DEPENDENCY_MAP } from './constants.ts'
 import { sdcTwigRuntimePlugin } from './vite/sdcTwigRuntime.ts'
@@ -54,6 +55,25 @@ export const prebundledDeps = (twigLib?: 'twig' | 'twing'): string[] => [
     ? ['twing', '@christianwiedemann/drupal-twig-extensions/twing']
     : ['twig', 'drupal-twig-extensions/twig']),
 ]
+
+// Drupal libraries and design tokens; token files are re-read on each page load.
+const sdcHeadPlugin = (
+  headTags: HtmlTagDescriptor[],
+  namespaces: NamespaceRoots
+): Plugin => ({
+  name: 'vite-plugin-sdc-head',
+  transformIndexHtml: () => {
+    const css = designTokensCss(namespaces)
+    return css
+      ? [...headTags, { tag: 'style', children: css, injectTo: 'head' }]
+      : headTags
+  },
+  configureServer(server) {
+    server.watcher.on('all', (_event, file) => {
+      if (file.endsWith('.tokens.yml')) server.ws.send({ type: 'full-reload' })
+    })
+  },
+})
 
 export async function viteFinal(
   config: UserConfig,
@@ -101,9 +121,7 @@ export async function viteFinal(
       ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
       sdcTwigRuntimePlugin(namespaces, sdcStorybookOptions.resolveIconSource),
-      ...(headTags.length > 0
-        ? [{ name: 'vite-plugin-sdc-head', transformIndexHtml: () => headTags }]
-        : []),
+      sdcHeadPlugin(headTags, namespaces),
     ],
     optimizeDeps: {
       include: prebundledDeps(sdcStorybookOptions.twigLib),

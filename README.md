@@ -16,6 +16,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Components as form elements](#components-as-form-elements)
 - [Namespaces](#namespaces)
 - [Drupal Icon API](#drupal-icon-api)
+- [Design tokens (experimental)](#design-tokens-experimental)
 - [Advanced Grouping and Nesting](#advanced-grouping-and-nesting)
 - [Regular Storybook](#regular-storybook)
 - [Configuration Options](#configuration-options)
@@ -52,6 +53,7 @@ The SDC Storybook Addon simplifies the integration of Drupal Single Directory Co
 - **Default and Custom Story Rendering**: Use `type: component` to nest components, `type: element` for HTML markup, and `type: image` for images within stories. Or create your own custom renderers.
 - **Namespaces**: Supports multiple namespaces, allowing you to use components from different(parent/sibling) directories or packages.
 - **Drupal Icon API**: Automatically detects `*.icons.yml` files in registered namespaces and makes `{{ icon('pack_id', 'icon_id', settings) }}` available in every Twig template. Supports `svg_sprite`, `svg` (inline), and `path` extractors with no configuration required.
+- **Design tokens**: `{namespace}.tokens.yml` (DTCG, Drupal's experimental API) becomes CSS variables in every story.
 - **`html_cva()`**: The class-variants Twig function from Drupal 11.4 works in templates on both engines, with the same arguments as in Drupal.
 - **Drupal Library CDN Resolution**: Resolves Drupal library dependencies (e.g. `core/jquery`) to CDN assets via `dependencyMap`. Assets are injected per-component — only when a story uses a component that declares the dependency in `libraryOverrides.dependencies`. Built-in defaults cover the Drupal runtime (`core/drupal`, `core/once`, etc.).
 
@@ -570,6 +572,34 @@ With Twig.js, if templates read component files with `source(componentMetadata.p
 Twing needs no setup, and is the engine to use when a base theme lives outside the Storybook project.
 
 ---
+
+## Design tokens (experimental)
+
+Put a `{namespace}.tokens.yml` next to the theme's `.info.yml`, in the [DTCG](https://www.designtokens.org/) format Drupal uses. Every story gets the tokens as CSS variables on `:root`, named like in Drupal: the token path with `.`, `_` and spaces turned into `-`.
+
+```yaml
+color:
+  $type: color
+  palette:
+    blue-700:
+      $value: '#1d4ed8'
+  info:
+    border:
+      $value: '{color.palette.blue-700}' # -> var(--color-palette-blue-700)
+spacing:
+  $type: dimension
+  md:
+    $value: { value: 1, unit: rem }
+```
+
+```css
+.callout {
+  border-color: var(--color-info-border);
+  padding: var(--spacing-md);
+}
+```
+
+Supported types: `color`, `dimension`, `fontFamily`, `fontWeight`, `number` and `typography`. The Drupal API is experimental (Drupal 12), so the file format may still change.
 
 ## Advanced Grouping and Nesting
 
