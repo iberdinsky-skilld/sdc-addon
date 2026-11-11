@@ -1,3 +1,15 @@
+# v0.27.0 (Wed Nov 11 2026)
+
+#### 🚀 Enhancement
+
+- Strict types, type-aware lint, public option types, module split [#140](https://github.com/iberdinsky-skilld/sdc-addon/pull/140) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.26.0 (Tue Nov 10 2026)
 
 #### 🚀 Enhancement
