@@ -8,7 +8,7 @@ import type { IconPacks } from '../sdc.d.ts'
 import { buildIconContext } from './icons.ts'
 import { patchDrupalAttribute, castVarsAttributes } from './attributes.ts'
 
-export { PrintableArray } from './nodes.ts'
+export { twigArgs } from './nodes.ts'
 
 export type SdcEnv = TwingSynchronousEnvironment & {
   __sdcMergeOverridden?: boolean

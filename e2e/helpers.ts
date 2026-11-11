@@ -168,6 +168,36 @@ export const renderStory = async (
     if (box) errors.push(`storybook: ${box}`)
     if (!html) errors.push('empty render')
     if (html.includes('_keys=')) errors.push('leaked `_keys` attribute')
+    const instances = await page
+      .evaluate((storyId) => {
+        // Storybook internals; skipped when the API is not there.
+        const preview = (
+          window as unknown as {
+            __STORYBOOK_PREVIEW__?: {
+              storyStoreValue?: { args?: { get(id: string): unknown } }
+            }
+          }
+        ).__STORYBOOK_PREVIEW__
+        const found: string[] = []
+        const walk = (value: unknown, path: string): void => {
+          if (Array.isArray(value)) {
+            value.forEach((item, i) => walk(item, `${path}[${i}]`))
+          } else if (value !== null && typeof value === 'object') {
+            if (Object.getPrototypeOf(value) !== Object.prototype)
+              found.push(path)
+            else
+              for (const [k, v] of Object.entries(value))
+                walk(v, `${path}.${k}`)
+          }
+        }
+        walk(preview?.storyStoreValue?.args?.get(storyId), 'args')
+        return found
+      }, id)
+      .catch(() => [])
+    if (instances.length)
+      errors.push(
+        `class instances in args (no plain Controls): ${instances.join(', ')}`
+      )
   } finally {
     page.off('console', onConsole)
     page.off('pageerror', onPageError)

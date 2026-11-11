@@ -21,6 +21,8 @@ const input = (
   args: { title: 'Hi' },
   basicArgs: {},
   stories: 'export const Extra = {}',
+  slotNames: ['content'],
+  propNames: ['title'],
   ...overrides,
 })
 
@@ -28,6 +30,9 @@ describe('componentModule', () => {
   test('imports the template and runtime, exports meta, Basic and stories', () => {
     const code = componentModule(input())
     expect(code).toContain("import COMPONENT from '@umami/card/card.twig';")
+    expect(code).toContain(
+      'component: (args) => COMPONENT(_sdcTwigArgs(args, ["content"], ["title"])),'
+    )
     expect(code).toContain("from 'virtual:sdc-twig-runtime:twig';")
     expect(code).toContain('docs: {description: {component: "A card"}}')
     expect(code).toContain('export const Basic = {')

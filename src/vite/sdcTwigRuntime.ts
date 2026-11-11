@@ -38,7 +38,7 @@ function generateRuntimeGlue(
 ${imports}
 import { ${factory} } from 'storybook-addon-sdc/renderer/${lib}';
 
-export { PrintableArray } from 'storybook-addon-sdc/renderer/${lib}';
+export { twigArgs } from 'storybook-addon-sdc/renderer/${lib}';
 
 export const { renderIcon, registerSdcRuntime } = ${factory}(${mergeExpr});
 `

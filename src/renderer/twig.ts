@@ -6,7 +6,7 @@ import { toText } from './collections.ts'
 import { buildIconContext } from './icons.ts'
 import { patchDrupalAttribute } from './attributes.ts'
 
-export { PrintableArray } from './nodes.ts'
+export { twigArgs } from './nodes.ts'
 
 // Filters may return non-strings (merge returns story objects).
 export type TwigJs = Omit<typeof Twig, 'extendFilter'> & {

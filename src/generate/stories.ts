@@ -52,7 +52,7 @@ ${globalsBlock}
   args: {
     ...Basic.baseArgs,
     ${processPropsAttributes(props)}
-    ${generateArgs(slots, true)}
+    ${generateArgs(slots)}
     ${generateVariants(variants)}
   },
   ${
@@ -85,9 +85,9 @@ const generateVariants = (
 const processPropsAttributes = (props: Record<string, unknown>): string => {
   const { attributes, ...otherProps } = props
   if (!isRecord(attributes) || Object.keys(attributes).length === 0) {
-    return generateArgs(props, false)
+    return generateArgs(props)
   }
-  const propsArgs = generateArgs(otherProps, false)
+  const propsArgs = generateArgs(otherProps)
 
   const attributeEntries = Object.entries(attributes)
     .map(([key, value]) => `['${key}', ${jsLiteral(value)}]`)

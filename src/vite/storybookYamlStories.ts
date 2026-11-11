@@ -185,6 +185,8 @@ export const createYamlStoriesHooks = ({
         args,
         basicArgs,
         stories,
+        slotNames: Object.keys(content.slots ?? {}),
+        propNames: Object.keys(content.props?.properties ?? {}),
       })
     } catch (error) {
       logger.error(`Error loading component YAML file: ${id}, ${String(error)}`)

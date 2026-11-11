@@ -4,19 +4,19 @@ import { registerCustomNodes } from '../renderer/nodes.ts'
 
 afterEach(() => registerCustomNodes([]))
 
-describe('generateArgs slot wrapping', () => {
-  test('single slot value is wrapped so `is not sequence ? [X] : X` stays printable', () => {
-    expect(
-      generateArgs({ col_1_content: '.col-md-6 .offset-md-3' }, true)
-    ).toBe('col_1_content: new TwigSafeArray(".col-md-6 .offset-md-3"),')
-  })
-  test('single PROP value is NOT wrapped', () => {
-    expect(generateArgs({ title: 'Hi' }, false)).toBe('title: "Hi",')
-  })
-  test('nested array slot wraps the inner array too', () => {
-    expect(generateArgs({ items: [['a'], 'b'] }, true)).toContain(
-      'new TwigSafeArray(new TwigSafeArray("a"), "b")'
+describe('generateArgs emits plain values', () => {
+  test('a single value stays as it is', () => {
+    expect(generateArgs({ col_1_content: '.col-md-6 .offset-md-3' })).toBe(
+      'col_1_content: ".col-md-6 .offset-md-3",'
     )
+  })
+  test('lists, nested too, are plain arrays', () => {
+    expect(generateArgs({ items: [['a'], 'b'] })).toBe('items: [["a"], "b"],')
+  })
+  test('a list inside an element still prints its items', () => {
+    expect(
+      generateArgs({ x: { type: 'element', tag: 'p', value: ['a', 'b'] } })
+    ).toBe(`x: ("<p>" + ["a", "b"].join('') + "</p>"),`)
   })
 })
 
@@ -70,7 +70,7 @@ describe('renderStoryNode (build codegen)', () => {
     expect(out).toContain('title: "Hello"')
   })
 
-  test('renders array slot with multiple components as TwigSafeArray', () => {
+  test('renders array slot with multiple components as a plain array', () => {
     const item = {
       type: 'component',
       component: 'umami:card',
@@ -83,13 +83,14 @@ describe('renderStoryNode (build codegen)', () => {
     }
 
     const out = renderStoryNode(item)
-    expect(out).toContain('new TwigSafeArray(')
+    expect(out).toContain('content: [umamititle.default.component(')
+    expect(out).not.toContain(".join('')")
     expect(out).toContain('umamititle.default.component(')
     expect(out).toContain('umamisubtitle.default.component(')
     expect(out).toContain('content:')
   })
 
-  test('renders array slot of primitives as TwigSafeArray of strings', () => {
+  test('renders array slot of primitives as a plain array of strings', () => {
     const item = {
       type: 'component',
       component: 'umami:list',
@@ -97,7 +98,7 @@ describe('renderStoryNode (build codegen)', () => {
     }
 
     const out = renderStoryNode(item)
-    expect(out).toContain('new TwigSafeArray')
+    expect(out).toContain('items: ["a", "b"]')
     expect(out).toContain('"a"')
     expect(out).toContain('"b"')
   })
@@ -117,7 +118,7 @@ describe('renderStoryNode (build codegen)', () => {
     }
 
     const out = renderStoryNode(item)
-    expect(out).toContain('new TwigSafeArray(')
+    expect(out).toContain('content: ["x", umamititle.default.component(')
     expect(out).toContain('"x"')
     expect(out).toContain('umamititle.default.component(')
   })
@@ -152,7 +153,7 @@ describe('renderStoryNode (build codegen)', () => {
           ],
         },
       },
-      'umamicard.default.component({...umamicard.Basic.baseArgs, ...umamicard.Preview.args, ...{ }, ...{content: new TwigSafeArray(umamititle.default.component({...umamititle.Basic.baseArgs, ...{}, ...{ }, ...{}})),}})',
+      'umamicard.default.component({...umamicard.Basic.baseArgs, ...umamicard.Preview.args, ...{ }, ...{content: [umamititle.default.component({...umamititle.Basic.baseArgs, ...{}, ...{ }, ...{}})],}})',
     ],
 
     [
@@ -254,9 +255,7 @@ describe('renderStoryNode (build codegen)', () => {
       value: ['hi ', { type: 'icon', pack_id: 'p', icon_id: 'i' }],
     })
     expect(out).toContain('"<a href=\\"#\\">"')
-    expect(out).toContain(
-      'new TwigSafeArray("hi ", _sdcRenderIcon("p", "i", {}))'
-    )
+    expect(out).toContain(`["hi ", _sdcRenderIcon("p", "i", {})].join('')`)
   })
 
   test('renders a type:icon node via the Icon API helper', () => {

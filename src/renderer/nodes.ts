@@ -33,6 +33,32 @@ export class PrintableArray {
   }
 }
 
+const toPrintable = (items: unknown[]): PrintableArray =>
+  new PrintableArray(
+    ...items.map((item) => (Array.isArray(item) ? toPrintable(item) : item))
+  )
+
+// Lists and slot values print their items; only the component's keys, '' stays falsy.
+export function twigArgs(
+  args: Record<string, unknown>,
+  slots: readonly string[],
+  props: readonly string[]
+): Record<string, unknown> {
+  const out = { ...args }
+  for (const key of [...slots, ...props]) {
+    const value = args[key]
+    if (Array.isArray(value)) out[key] = toPrintable(value)
+    else if (
+      slots.includes(key) &&
+      value != null &&
+      value !== '' &&
+      !(value instanceof PrintableArray)
+    )
+      out[key] = new PrintableArray(value)
+  }
+  return out
+}
+
 export function nodeGet(node: unknown, key: string): unknown {
   if (node instanceof Map) {
     const value: unknown = node.get(key)
