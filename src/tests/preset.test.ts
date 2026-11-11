@@ -28,6 +28,7 @@ import {
   viteFinal,
   dependencyHeadTags,
   indexersWithYaml,
+  prebundledDeps,
   staticDirs,
 } from '../preset'
 
@@ -86,6 +87,25 @@ describe('preset.viteFinal and helpers', () => {
     expect(pluginNames(result)).toEqual(
       expect.arrayContaining(['nodePolyfills', 'twing-plugin'])
     )
+  })
+
+  test('viteFinal pre-bundles the active engine and its Drupal extensions', async () => {
+    const twing = await viteFinal(
+      { plugins: [] },
+      { sdcStorybookOptions: { twigLib: 'twing' } }
+    )
+    expect(twing.optimizeDeps?.include).toEqual(prebundledDeps('twing'))
+    expect(prebundledDeps('twing')).toEqual(
+      expect.arrayContaining([
+        'twing',
+        '@christianwiedemann/drupal-twig-extensions/twing',
+        'drupal-attribute',
+      ])
+    )
+    expect(prebundledDeps('twig')).toEqual(
+      expect.arrayContaining(['twig', 'drupal-twig-extensions/twig'])
+    )
+    expect(prebundledDeps('twig')).not.toContain('twing')
   })
 
   test('viteFinal includes twig plugin when twigLib=twig', async () => {
