@@ -1,0 +1,28 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+name: Form input
+description: A component used as a form element (Drupal 11.4, `#type => component`). Drupal passes the element's name, value and required flag in `form_state`.
+props:
+  type: object
+  properties:
+    id:
+      type: string
+      title: ID
+      examples:
+        - email
+slots:
+  label:
+    title: Label
+    examples:
+      - Email
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      required:
+        name: Required, with a value
+        props:
+          id: email-required
+          form_state:
+            value:
+              name: email
+              value: me@example.com
+              required: true
