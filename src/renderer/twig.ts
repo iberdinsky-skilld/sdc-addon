@@ -4,12 +4,17 @@ import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
 import { toText } from './collections.ts'
 import { buildIconContext } from './icons.ts'
+import { htmlCva, HTML_CVA_ARGUMENTS, twigJsArguments } from './cva.ts'
 import { patchDrupalAttribute } from './attributes.ts'
 
 export { twigArgs } from './nodes.ts'
 
-// Filters may return non-strings (merge returns story objects).
-export type TwigJs = Omit<typeof Twig, 'extendFilter'> & {
+// Filters and functions may return non-strings (story objects, html_cva).
+export type TwigJs = Omit<typeof Twig, 'extendFilter' | 'extendFunction'> & {
+  extendFunction(
+    name: string,
+    definition: (...args: unknown[]) => unknown
+  ): void
   extendFilter(
     name: string,
     definition: (
@@ -50,6 +55,11 @@ export function createTwigCore(iconPacks: IconPacks) {
     twig = Twig
     if (Twig.__sdcIconRegistered) return
     Twig.__sdcIconRegistered = true
+    Twig.extendFunction('html_cva', (...args: unknown[]) => {
+      const [base, variants, compoundVariants, defaultVariant] =
+        twigJsArguments(args, HTML_CVA_ARGUMENTS)
+      return htmlCva(base, variants, compoundVariants, defaultVariant)
+    })
     Twig.extendFunction(
       'icon',
       (packId: unknown, iconId: unknown, settings: unknown) =>

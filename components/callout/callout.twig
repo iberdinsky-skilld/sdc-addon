@@ -1,0 +1,12 @@
+{% set callout = html_cva(
+  base: 'callout',
+  variants: {
+    variant: { info: 'callout--info', warning: 'callout--warning' },
+    size: { sm: 'callout--sm', lg: 'callout--lg' }
+  },
+  compound_variants: [{ variant: 'warning', size: 'lg', class: 'callout--strong' }],
+  default_variant: { variant: 'info', size: 'sm' }
+) %}
+<div{{ attributes.addClass(callout.apply({ variant: variant, size: size })|split(' ')) }}>
+{% block content %}{{ content }}{% endblock %}
+</div>
