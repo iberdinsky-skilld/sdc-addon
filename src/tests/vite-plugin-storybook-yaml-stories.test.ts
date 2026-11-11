@@ -312,6 +312,43 @@ thirdPartySettings:
     }
   })
 
+  test('stories of a noUi component carry the no-ui tag', async () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-idx-'))
+    try {
+      const compDir = join(tmpRoot, 'components', 'item')
+      mkdirSync(compDir, { recursive: true })
+      const file = join(compDir, 'item.component.yml')
+      writeFileSync(
+        file,
+        [
+          'name: Item',
+          'noUi: true',
+          'thirdPartySettings:',
+          '  sdcStorybook:',
+          '    tags: [autodocs]',
+          '    stories:',
+          '      open: {}',
+        ].join('\n'),
+        'utf8'
+      )
+      const index = await yamlStoriesIndexer.createIndex(file, {
+        makeTitle: (s?: string) => s ?? '',
+      })
+      expect(index.map((entry) => entry.tags)).toEqual([
+        ['autodocs', 'no-ui'],
+        ['autodocs', 'no-ui'],
+      ])
+
+      writeFileSync(file, 'name: Item\nnoUi: false', 'utf8')
+      const visible = await yamlStoriesIndexer.createIndex(file, {
+        makeTitle: (s?: string) => s ?? '',
+      })
+      expect(visible[0]?.tags).toEqual([])
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
   test('variant twig files are not imported in the generated module', async () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
     try {

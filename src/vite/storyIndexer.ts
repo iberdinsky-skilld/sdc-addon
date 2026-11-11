@@ -66,7 +66,10 @@ export const yamlStoriesIndexer: Indexer = {
         ...settings?.stories,
         ...loadStoryFilesSync(fileName),
       }
-      const tags = settings?.tags ?? []
+      const tags = [
+        ...(settings?.tags ?? []),
+        ...(content.noUi === true ? ['no-ui'] : []),
+      ]
 
       const disabledStories = settings?.disabledStories ?? []
 

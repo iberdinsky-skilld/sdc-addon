@@ -7,6 +7,9 @@ name: Title
 # Status can be: "experimental", "stable", "deprecated", "obsolete".
 status: experimental
 
+# Only used inside other components, so hidden from page builders.
+noUi: true
+
 # Schema for the props. We support www.json-schema.org. Learn more about the
 # syntax there.
 props:

@@ -578,6 +578,10 @@ components/
 
 will result in nested folders in Storybook, mirroring the organization of your components.
 
+### Components hidden from page builders (`noUi`)
+
+Stories of a component with `noUi: true` (Drupal 11.3+) get the `no-ui` tag. Use the tag filter in the sidebar to hide them.
+
 ## Regular storybook
 
 All Storybook functions work as usual, and you can import SDC YAML into `.stories.js` files.
