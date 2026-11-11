@@ -1,3 +1,15 @@
+# v0.27.2 (Wed Nov 11 2026)
+
+#### 🐛 Bug Fix
+
+- Do not print twig.js _keys as an HTML attribute [#142](https://github.com/iberdinsky-skilld/sdc-addon/pull/142) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.27.1 (Wed Nov 11 2026)
 
 #### 🐛 Bug Fix
