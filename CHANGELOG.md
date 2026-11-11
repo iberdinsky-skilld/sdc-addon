@@ -1,3 +1,15 @@
+# v0.27.1 (Wed Nov 11 2026)
+
+#### 🐛 Bug Fix
+
+- Release guard, Node 22 types, twig packages as dependencies [#141](https://github.com/iberdinsky-skilld/sdc-addon/pull/141) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.27.0 (Wed Nov 11 2026)
 
 #### 🚀 Enhancement
