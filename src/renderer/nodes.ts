@@ -52,6 +52,7 @@ export function twigArgs(
       slots.includes(key) &&
       value != null &&
       value !== '' &&
+      typeof value !== 'function' &&
       !(value instanceof PrintableArray)
     )
       out[key] = new PrintableArray(value)

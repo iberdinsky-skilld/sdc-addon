@@ -29,6 +29,15 @@ describe('twigArgs', () => {
     expect(out['defaultAttributes']).toBe(attributes)
   })
 
+  test('leaves a function slot alone, so the engine calls it', () => {
+    const content = (): string => '<p>rendered</p>'
+    expect(twigArgs({ content }, ['content'], [])['content']).toBe(content)
+    const template = Twig.twig({ data: '<div>{{ content }}</div>' })
+    expect(template.render(twigArgs({ content }, ['content'], []))).toBe(
+      '<div><p>rendered</p></div>'
+    )
+  })
+
   test('keeps a value that is already printable and does not touch the input', () => {
     const printable = new PrintableArray('x')
     const args = { text: printable, items: ['a'] }

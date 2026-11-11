@@ -168,6 +168,7 @@ export const renderStory = async (
     if (box) errors.push(`storybook: ${box}`)
     if (!html) errors.push('empty render')
     if (html.includes('_keys=')) errors.push('leaked `_keys` attribute')
+    if (/\(\)\s*=>/.test(html)) errors.push('printed function source')
     const instances = await page
       .evaluate((storyId) => {
         // Storybook internals; skipped when the API is not there.
