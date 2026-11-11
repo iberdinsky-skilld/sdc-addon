@@ -12,19 +12,6 @@ import type {
 } from 'vite'
 import type { SDCAddonOptions } from '../sdc.d.ts'
 
-vi.mock('./definitions.ts', () => ({
-  loadAndMergeDefinitions: () => Promise.resolve({}),
-}))
-
-vi.mock('./namespaces.ts', () => ({
-  toNamespaces: () => ({
-    toTwingNamespaces: () => ({ t: ['p'] }),
-    toTwigJsNamespaces: () => ({ t: 'p' }),
-    toViteAlias: () => [{ find: '@ns', replacement: '/path/components' }],
-    entries: () => [['ns', '/path']],
-  }),
-}))
-
 vi.mock('vite-plugin-node-polyfills', () => ({
   nodePolyfills: (opts: unknown) => ({ name: 'nodePolyfills', opts }),
 }))
@@ -41,6 +28,7 @@ import {
   viteFinal,
   dependencyHeadTags,
   indexersWithYaml,
+  prebundledDeps,
   staticDirs,
 } from '../preset'
 
@@ -99,6 +87,25 @@ describe('preset.viteFinal and helpers', () => {
     expect(pluginNames(result)).toEqual(
       expect.arrayContaining(['nodePolyfills', 'twing-plugin'])
     )
+  })
+
+  test('viteFinal pre-bundles the active engine and its Drupal extensions', async () => {
+    const twing = await viteFinal(
+      { plugins: [] },
+      { sdcStorybookOptions: { twigLib: 'twing' } }
+    )
+    expect(twing.optimizeDeps?.include).toEqual(prebundledDeps('twing'))
+    expect(prebundledDeps('twing')).toEqual(
+      expect.arrayContaining([
+        'twing',
+        '@christianwiedemann/drupal-twig-extensions/twing',
+        'drupal-attribute',
+      ])
+    )
+    expect(prebundledDeps('twig')).toEqual(
+      expect.arrayContaining(['twig', 'drupal-twig-extensions/twig'])
+    )
+    expect(prebundledDeps('twig')).not.toContain('twing')
   })
 
   test('viteFinal includes twig plugin when twigLib=twig', async () => {

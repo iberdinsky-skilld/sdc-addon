@@ -536,14 +536,17 @@ settings:
 
 ### Production static build
 
-For `storybook build`, add icon asset directories to `staticDirs` in `.storybook/main.js` so the files are copied into the build output:
+Icon pack sources are copied into the build automatically.
+
+With Twig.js, if templates read component files with `source(componentMetadata.path ~ '/icons/x.svg')`, add the component folders to `staticDirs` for production builds:
 
 ```js
-staticDirs: [
-  { from: '../components', to: '/components' },
-  { from: '../icons',      to: '/icons' },   // ← icon assets
-],
+...(process.env.NODE_ENV === 'production'
+  ? { staticDirs: [{ from: '../components', to: '/components' }] }
+  : {}),
 ```
+
+Twing needs no setup, and is the engine to use when a base theme lives outside the Storybook project.
 
 ---
 

@@ -43,10 +43,21 @@ export const dependencyHeadTags = (
     )
 }
 
+// Found only when the first story loads, they make Vite reload the page mid-load.
+export const prebundledDeps = (twigLib?: 'twig' | 'twing'): string[] => [
+  'drupal-attribute',
+  'vite-plugin-node-polyfills/shims/buffer',
+  'vite-plugin-node-polyfills/shims/global',
+  'vite-plugin-node-polyfills/shims/process',
+  ...(twigLib === 'twing'
+    ? ['twing', '@christianwiedemann/drupal-twig-extensions/twing']
+    : ['twig', 'drupal-twig-extensions/twig']),
+]
+
 export async function viteFinal(
   config: UserConfig,
   userOptions: SDCAddonOptions
-) {
+): Promise<UserConfig> {
   const options = mergeOptions(DEFAULT_ADDON_OPTIONS, userOptions)
 
   const {
@@ -94,6 +105,7 @@ export async function viteFinal(
         : []),
     ],
     optimizeDeps: {
+      include: prebundledDeps(sdcStorybookOptions.twigLib),
       exclude: ['vite-plugin-twig-drupal', 'vite-plugin-twing-drupal'],
       esbuildOptions: { target: 'esnext' },
     },
