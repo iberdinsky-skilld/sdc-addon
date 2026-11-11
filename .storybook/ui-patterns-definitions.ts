@@ -1,4 +1,6 @@
-export const CUSTOM_TEST_DEFS = {
+import type { JSONSchema4 } from 'json-schema'
+
+export const CUSTOM_TEST_DEFS: Record<string, JSONSchema4> = {
   'ui-patterns://attributes': {
     type: 'object',
     properties: {

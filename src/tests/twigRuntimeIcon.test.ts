@@ -22,8 +22,7 @@ const packs: IconPacks = {
     sources: ['icons'],
     sourceUrls: ['sdc-icons/t/icons'],
     settings: {},
-    // twig.js swallows compile errors itself; an unknown filter throws at
-    // render time, which is the path the addon guards.
+    // twig.js swallows compile errors; an unknown filter throws at render time.
     template: '{{ icon_id|no_such_filter }}',
     svgIcons: {},
     pathIcons: {},
@@ -35,7 +34,7 @@ describe('twig.js icon() and renderIcon share one renderer', () => {
 
   test('a working pack renders the same through icon() and renderIcon()', () => {
     const rt = createTwigRuntime(packs)
-    rt.registerSdcRuntime(Twig as never)
+    rt.registerSdcRuntime(Twig)
     const viaFunction = Twig.twig({ data: "{{ icon('ok', 'home') }}" }).render(
       {}
     )
@@ -46,7 +45,7 @@ describe('twig.js icon() and renderIcon share one renderer', () => {
   test('a broken pack template logs the error and renders nothing, in both paths', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const rt = createTwigRuntime(packs)
-    rt.registerSdcRuntime(Twig as never)
+    rt.registerSdcRuntime(Twig)
     expect(Twig.twig({ data: "{{ icon('broken', 'home') }}" }).render({})).toBe(
       ''
     )
@@ -61,7 +60,7 @@ describe('twig.js icon() and renderIcon share one renderer', () => {
   test('unknown pack or missing icon id render nothing without logging', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const rt = createTwigRuntime(packs)
-    rt.registerSdcRuntime(Twig as never)
+    rt.registerSdcRuntime(Twig)
     expect(rt.renderIcon('nope', 'home', {})).toBe('')
     expect(rt.renderIcon('ok', '', {})).toBe('')
     expect(errorSpy).not.toHaveBeenCalled()

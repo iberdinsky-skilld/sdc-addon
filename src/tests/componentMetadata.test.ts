@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import type { SDCSchema } from '../sdc.d.ts'
 import componentMetadata from '../generate/componentMetadata'
 import { cwd } from 'node:process'
 import { dirname, relative } from 'node:path'
@@ -6,7 +7,7 @@ import { dirname, relative } from 'node:path'
 describe('componentMetadata', () => {
   test('returns correct metadata for given id and content', () => {
     const id = `${cwd()}/components/atoms/button/button.component.yml`
-    const content: any = {
+    const content: SDCSchema = {
       name: 'Button',
       status: 'deprecated',
       group: 'atoms',
@@ -24,7 +25,7 @@ describe('componentMetadata', () => {
 
   test('defaults status to stable when missing', () => {
     const id = `${cwd()}/components/pkg/x/x.component.yml`
-    const content: any = { name: 'X', group: 'pkg' }
+    const content: SDCSchema = { name: 'X', group: 'pkg' }
 
     const meta = componentMetadata(id, content)
     expect(meta.status).toBe('stable')

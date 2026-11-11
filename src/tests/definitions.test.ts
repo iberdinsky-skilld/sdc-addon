@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from 'vitest'
+import type { JSONSchema4 } from 'json-schema'
 
 import { loadAndMergeDefinitions } from '../generate/definitions.ts'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
@@ -26,7 +27,10 @@ describe('definitions.loadExternalDef / loadAndMergeDefinitions', () => {
 
   test('fetches remote YAML and merges definitions', async () => {
     const yaml = `RemoteComponent:\n  type: object\n`
-    fetchMock.mockResolvedValueOnce({ ok: true, text: async () => yaml })
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: () => Promise.resolve(yaml),
+    })
 
     const merged = await loadAndMergeDefinitions(
       ['https://example.com/defs.yml'],
@@ -47,14 +51,17 @@ describe('definitions.loadExternalDef / loadAndMergeDefinitions', () => {
   })
 
   test('merges customDefs into global defs', async () => {
-    const custom = { MyCustom: { type: 'object' } } as any
+    const custom: Record<string, JSONSchema4> = { MyCustom: { type: 'object' } }
     const merged = await loadAndMergeDefinitions(undefined, custom)
     expect(merged).toHaveProperty('MyCustom')
   })
 
   test('remote fetch returns invalid YAML -> logs error and rejects', async () => {
     const bad = '::: not yaml :::'
-    fetchMock.mockResolvedValueOnce({ ok: true, text: async () => bad })
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: () => Promise.resolve(bad),
+    })
     const spy = vi.spyOn(logger, 'error')
 
     await expect(

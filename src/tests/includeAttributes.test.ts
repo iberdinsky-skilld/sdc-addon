@@ -1,19 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import twing from 'twing'
-// @ts-ignore — @christianwiedemann/drupal-twig-extensions ships no types
 import { addDrupalExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
 import DrupalAttribute from 'drupal-attribute'
 import { toAttribute, castVarsAttributes } from '../renderer/attributes.ts'
 import { createTwingWrapperRuntime } from '../renderer/twingWrapper.ts'
 
-const { createSynchronousEnvironment, createSynchronousArrayLoader } =
-  twing as unknown as {
-    createSynchronousEnvironment: (loader: unknown) => {
-      render: (name: string, ctx: unknown) => string
-      functions: Map<string, unknown>
-    }
-    createSynchronousArrayLoader: (t: Record<string, string>) => unknown
-  }
+const { createSynchronousEnvironment, createSynchronousArrayLoader } = twing
 
 describe('nested include attributes cast (twing)', () => {
   // ── unit: the typed runtime helpers ────────────────────────────────────────
@@ -68,7 +60,6 @@ describe('nested include attributes cast (twing)', () => {
       'function'
     )
     expect(vars.label).toBe('Go')
-    // object without attributes key is left untouched
     const bare: Record<string, unknown> = { label: 'x' }
     castVarsAttributes(bare)
     expect('attributes' in bare).toBe(false)
@@ -85,7 +76,7 @@ describe('nested include attributes cast (twing)', () => {
         "{{ include('child', { attributes: create_attribute({ id: 'bar', class: ['pre'] }), label: 'A' }, with_context = false) }}",
     })
     const env = createSynchronousEnvironment(loader)
-    addDrupalExtensions(env as never)
+    addDrupalExtensions(env)
     return env
   }
 
@@ -96,7 +87,7 @@ describe('nested include attributes cast (twing)', () => {
 
   test('createTwingWrapperRuntime().registerSdcRuntime wires the include cast', () => {
     const env = makeEnv()
-    createTwingWrapperRuntime({}).registerSdcRuntime(env as never)
+    createTwingWrapperRuntime({}).registerSdcRuntime(env)
     const out = env.render('plain', {})
     expect(out).toContain('data-bs-toggle="modal"')
     expect(out).toContain('class="btn"')
@@ -105,7 +96,7 @@ describe('nested include attributes cast (twing)', () => {
 
   test('an already-built DrupalAttribute is passed through (merged, not wiped)', () => {
     const env = makeEnv()
-    createTwingWrapperRuntime({}).registerSdcRuntime(env as never)
+    createTwingWrapperRuntime({}).registerSdcRuntime(env)
     const out = env.render('already', {})
     expect(out).toContain('id="bar"')
     expect(out).toContain('class="pre btn"')

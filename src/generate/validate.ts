@@ -1,24 +1,22 @@
-import { Validator } from 'jsonschema'
-import type { JSONSchema4 } from 'json-schema'
+import { Validator, type Schema } from 'jsonschema'
 import { logger } from '../logger.ts'
+import { isRecord } from '../guards.ts'
 import type { SDCSchema } from '../sdc.d.ts'
 import { DEFAULT_SCHEMA_URL } from '../constants.ts'
-// Vendored copy of http://json-schema.org/draft-04/schema (JSON Schema
-// specification meta-schema). Drupal's component schema validates `props`
-// against it, and jsonschema does not bundle any meta-schema.
+// Vendored draft-04 meta-schema: Drupal validates `props` against it and
+// jsonschema bundles none.
 import draft04 from './draft-04.schema.json' with { type: 'json' }
 
 const DRAFT04_ID = 'http://json-schema.org/draft-04/schema'
 
-// jsonschema reports every `#/$defs/...` pointer of a document as unresolved,
-// so an unbounded loop over `unresolvedRefs` never ends. One fetch per
-// distinct document is enough; the bound is a safety net.
+// jsonschema keeps every `#/$defs/...` pointer unresolved, so each document is
+// fetched once and the loop is bounded.
 const MAX_REF_ROUNDS = 20
 
 // Promises are cached, so concurrent validations share one request per URL.
-const schemaCache = new Map<string, Promise<JSONSchema4>>()
+const schemaCache = new Map<string, Promise<Schema>>()
 
-const fetchSchema = (url: string): Promise<JSONSchema4> => {
+const fetchSchema = (url: string): Promise<Schema> => {
   let pending = schemaCache.get(url)
   if (!pending) {
     pending = (async () => {
@@ -26,7 +24,11 @@ const fetchSchema = (url: string): Promise<JSONSchema4> => {
       if (!response.ok) {
         throw new Error(`Failed to fetch schema ${url}: ${response.statusText}`)
       }
-      return (await response.json()) as JSONSchema4
+      const schema: unknown = await response.json()
+      if (!isRecord(schema)) {
+        throw new Error(`Schema ${url} is not a JSON object`)
+      }
+      return schema
     })()
     pending.catch(() => schemaCache.delete(url))
     schemaCache.set(url, pending)
@@ -34,9 +36,8 @@ const fetchSchema = (url: string): Promise<JSONSchema4> => {
   return pending
 }
 
-// The schema a component is validated against for a given `validate` option:
-// the component's own `$schema` wins; otherwise the URL passed as the option,
-// or Drupal's schema when the option is just `true`. `false` disables.
+// Schema URL for a component: its own `$schema`, else the `validate` URL, or
+// Drupal's schema for `true`.
 export const schemaUrlFor = (
   content: Pick<SDCSchema, '$schema'>,
   validate: string | boolean | undefined
@@ -53,7 +54,7 @@ export const validateJson = async (
   schemaUrl: string
 ): Promise<void> => {
   const validator = new Validator()
-  validator.addSchema(draft04 as JSONSchema4, DRAFT04_ID)
+  validator.addSchema(draft04, DRAFT04_ID)
 
   const rootSchema = await fetchSchema(schemaUrl)
   validator.addSchema(rootSchema, schemaUrl)
@@ -64,8 +65,7 @@ export const validateJson = async (
     validator.unresolvedRefs.length > 0 && round < MAX_REF_ROUNDS;
     round++
   ) {
-    const ref = validator.unresolvedRefs.shift()!
-    const document = ref.split('#')[0]
+    const document = validator.unresolvedRefs.shift()?.split('#')[0]
     if (!document || loaded.has(document)) continue
     loaded.add(document)
     validator.addSchema(await fetchSchema(document), document)

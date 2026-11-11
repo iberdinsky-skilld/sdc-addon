@@ -6,6 +6,7 @@ import {
   toNamespaces,
   resolveComponentPath,
   getProjectName,
+  parseComponentId,
 } from '../generate/namespaces.ts'
 
 describe('Namespaces - pathToNamespace (integration)', () => {
@@ -16,7 +17,6 @@ describe('Namespaces - pathToNamespace (integration)', () => {
       const dsBRoot = join(tmpRoot, 'ds-b')
       const dsC = join(dsBRoot, 'ds-c')
 
-      // Create components folders that Namespaces expects to exist on disk
       mkdirSync(join(dsARoot, 'components', 'component-a'), { recursive: true })
       mkdirSync(join(dsC, 'components', 'component-a'), { recursive: true })
       mkdirSync(join(dsBRoot, 'components', 'component-a', 'sub-component-b'), {
@@ -57,6 +57,25 @@ describe('Namespaces - utilities (unit/integration)', () => {
     expect(() => getProjectName('/no/other/here')).toThrow()
   })
 
+  test('getProjectName throws when components is the first segment', () => {
+    expect(() => getProjectName('components/button')).not.toThrow()
+    expect(() => getProjectName('/components/button')).toThrow()
+  })
+
+  test('parseComponentId splits namespace:component', () => {
+    expect(parseComponentId('umami:card')).toEqual({
+      namespace: 'umami',
+      component: 'card',
+    })
+  })
+
+  test.each(['card', ':card', 'umami:', 'a:b:c', ''])(
+    'parseComponentId rejects %j',
+    (id) => {
+      expect(parseComponentId(id)).toBeUndefined()
+    }
+  )
+
   test('toViteAlias / toTwingNamespaces / toTwigJsNamespaces behavior', () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-ns-'))
     try {
@@ -84,10 +103,10 @@ describe('Namespaces - utilities (unit/integration)', () => {
       )
 
       const twing = ns.toTwingNamespaces()
-      expect(twing!['pkg1'][0]).toContain('/components')
+      expect(twing?.['pkg1']?.[0]).toContain('/components')
 
       const twigjs = ns.toTwigJsNamespaces()
-      expect(twigjs!['pkg2']).toBeDefined()
+      expect(twigjs?.['pkg2']).toBeDefined()
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }

@@ -25,8 +25,9 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      const theme = context.globals.theme || 'light'
-      document.documentElement.dataset.theme = theme
+      const theme: unknown = context.globals['theme']
+      document.documentElement.dataset['theme'] =
+        typeof theme === 'string' ? theme : 'light'
       return Story()
     },
   ],

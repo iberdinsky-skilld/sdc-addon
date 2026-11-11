@@ -1,12 +1,8 @@
-// Build-time (Node) rendering of `library_wrapper` stories to static HTML,
-// reusing the same loaders, extensions and runtime as the browser.
+// Renders library_wrapper stories to static HTML at build time.
 import { createSynchronousEnvironment } from 'twing'
-// @ts-ignore — vite-plugin-twing-drupal ships no types
 import { createSDCLoader } from 'vite-plugin-twing-drupal/src/loader/createSDCLoader.js'
-// @ts-ignore — @christianwiedemann/drupal-twig-extensions ships no types
 import { addDrupalExtensions as addTwingExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
 import Twig from 'twig'
-// @ts-ignore — drupal-twig-extensions ships no types
 import { addDrupalExtensions as addTwigExtensions } from 'drupal-twig-extensions/twig'
 import { createTwingWrapperRuntime } from './twingWrapper.ts'
 import { createTwigWrapperRuntime } from './twigWrapper.ts'
@@ -24,8 +20,8 @@ export interface WrapperEnv {
 interface WrapperEnvOptions {
   templates: Record<string, string>
   namespaces: Record<string, string[] | string>
-  initEnvironment?: (env: unknown) => void
-  iconPacks?: IconPacks
+  initEnvironment?: ((env: unknown) => void) | undefined
+  iconPacks?: IconPacks | undefined
 }
 
 export function createWrapperEnv(
@@ -37,12 +33,12 @@ export function createWrapperEnv(
 
 function twingWrapperEnv(opts: WrapperEnvOptions): WrapperEnv {
   const env = createSynchronousEnvironment(
-    createSDCLoader(opts.templates, opts.namespaces) as never
+    createSDCLoader(opts.templates, opts.namespaces)
   )
-  addTwingExtensions(env as never)
+  addTwingExtensions(env)
   opts.initEnvironment?.(env)
   const rt = createTwingWrapperRuntime(opts.iconPacks ?? {})
-  rt.registerSdcRuntime(env as never)
+  rt.registerSdcRuntime(env)
   return {
     render(componentId, props, slots, wrapper) {
       const story = rt.makeStory(componentId, props, slots, { context: {} })
@@ -52,28 +48,23 @@ function twingWrapperEnv(opts: WrapperEnvOptions): WrapperEnv {
 }
 
 function twigWrapperEnv(opts: WrapperEnvOptions): WrapperEnv {
-  const T = Twig as unknown as {
-    twig: (o: Record<string, unknown>) => { render: (c: unknown) => string }
-    cache: (on: boolean) => void
-  }
-  T.cache(false)
+  Twig.cache(false)
   addTwigExtensions(Twig)
   opts.initEnvironment?.(Twig)
   for (const [key, src] of Object.entries(opts.templates)) {
-    // Register under the `@ns/path` id (so `{% include '@assets/x.svg' %}` works)
-    // and the `ns:component` id (so `{% include 'ns:component' %}` works).
-    T.twig({ id: key, data: src, allowInlineIncludes: true })
+    // Registered as `@ns/path` and `ns:component` so both include forms work.
+    Twig.twig({ id: key, data: src, allowInlineIncludes: true })
     const m = key.match(/^@([^/]+)\/.*\/([^/]+)\.twig$/)
     if (m)
-      T.twig({ id: `${m[1]}:${m[2]}`, data: src, allowInlineIncludes: true })
+      Twig.twig({ id: `${m[1]}:${m[2]}`, data: src, allowInlineIncludes: true })
   }
   const rt = createTwigWrapperRuntime(opts.iconPacks ?? {})
-  rt.registerSdcRuntime(Twig as never)
+  rt.registerSdcRuntime(Twig)
   return {
     render(componentId, props, slots, wrapper) {
       const story = rt.makeStory(componentId, props, slots, {
         context: {},
-        render: (ctx) => T.twig({ ref: componentId }).render(ctx),
+        render: (ctx) => Twig.twig({ ref: componentId }).render(ctx),
       })
       return rt.renderInline(wrapper, { _story: story })
     },

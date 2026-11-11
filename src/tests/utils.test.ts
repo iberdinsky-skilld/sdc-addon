@@ -16,6 +16,10 @@ describe('utils', () => {
     expect(capitalize('h')).toBe('H')
   })
 
+  test('capitalize leaves an empty string empty', () => {
+    expect(capitalize('')).toBe('')
+  })
+
   test('toIdentifier turns a component id into a JS identifier', () => {
     expect(toIdentifier('umami:card')).toBe('umamicard')
     expect(toIdentifier('umami:read-more')).toBe('umamireadmore')
@@ -55,13 +59,22 @@ describe('utils', () => {
   })
 
   test('mergeOptions merges nested plain objects and keeps defaults', () => {
-    const defaults = {
+    interface Options {
+      sdcStorybookOptions: {
+        twigLib?: string
+        validate?: boolean
+        useBasic?: boolean
+        namespace?: string
+      }
+      jsonSchemaFakerOptions: { useExamplesValue?: boolean }
+    }
+    const defaults: Options = {
       sdcStorybookOptions: { twigLib: 'twig', validate: false, useBasic: true },
       jsonSchemaFakerOptions: { useExamplesValue: true },
     }
     const merged = mergeOptions(defaults, {
       sdcStorybookOptions: { validate: true, namespace: 'umami' },
-    } as any)
+    })
     expect(merged.sdcStorybookOptions).toEqual({
       twigLib: 'twig',
       validate: true,
@@ -92,9 +105,9 @@ describe('utils', () => {
   })
 
   test('mergeOptions does not mutate its inputs', () => {
-    const defaults = { a: { b: 1 } }
+    const defaults: { a: { b?: number; c?: number } } = { a: { b: 1 } }
     const overrides = { a: { c: 2 } }
-    const merged = mergeOptions(defaults, overrides as any)
+    const merged = mergeOptions(defaults, overrides)
     expect(merged).toEqual({ a: { b: 1, c: 2 } })
     expect(defaults).toEqual({ a: { b: 1 } })
     expect(overrides).toEqual({ a: { c: 2 } })

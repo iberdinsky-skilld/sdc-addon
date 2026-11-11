@@ -15,20 +15,26 @@
   "type": "module",
   "license": "MIT",
   "author": "Ivan Berdinsky <iberdinsky@skilld.cloud>",
+  "types": "./dist/index.d.ts",
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts"
+    },
     "./preset": "./dist/preset.js",
     "./renderer/twing": "./dist/renderer/twing.js",
     "./renderer/twig": "./dist/renderer/twig.js"
   },
   "files": [
     "dist/**/*",
-    "README.md",
-    "*.js",
-    "*.d.ts"
+    "README.md"
   ],
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "prebuild": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.runtime.json --noEmit",
+    "lint": "eslint",
     "build": "tsup",
     "build:watch": "npm run build -- --watch",
     "test": "vitest",
@@ -39,9 +45,12 @@
     "build-storybook": "storybook build",
     "serve": "npx http-server ./storybook-static",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
+    "@types/json-schema": "^7.0.15",
+    "@types/twig": "^1.12.17",
     "json-schema-faker": "^0.6.4",
     "jsonschema": "^1.5.0",
     "vite-plugin-twig-drupal": "^1.7.0",
@@ -55,25 +64,25 @@
     "twing": "^7.3.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@storybook/addon-a11y": "^11.0.0-beta.1",
     "@storybook/addon-docs": "^11.0.0-beta.1",
     "@storybook/html-vite": "^11.0.0-beta.1",
-    "@types/json-schema": "^7.0.15",
     "@types/node": "^24.19.2",
-    "@types/twig": "^1.12.17",
     "auto": "^11.3.6",
     "boxen": "^9.0.0",
     "dedent": "^1.7.2",
     "drupal-attribute": "^1.2.1",
+    "eslint": "^10.14.0",
     "playwright": "^1.65.0",
     "prettier": "^3.9.10",
-    "prompts": "^2.4.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "storybook": "^11.0.0-beta.1",
     "tsup": "^9.0.0",
     "twing": "^7.3.1",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
     "vite": "^7.3.8",
     "vitest": "^5.1.0",
     "zx": "^8.8.5"

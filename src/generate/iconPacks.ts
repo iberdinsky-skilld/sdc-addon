@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve, basename, dirname, extname, relative } from 'node:path'
 import { parse as parseYaml } from 'yaml'
-import type { Namespaces } from './namespaces.ts'
+import type { NamespaceRoots } from './namespaces.ts'
 import { isRemoteUrl, listDir, posixDirname } from '../utils.ts'
+import { isRecord, isString } from '../guards.ts'
 import type {
   IconPack,
   IconPacks,
@@ -14,16 +15,39 @@ import type {
 
 export type { IconPack, IconPacks, IconPackSettings, SvgIconData, PathIconData }
 
-interface RawIconPackDef {
-  enabled?: boolean
-  label?: string
-  extractor?: string
-  config?: { sources?: string[] }
-  settings?: IconPackSettings
-  template?: string
+// One pack of a *.icons.yml, with every field checked and defaulted.
+interface IconPackDef {
+  enabled: boolean
+  label: string | undefined
+  extractor: string
+  sources: string[]
+  settings: IconPackSettings
+  template: string
 }
 
-type RawIconsYml = Record<string, RawIconPackDef>
+const readIconPackDef = (value: unknown): IconPackDef | undefined => {
+  if (!isRecord(value)) return undefined
+  const { enabled, label, extractor, config, settings, template } = value
+  const sources =
+    isRecord(config) && Array.isArray(config['sources'])
+      ? config['sources'].filter(isString)
+      : []
+  return {
+    enabled: enabled !== false,
+    label: isString(label) ? label : undefined,
+    extractor: isString(extractor) ? extractor : 'svg',
+    sources,
+    settings: isRecord(settings)
+      ? Object.fromEntries(
+          Object.entries(settings).filter(
+            (entry): entry is [string, Record<string, unknown>] =>
+              isRecord(entry[1])
+          )
+        )
+      : {},
+    template: isString(template) ? template : '',
+  }
+}
 
 export interface IconPackFileResult {
   packs: IconPacks
@@ -41,16 +65,13 @@ function parseSvgFile(raw: string): {
   attrs: Record<string, string>
 } {
   const attrs: Record<string, string> = {}
-  const openTagMatch = raw.match(/<svg([^>]*)>/i)
-  if (openTagMatch) {
-    const attrRegex = /([\w:.-]+)=(?:"([^"]*)"|'([^']*)')/g
-    let m: RegExpExecArray | null
-    while ((m = attrRegex.exec(openTagMatch[1])) !== null) {
-      attrs[m[1]] = m[2] ?? m[3] ?? ''
-    }
+  const openTag = /<svg([^>]*)>/i.exec(raw)?.[1] ?? ''
+  for (const [, name = '', dq, sq] of openTag.matchAll(
+    /([\w:.-]+)=(?:"([^"]*)"|'([^']*)')/g
+  )) {
+    attrs[name] = dq ?? sq ?? ''
   }
-  const innerMatch = raw.match(/<svg[^>]*>([\s\S]*)<\/svg>/i)
-  const content = innerMatch ? innerMatch[1].trim() : ''
+  const content = /<svg[^>]*>([\s\S]*)<\/svg>/i.exec(raw)?.[1]?.trim() ?? ''
   return { content, attrs }
 }
 
@@ -78,7 +99,7 @@ function resolveSourceEntry(rawSource: string, nsRoot: string): ScannedFile[] {
 
   const absPath = resolve(nsRoot, rawSource)
   const extMatch = rawSource.match(/\*(\.[^/{}*]+)$/)
-  const filterExt = extMatch ? extMatch[1] : null
+  const filterExt = extMatch?.[1] ?? null
   const wildcardIdx = rawSource.search(/[*{]/)
   const dirPart =
     wildcardIdx >= 0 ? rawSource.substring(0, wildcardIdx) : rawSource
@@ -116,25 +137,23 @@ export function loadIconPackFile(
   const nsRoot = dirname(iconsFilePath)
   const ns = basename(iconsFilePath, '.icons.yml')
 
-  let raw: RawIconsYml
+  let raw: unknown
   try {
-    raw = parseYaml(readFileSync(iconsFilePath, 'utf8')) as RawIconsYml
+    raw = parseYaml(readFileSync(iconsFilePath, 'utf8'))
   } catch {
     return { packs, watchFiles }
   }
-  if (!raw || typeof raw !== 'object') return { packs, watchFiles }
+  if (!isRecord(raw)) return { packs, watchFiles }
 
-  // Relative (no leading slash): resolved against the preview iframe URL, so
-  // it works when Storybook is served from a sub-path (e.g. GitHub Pages).
+  // Relative, so it works when Storybook is served from a sub-path.
   const toUrl = (absPath: string) =>
     `sdc-icons/${ns}/${relative(nsRoot, absPath).replace(/\\/g, '/')}`
 
-  for (const [packId, packDef] of Object.entries(raw)) {
-    if (!packDef || typeof packDef !== 'object') continue
-    if (packDef.enabled === false) continue
+  for (const [packId, value] of Object.entries(raw)) {
+    const packDef = readIconPackDef(value)
+    if (!packDef?.enabled) continue
 
-    const extractor = (packDef.extractor ?? 'svg') as IconPack['extractor']
-    const rawSources: string[] = packDef.config?.sources ?? []
+    const { extractor, sources: rawSources } = packDef
     const resolvedSources = resolveIconSource
       ? rawSources.map((src) =>
           resolveIconSource(src, { packId, namespace: ns })
@@ -206,8 +225,8 @@ export function loadIconPackFile(
       extractor,
       sources,
       sourceUrls,
-      settings: packDef.settings ?? {},
-      template: packDef.template ?? '',
+      settings: packDef.settings,
+      template: packDef.template,
       svgIcons,
       pathIcons,
     }
@@ -216,9 +235,7 @@ export function loadIconPackFile(
   return { packs, watchFiles }
 }
 
-// Walk parsed YAML (component/story) data and collect every icon_id that is
-// referenced for the given pack (props `icon: {pack_id, icon_id}` and
-// `type: icon` nodes both match on the pack_id/icon_id pair).
+// Icon ids of `packId` referenced anywhere in parsed component/story YAML.
 export function collectIconIdsFromData(
   data: unknown,
   packId: string,
@@ -228,13 +245,13 @@ export function collectIconIdsFromData(
     for (const item of data) collectIconIdsFromData(item, packId, out)
     return
   }
-  if (data && typeof data === 'object') {
-    const obj = data as Record<string, unknown>
+  if (isRecord(data)) {
+    const obj = data
     // ui-patterns icon prop / type:icon node shape.
     if (obj.pack_id === packId && typeof obj.icon_id === 'string') {
       out.add(obj.icon_id)
     }
-    // Compact { pack, id } shape (e.g. the icon-api demo component).
+    // Compact { pack, id } shape.
     if (obj.pack === packId && typeof obj.id === 'string') {
       out.add(obj.id)
     }
@@ -244,8 +261,7 @@ export function collectIconIdsFromData(
   }
 }
 
-// For a pack whose svg sources are remote (CDN) URLs, fetch and inline the
-// SVG content of only the used icons. `fetchSvg` is injectable for testing.
+// Inlines the used icons of a pack with remote svg sources.
 export async function fetchRemoteSvgIcons(
   pack: IconPack,
   usedIconIds: Iterable<string>,
@@ -269,9 +285,8 @@ export async function fetchRemoteSvgIcons(
   }
 }
 
-// For an svg_sprite pack whose source is a remote (CDN) sprite, fetch the
-// sprite once. Browsers block external `<use href>`, so the caller inlines the
-// sprite into the DOM and we switch the source to '' → `<use href="#icon_id">`.
+// Fetches a remote sprite once. Browsers block external `<use href>`, so the
+// caller inlines it and the source becomes '' (`<use href="#id">`).
 export async function fetchRemoteSprite(
   pack: IconPack,
   fetchSvg: (url: string) => Promise<string | null>
@@ -287,7 +302,9 @@ export async function fetchRemoteSprite(
 }
 
 // `<ns>.icons.yml` of every namespace that has one, as [namespace, path].
-export function iconPackFiles(namespaces: Namespaces): Array<[string, string]> {
+export function iconPackFiles(
+  namespaces: NamespaceRoots
+): Array<[string, string]> {
   return namespaces
     .entries()
     .map(([ns, root]): [string, string] => [ns, join(root, `${ns}.icons.yml`)])
@@ -295,7 +312,7 @@ export function iconPackFiles(namespaces: Namespaces): Array<[string, string]> {
 }
 
 export function discoverIconPacks(
-  namespaces: Namespaces,
+  namespaces: NamespaceRoots,
   resolveIconSource?: ResolveIconSource
 ): IconPacks {
   const packs: IconPacks = {}

@@ -1,14 +1,8 @@
-import { defineConfig, type Options } from 'tsup'
+import { defineConfig } from 'tsup'
 
-const NODE_TARGET: Options['target'] = ['node22']
-
-export default defineConfig(async (options) => {
-  const commonConfig: Options = {
-    // splitting: false,
-    // minify: !options.watch,
-    // treeshake: true,
-    // sourcemap: true,
-    // clean: options.watch ? false : true,
+export default defineConfig([
+  // Storybook preset (Node).
+  {
     entry: ['src/preset.ts'],
     format: ['esm'],
     target: 'node22',
@@ -17,23 +11,10 @@ export default defineConfig(async (options) => {
     clean: false,
     shims: true,
     external: ['vite', 'fs', 'vite-plugin-node-polyfills'],
-  }
-
-  const configs: Options[] = []
-
-  configs.push({
-    ...commonConfig,
-    entry: ['src/preset.ts'],
-    format: ['esm'],
-    target: NODE_TARGET,
-    platform: 'node',
-  })
-
-  // Browser runtime modules. These are imported into the consumer's Storybook
-  // preview bundle (not the node preset), so build them for the browser and keep
-  // twing/drupal-attribute external — they must resolve to the consumer's copies
-  // (the same singletons the component render uses).
-  configs.push({
+  },
+  // Browser runtime, bundled into the consumer's preview; twing and
+  // drupal-attribute stay external to share the consumer's singletons.
+  {
     entry: ['src/renderer/twing.ts', 'src/renderer/twig.ts'],
     format: ['esm'],
     target: 'es2020',
@@ -43,7 +24,13 @@ export default defineConfig(async (options) => {
     shims: false,
     splitting: false,
     external: ['twing', 'drupal-attribute'],
-  })
-
-  return configs
-})
+  },
+  // Public option types for `.storybook/main.ts`; no runtime code.
+  {
+    entry: { index: 'src/index.ts' },
+    format: ['esm'],
+    outDir: 'dist',
+    clean: false,
+    dts: { only: true },
+  },
+])

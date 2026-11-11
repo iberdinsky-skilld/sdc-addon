@@ -1,15 +1,13 @@
-// Full Twig.js runtime for the build-time harness: core (icon) plus the
-// `_story|merge` render-array machinery. Not shipped to the browser.
+// Twig.js runtime for the build-time wrapper renderer (not shipped).
 import type { IconPacks } from '../sdc.d.ts'
-import { entries } from './collections.ts'
-import { toAttribute } from './attributes.ts'
+import { toText } from './collections.ts'
 import {
   isStory,
   storyContext,
   createStoryFactory,
   type StoryBase,
 } from './story.ts'
-import { createNodeResolver, nodeGet } from './nodes.ts'
+import { componentNodeContext, createNodeResolver, nodeGet } from './nodes.ts'
 import { createTwigCore, type TwigJs } from './twig.ts'
 
 export function createTwigWrapperRuntime(iconPacks: IconPacks) {
@@ -17,13 +15,9 @@ export function createTwigWrapperRuntime(iconPacks: IconPacks) {
 
   function renderComponentNode(node: unknown): string {
     const twig = core.getTwig()
-    const id = String(nodeGet(node, 'component') ?? '')
+    const id = toText(nodeGet(node, 'component'))
     if (!twig || !id) return ''
-    const vars: Record<string, unknown> = {}
-    for (const src of [nodeGet(node, 'props'), nodeGet(node, 'slots')]) {
-      for (const [k, v] of entries(src)) vars[k as string] = resolve(v)
-    }
-    vars['attributes'] = toAttribute(vars['attributes'])
+    const vars = componentNodeContext(node, resolve)
     return renderInline("{% include '" + id + "' with vars only %}", { vars })
   }
 
@@ -57,8 +51,8 @@ export function createTwigWrapperRuntime(iconPacks: IconPacks) {
     if (!twig || !template) return template || ''
     try {
       return twig
-        .twig({ data: template, allowInlineIncludes: true } as never)
-        .render((context as Record<string, unknown>) || {})
+        .twig({ data: template, allowInlineIncludes: true })
+        .render(context || {})
     } catch (e) {
       console.error('[SDC] renderInline error:', e)
       return template
@@ -73,11 +67,9 @@ export function createTwigWrapperRuntime(iconPacks: IconPacks) {
       Twig.extendFilter('merge', function (this: unknown, value, params) {
         const other = Array.isArray(params) ? params[0] : undefined
         if (isStory(value) || isStory(other)) {
-          return mergeStory(value, other) as unknown as string
+          return mergeStory(value, other)
         }
-        return origMerge
-          ? (origMerge.call(this, value, params) as string)
-          : (value as string)
+        return origMerge ? origMerge.call(this, value, params) : value
       })
     }
   }

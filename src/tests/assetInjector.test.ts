@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { assetInjectorModule } from '../vite/storybookYamlStories.ts'
+import { assetInjectorModule } from '../vite/assetInjector.ts'
 
 // Evaluate the browser-side injector against a minimal fake document.
 const loadInjector = async () =>
@@ -7,27 +7,36 @@ const loadInjector = async () =>
     'data:text/javascript,' + encodeURIComponent(assetInjectorModule)
   )) as { injectAssets: (assets: unknown[]) => Promise<void> }
 
+// What injectAssets touches; src, href, media, async and onload are assigned
+// as plain properties.
+interface FakeElement {
+  tag: string
+  attrs: Record<string, string>
+  setAttribute(k: string, v: string): void
+  onload?: () => void
+  [prop: string]: unknown
+}
+
 const fakeDocument = () => {
-  const created: Array<Record<string, unknown>> = []
+  const created: FakeElement[] = []
   const doc = {
     querySelector: () => null,
-    createElement: (tag: string) => {
-      const el: Record<string, unknown> = {
+    createElement: (tag: string): FakeElement => {
+      const attrs: Record<string, string> = {}
+      const el: FakeElement = {
         tag,
-        attrs: {} as Record<string, string>,
+        attrs,
+        setAttribute: (k, v) => {
+          attrs[k] = v
+        },
       }
-      el.setAttribute = (k: string, v: string) =>
-        ((el.attrs as Record<string, string>)[k] = v)
       created.push(el)
       return el
     },
     head: {
-      appendChild: (el: Record<string, unknown>) => {
+      appendChild: (el: FakeElement) => {
         // Simulate the network finishing in reverse order.
-        setTimeout(
-          () => (el.onload as () => void)?.(),
-          created.length === 1 ? 20 : 1
-        )
+        setTimeout(() => el.onload?.(), created.length === 1 ? 20 : 1)
       },
     },
   }
@@ -56,13 +65,10 @@ describe('injectAssets', () => {
       'https://cdn/jquery-ui.js',
     ])
     expect(scripts.every((s) => s.async === false)).toBe(true)
-    expect((scripts[1].attrs as Record<string, string>).defer).toBe('')
-    const link = created.find((e) => e.tag === 'link') as Record<
-      string,
-      unknown
-    >
-    expect(link.href).toBe('https://cdn/ui.css')
-    expect(link.media).toBe('print')
+    expect(scripts[1]?.attrs['defer']).toBe('')
+    const link = created.find((e) => e.tag === 'link')
+    expect(link?.['href']).toBe('https://cdn/ui.css')
+    expect(link?.['media']).toBe('print')
   })
 
   test('is a no-op without a document', async () => {

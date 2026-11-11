@@ -1,21 +1,15 @@
 import { describe, expect, test } from 'vitest'
 import twing from 'twing'
 import TwigJs from 'twig'
-// @ts-ignore — @christianwiedemann/drupal-twig-extensions ships no types
 import { addDrupalExtensions as addTwing } from '@christianwiedemann/drupal-twig-extensions/twing'
-// @ts-ignore — drupal-twig-extensions ships no types
 import { addDrupalExtensions as addTwig } from 'drupal-twig-extensions/twig'
-import DrupalAttribute from 'drupal-attribute'
+import { toAttribute } from '../renderer/attributes.ts'
+import { toText } from '../renderer/collections.ts'
 import { createTwingWrapperRuntime } from '../renderer/twingWrapper.ts'
 import { createTwigWrapperRuntime } from '../renderer/twigWrapper.ts'
+import { makeIconPack } from './helpers.ts'
 
-const { createSynchronousEnvironment, createSynchronousArrayLoader } =
-  twing as unknown as {
-    createSynchronousEnvironment: (loader: unknown) => {
-      render: (name: string, ctx: unknown) => string
-    }
-    createSynchronousArrayLoader: (t: Record<string, string>) => unknown
-  }
+const { createSynchronousEnvironment, createSynchronousArrayLoader } = twing
 
 // The UI Patterns "advanced" wrapper: loop, merge #props/#slots, re-render.
 const WRAPPER = `{% for c in ['primary', 'success'] %}{{ _story|merge({
@@ -33,9 +27,9 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
       wrap: WRAPPER,
     })
     const env = createSynchronousEnvironment(loader)
-    addTwing(env as never)
+    addTwing(env)
     const rt = createTwingWrapperRuntime({})
-    rt.registerSdcRuntime(env as never)
+    rt.registerSdcRuntime(env)
 
     const story = rt.makeStory('badge', {}, { label: 'base' }, { context: {} })
 
@@ -53,16 +47,11 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
     const rt = createTwigWrapperRuntime({})
     rt.registerSdcRuntime(TwigJs)
 
-    // Twig.js renders a render array via the component's own render(): mimic the
-    // SDC component render (attributes as a DrupalAttribute, addClass('badge')).
+    // twig.js renders through the component's own render(); mimic SDC's.
     const render = (ctx: Record<string, unknown>): string => {
-      const a = ctx.attributes
-      const attrs =
-        a && typeof (a as DrupalAttribute).addClass === 'function'
-          ? (a as DrupalAttribute)
-          : new DrupalAttribute(Object.entries((a as object) ?? {}))
+      const attrs = toAttribute(ctx['attributes'])
       attrs.addClass('badge')
-      return `<span${attrs}>${ctx.label ?? ''}</span>`
+      return `<span${attrs.toString()}>${toText(ctx['label'])}</span>`
     }
     const story = rt.makeStory(
       'badge',
@@ -87,28 +76,21 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
     expect(rt.renderInline('', {})).toBe('')
 
     const env = createSynchronousEnvironment(createSynchronousArrayLoader({}))
-    addTwing(env as never)
-    rt.registerSdcRuntime(env as never)
+    addTwing(env)
+    rt.registerSdcRuntime(env)
     expect(rt.renderInline("{{ 'a' ~ 'b' }}", {})).toBe('ab')
     expect(rt.renderInline('{{ x }}', { x: 'hi' })).toBe('hi')
   })
 
   test('twing: renderIcon renders the pack template with the icon context', () => {
-    const pack = {
-      extractor: 'path',
-      template: '<i>{{ icon_id }}</i>',
-      settings: {},
-      sourceUrls: [] as string[],
-      svgIcons: {},
-      pathIcons: {},
-    }
-    const rt = createTwingWrapperRuntime({ heart: pack as never })
+    const pack = makeIconPack({ template: '<i>{{ icon_id }}</i>' })
+    const rt = createTwingWrapperRuntime({ heart: pack })
     // before register → ''
     expect(rt.renderIcon('heart', 'love', {})).toBe('')
 
     const env = createSynchronousEnvironment(createSynchronousArrayLoader({}))
-    addTwing(env as never)
-    rt.registerSdcRuntime(env as never)
+    addTwing(env)
+    rt.registerSdcRuntime(env)
     expect(rt.renderIcon('heart', 'love', {})).toBe('<i>love</i>')
     // unknown pack / missing id → ''
     expect(rt.renderIcon('nope', 'love', {})).toBe('')
@@ -124,15 +106,8 @@ describe('advanced render-array pattern (end-to-end through the real runtime)', 
   })
 
   test('twig.js: renderIcon renders the pack template with the icon context', () => {
-    const pack = {
-      extractor: 'path',
-      template: '<i>{{ icon_id }}</i>',
-      settings: {},
-      sourceUrls: [] as string[],
-      svgIcons: {},
-      pathIcons: {},
-    }
-    const rt = createTwigWrapperRuntime({ heart: pack as never })
+    const pack = makeIconPack({ template: '<i>{{ icon_id }}</i>' })
+    const rt = createTwigWrapperRuntime({ heart: pack })
     expect(rt.renderIcon('heart', 'love', {})).toBe('')
     rt.registerSdcRuntime(TwigJs)
     expect(rt.renderIcon('heart', 'love', {})).toBe('<i>love</i>')

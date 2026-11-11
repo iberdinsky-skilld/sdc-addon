@@ -1,4 +1,4 @@
-import { describe, it, expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { renderStoryNode } from '../generate/nodeCodegen.ts'
 describe('storiesRenderer', () => {
   test.each([

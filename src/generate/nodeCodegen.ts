@@ -1,21 +1,24 @@
-import { capitalize, toIdentifier } from '../utils.ts'
+import { capitalize, jsLiteral, toIdentifier } from '../utils.ts'
+import { isRecord } from '../guards.ts'
 import { toAttribute } from '../renderer/attributes.ts'
-import { nodeKind, matchCustomNode, TAG_RESERVED } from '../renderer/nodes.ts'
-import type { Component } from '../sdc.d.ts'
-import { jsLiteral } from '../utils.ts'
+import { toText } from '../renderer/collections.ts'
+import { nodeKind, renderCustomNode, TAG_RESERVED } from '../renderer/nodes.ts'
+
+// A YAML render node; fields are user input and read defensively.
+type Node = Record<string, unknown>
 
 // drupal-attribute intentionally drops empty values (canonical Drupal).
 const attrStr = (value: unknown): string => toAttribute(value).toString()
 
 export const generateArgs = (
-  args: Component['props'] | Component['slots'],
+  args: Record<string, unknown> | undefined,
   isSlot = false
 ): string =>
   Object.entries(args ?? {})
     .map(([key, value]) => `${key}: ${formatArgValue(value, isSlot)},`)
     .join('\n')
 
-const formatArgValue = (value: any, isSlot = false): string => {
+const formatArgValue = (value: unknown, isSlot = false): string => {
   if (Array.isArray(value)) {
     const arrayContent = value.map((item) => formatArgValue(item, false))
     return `new TwigSafeArray(${arrayContent.join(', ')})`
@@ -24,13 +27,12 @@ const formatArgValue = (value: any, isSlot = false): string => {
   return isSlot ? `new TwigSafeArray(${rendered})` : rendered
 }
 
-// Build-time counterpart of the runtime resolver: classify with `nodeKind()` and
-// emit a JS expression. A custom renderer returns either HTML (a literal) or a
-// node (fed back through codegen).
-export const renderStoryNode = (item: any): string => {
+// Build-time twin of the runtime resolver: each node becomes a JS expression.
+export const renderStoryNode = (item: unknown): string => {
+  if (!isRecord(item)) return jsLiteral(item)
   switch (nodeKind(item)) {
     case 'custom': {
-      const out = matchCustomNode(item)!.render(item)
+      const out = renderCustomNode(item)
       return typeof out === 'string'
         ? jsLiteral(out)
         : formatArgValue(out, false)
@@ -42,7 +44,7 @@ export const renderStoryNode = (item: any): string => {
     case 'image':
       return renderImage(item)
     case 'markup':
-      return jsLiteral(`${item.markup}`)
+      return jsLiteral(toText(item.markup))
     case 'tag':
       return renderTag(item)
     default:
@@ -50,45 +52,52 @@ export const renderStoryNode = (item: any): string => {
   }
 }
 
-const renderComponent = (item: Component): string => {
+const renderComponent = (item: Node): string => {
+  if (typeof item.component !== 'string') {
+    throw new Error(
+      `A "type: component" node needs a string "component" (namespace:name), got ${jsLiteral(item.component)}`
+    )
+  }
   const identifier = toIdentifier(item.component)
-  const componentProps = `...{ ${generateArgs(item.props ?? {}, false)}}, ...{${generateArgs(item.slots ?? {}, true)}}`
-  const storyArgs = item.story
-    ? `...${identifier}.${capitalize(item.story)}.args`
-    : '...{}'
+  const props = isRecord(item.props) ? item.props : {}
+  const slots = isRecord(item.slots) ? item.slots : {}
+  const componentProps = `...{ ${generateArgs(props, false)}}, ...{${generateArgs(slots, true)}}`
+  const storyArgs =
+    typeof item.story === 'string'
+      ? `...${identifier}.${capitalize(item.story)}.args`
+      : '...{}'
   return `${identifier}.default.component({...${identifier}.Basic.baseArgs, ${storyArgs}, ${componentProps}})`
 }
 
-const renderImage = (item: any): string => {
-  const attrs: Record<string, any> = { ...(item.attributes ?? {}) }
+// image / theme:image -> <img>; top-level fields win over `attributes`, as in
+// Drupal.
+const renderImage = (item: Node): string => {
+  const attrs: Node = isRecord(item.attributes) ? { ...item.attributes } : {}
   if (item.uri != null) attrs.src = item.uri
   if (Array.isArray(item.srcset) && item.srcset.length > 0) {
     attrs.srcset = item.srcset
-      .map((s: any) =>
-        s && typeof s === 'object'
-          ? [s.uri, s.width].filter(Boolean).join(' ')
-          : s
+      .map((s: unknown) =>
+        isRecord(s) ? [s.uri, s.width].filter(Boolean).join(' ') : s
       )
       .join(', ')
   }
-  const mapped: Record<string, any> = {
+  const mapped: Node = {
     width: item.width,
     height: item.height,
     alt: item.alt ?? '',
     sizes: item.sizes,
     title: item.title,
   }
-  for (const key of ['width', 'height', 'alt', 'sizes', 'title']) {
-    if (mapped[key] != null) attrs[key] = mapped[key]
+  for (const [key, value] of Object.entries(mapped)) {
+    if (value != null) attrs[key] = value
   }
   return jsLiteral(`<img${attrStr(attrs)} />`)
 }
 
-// element / html_tag → <tag attrs>children</tag>. Like Drupal, children are
-// `value` plus every other renderable key (an icon under `icon:`, a numeric `0`),
-// not just `value`/`children`.
-const renderTag = (item: any): string => {
-  const tag = item.tag ?? 'div'
+// element / html_tag -> <tag>; children are `value` plus every other renderable
+// key, as in Drupal.
+const renderTag = (item: Node): string => {
+  const tag = toText(item.tag) || 'div'
   const parts: string[] = []
   const main = item.value ?? item.children
   if (main != null) parts.push(formatArgValue(main, false))
@@ -100,7 +109,7 @@ const renderTag = (item: any): string => {
   return `(${open} + ${parts.length ? parts.join(' + ') : '""'} + ${close})`
 }
 
-const renderIcon = (item: any): string =>
+const renderIcon = (item: Node): string =>
   `_sdcRenderIcon(${jsLiteral(item.pack_id)}, ${jsLiteral(
     item.icon_id
   )}, ${jsLiteral(item.settings ?? {})})`

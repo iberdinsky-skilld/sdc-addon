@@ -14,11 +14,20 @@ import { listDir } from '../utils.ts'
 export const getProjectName = (p: string): string => {
   const fullPath = resolve(p)
   const parts = fullPath.split(sep)
-  const i = parts.lastIndexOf('components')
-  if (i < 1) {
+  const project = parts[parts.lastIndexOf('components') - 1]
+  if (!project) {
     throw new Error(`Could not find 'components' folder in path: ${fullPath}`)
   }
-  return parts[i - 1]
+  return project
+}
+
+// `namespace:component` → its two parts; undefined for anything else.
+export const parseComponentId = (
+  componentId: string
+): { namespace: string; component: string } | undefined => {
+  const match = /^([^:]+):([^:]+)$/.exec(componentId)
+  if (!match?.[1] || !match[2]) return undefined
+  return { namespace: match[1], component: match[2] }
 }
 
 const getAllSubdirectoriesRecursive = (baseDir: string): string[] =>
@@ -128,17 +137,17 @@ export class Namespaces {
     makeComponentIdFormat = false
   ): string {
     const ns = this.find(fsPath)
-    if (!ns) {
+    const root = this.namespaces[ns]
+    if (!ns || root === undefined) {
       throw new Error(
         `Could not find valid 'namespace' for folder: ${fsPath} in namespaces: ${JSON.stringify(this.namespaces)}`
       )
     }
 
-    const rootPath = resolve(this.namespaces[ns])
+    const rootPath = resolve(root)
     const componentsDir = join(rootPath, 'components')
 
     if (existsSync(componentsDir)) {
-      // Standard Drupal 'components' structure
       const isExact = fsPath === componentsDir
       const isChild = fsPath.startsWith(componentsDir + sep)
       if (!isExact && !isChild) {
@@ -160,13 +169,19 @@ export class Namespaces {
       return `@${ns}/${rel}`
     }
 
-    // Custom namespace (icons, utilities, etc.)
     return `@${ns}`
   }
 }
 
+// Read-only views of the registry.
+export type NamespaceRoots = Pick<Namespaces, 'entries'>
+export type TwingNamespaceRoots = Pick<
+  Namespaces,
+  'entries' | 'toTwingNamespaces'
+>
+
 export const toNamespaces = (
   namespaceDefinition: NamespaceDefinition
 ): Namespaces => {
-  return new Namespaces(namespaceDefinition ?? {})
+  return new Namespaces(namespaceDefinition)
 }

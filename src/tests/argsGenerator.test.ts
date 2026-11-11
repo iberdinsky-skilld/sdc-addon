@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import generateStorybookArgs from '../generate/args'
+import assert from 'node:assert/strict'
+import { describe, it, expect } from 'vitest'
+import { isRecord } from '../guards.ts'
+import generateStorybookArgs, { toFakerSchema } from '../generate/args'
 import type { SDCSchema } from '../sdc.d.ts'
 
 describe('generateStorybookArgs', () => {
@@ -107,11 +109,13 @@ describe('generateStorybookArgs', () => {
         name: '',
       }
 
-      const args = await generateStorybookArgs(content, {})
-      expect(args.config).toBeInstanceOf(Object)
-      expect(Array.isArray(args.config)).toBe(false)
-      // object keys come from the schema properties (faker may generate a subset)
-      const keys = Object.keys(args.config)
+      const { config }: { config?: unknown } = await generateStorybookArgs(
+        content,
+        {}
+      )
+      assert(isRecord(config))
+      // The faker may generate a subset of the properties.
+      const keys = Object.keys(config)
       expect(keys.every((k) => ['label', 'count'].includes(k))).toBe(true)
     })
 
@@ -180,11 +184,14 @@ describe('generateStorybookArgs', () => {
         name: '',
       }
 
-      const args = await generateStorybookArgs(content, {})
-      expect(Array.isArray(args.items)).toBe(true)
-      if (args.items.length > 0) {
-        expect(args.items[0]).toBeInstanceOf(Object)
-        expect(Array.isArray(args.items[0])).toBe(false)
+      const { items }: { items?: unknown } = await generateStorybookArgs(
+        content,
+        {}
+      )
+      assert(Array.isArray(items))
+      if (items.length > 0) {
+        expect(items[0]).toBeInstanceOf(Object)
+        expect(Array.isArray(items[0])).toBe(false)
       }
     })
 
@@ -244,8 +251,8 @@ describe('generateStorybookArgs', () => {
     })
 
     it('converts a non-object-typed schema that generates an object via Object.values', async () => {
-      // A schema with enum containing an object value but no explicit type:'object'
-      // json-schema-faker will pick the enum value; result is an Object → converted to array of values
+      // An enum with an object value and no `type: object`: the picked object is
+      // flattened to its values.
       const content: SDCSchema = {
         props: {
           properties: {
@@ -262,6 +269,128 @@ describe('generateStorybookArgs', () => {
       // Without explicit type:'object', the object is flattened to its values
       expect(Array.isArray(args.option)).toBe(true)
       expect(args.option).toEqual(['a', 'A'])
+    })
+  })
+
+  describe('draft-04 schemas', () => {
+    it('honours boolean exclusiveMinimum/exclusiveMaximum', async () => {
+      const content: SDCSchema = {
+        name: '',
+        props: {
+          properties: {
+            n: {
+              type: 'integer',
+              minimum: 5,
+              maximum: 6,
+              exclusiveMinimum: true,
+            },
+            m: {
+              type: 'integer',
+              minimum: 5,
+              maximum: 6,
+              exclusiveMaximum: true,
+            },
+          },
+        },
+      }
+      const args = await generateStorybookArgs(content, {})
+      expect(args.n).toBe(6)
+      expect(args.m).toBe(5)
+    })
+
+    it('generates tuple items positionally', async () => {
+      const content: SDCSchema = {
+        name: '',
+        props: {
+          properties: {
+            pair: {
+              type: 'array',
+              items: [{ type: 'string' }, { type: 'integer' }],
+              minItems: 2,
+              maxItems: 2,
+            },
+          },
+        },
+      }
+      const { pair }: { pair?: unknown } = await generateStorybookArgs(
+        content,
+        {}
+      )
+      assert(Array.isArray(pair))
+      expect(pair).toHaveLength(2)
+      expect(typeof pair[0]).toBe('string')
+      expect(typeof pair[1]).toBe('number')
+    })
+
+    it('converts $defs referenced from props', async () => {
+      const content: SDCSchema = {
+        name: '',
+        props: { properties: { n: { $ref: 'x://bounded' } } },
+        $defs: {
+          'x://bounded': {
+            type: 'integer',
+            minimum: 5,
+            maximum: 6,
+            exclusiveMinimum: true,
+          },
+        },
+      }
+      const args = await generateStorybookArgs(content, {})
+      expect(args.n).toBe(6)
+    })
+  })
+
+  describe('toFakerSchema', () => {
+    it('drops a false exclusive flag and keeps the bound', () => {
+      expect(toFakerSchema({ minimum: 1, exclusiveMinimum: false })).toEqual({
+        minimum: 1,
+      })
+    })
+
+    it('maps tuple items plus additionalItems onto prefixItems/items', () => {
+      expect(
+        toFakerSchema({
+          items: [{ type: 'string' }],
+          additionalItems: { type: 'number' },
+        })
+      ).toEqual({
+        prefixItems: [{ type: 'string' }],
+        items: { type: 'number' },
+      })
+      expect(
+        toFakerSchema({ items: [{ type: 'string' }], additionalItems: false })
+      ).toEqual({ prefixItems: [{ type: 'string' }], items: false })
+    })
+
+    it('walks nested schema keywords but not data', () => {
+      const out = toFakerSchema({
+        properties: {
+          a: { minimum: 1, exclusiveMinimum: true },
+        },
+        patternProperties: { '^x': { maximum: 2, exclusiveMaximum: true } },
+        definitions: { d: { items: { minimum: 0, exclusiveMinimum: true } } },
+        dependencies: { a: ['b'], b: { minimum: 3, exclusiveMinimum: true } },
+        allOf: [{ minimum: 4, exclusiveMinimum: true }],
+        anyOf: [{ minimum: 5, exclusiveMinimum: true }],
+        oneOf: [{ minimum: 6, exclusiveMinimum: true }],
+        not: { minimum: 7, exclusiveMinimum: true },
+        additionalProperties: { minimum: 8, exclusiveMinimum: true },
+        enum: [{ minimum: 9, exclusiveMinimum: true }],
+        default: { minimum: 10, exclusiveMinimum: true },
+      })
+      expect(out).toEqual({
+        properties: { a: { exclusiveMinimum: 1 } },
+        patternProperties: { '^x': { exclusiveMaximum: 2 } },
+        definitions: { d: { items: { exclusiveMinimum: 0 } } },
+        dependencies: { a: ['b'], b: { exclusiveMinimum: 3 } },
+        allOf: [{ exclusiveMinimum: 4 }],
+        anyOf: [{ exclusiveMinimum: 5 }],
+        oneOf: [{ exclusiveMinimum: 6 }],
+        not: { exclusiveMinimum: 7 },
+        additionalProperties: { exclusiveMinimum: 8 },
+        enum: [{ minimum: 9, exclusiveMinimum: true }],
+        default: { minimum: 10, exclusiveMinimum: true },
+      })
     })
   })
 })

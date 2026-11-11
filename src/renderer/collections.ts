@@ -1,10 +1,48 @@
-// Map/iterable helpers — Twing represents array/hash literals as JS Maps.
+// Map/iterable helpers: Twing represents arrays and hashes as Maps.
+import type { DrupalAttributeEntry } from 'drupal-attribute'
+import { isRecord } from '../guards.ts'
 
-// Any iterable-ish value to [key, value] entries (Map branch covers DrupalAttribute).
+// [key, value] entries of a Map, array or object.
 export function entries(value: unknown): Array<[unknown, unknown]> {
   if (value == null) return []
   if (value instanceof Map) return [...value.entries()]
   if (Array.isArray(value)) return value.map((x, i) => [i, x])
-  if (typeof value === 'object') return Object.entries(value as object)
+  if (typeof value === 'object') return Object.entries(value)
   return []
+}
+
+// Text of a template value through its own toString; plain objects render ''.
+export function toText(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  )
+    return String(value)
+  if (typeof value === 'object' && value !== null) {
+    const own: unknown = Reflect.get(value, 'toString')
+    if (typeof own === 'function' && own !== Object.prototype.toString)
+      return String(Reflect.apply(own, value, []))
+  }
+  return ''
+}
+
+// A hash as a plain object (Twing passes Maps); undefined for anything else.
+export function toPlainObject(
+  value: unknown
+): Record<string, unknown> | undefined {
+  if (value instanceof Map)
+    return Object.fromEntries(entries(value).map(([k, v]) => [toText(k), v]))
+  return isRecord(value) ? value : undefined
+}
+
+// A value as something DrupalAttribute.setAttribute accepts.
+export function toAttributeEntry(value: unknown): DrupalAttributeEntry {
+  if (value == null || typeof value === 'string' || typeof value === 'boolean')
+    return value
+  if (Array.isArray(value)) return value.map(toText)
+  if (typeof value === 'object')
+    return Object.fromEntries(entries(value).map(([k, v]) => [toText(k), v]))
+  return toText(value)
 }

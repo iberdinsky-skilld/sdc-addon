@@ -1,5 +1,4 @@
-// Twing browser runtime: env capture, icon() and include casting. The wrapper
-// machinery (makeStory/merge/resolver) lives in twingWrapper.ts, harness-only.
+// Twing browser runtime: env capture, icon() and the include() attributes cast.
 import {
   createSynchronousFunction,
   type TwingSynchronousEnvironment,
@@ -41,7 +40,7 @@ export function createTwingCore(iconPacks: IconPacks) {
   function registerCore(e: SdcEnv): void {
     env = e
 
-    if (!e.__sdcIncludeOverridden && typeof e.functions?.get === 'function') {
+    if (!e.__sdcIncludeOverridden) {
       const origInclude = e.functions.get('include')
       if (origInclude && typeof origInclude.callable === 'function') {
         e.__sdcIncludeOverridden = true
@@ -55,15 +54,17 @@ export function createTwingCore(iconPacks: IconPacks) {
               withContext,
               ignoreMissing,
               sandboxed
-            ) =>
-              origInclude.callable(
+            ) => {
+              const output: unknown = origInclude.callable(
                 execCtx,
                 template,
                 castVarsAttributes(variables),
                 withContext,
                 ignoreMissing,
                 sandboxed
-              ),
+              )
+              return output
+            },
             [...origInclude.acceptedArguments]
           )
         )
@@ -71,7 +72,7 @@ export function createTwingCore(iconPacks: IconPacks) {
     }
 
     const loader = e.loader
-    if (loader && typeof loader.setTemplate === 'function') {
+    if (typeof loader.setTemplate === 'function') {
       for (const [packId, pack] of Object.entries(iconPacks)) {
         loader.setTemplate('_sdc_icon_' + packId, pack.template)
       }

@@ -1,13 +1,12 @@
 import { readdirSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 
-// http(s) URL as opposed to a filesystem path.
 export const isRemoteUrl = (s: string): boolean => /^https?:\/\//.test(s)
 
-export const capitalize = (str: string) => str[0].toUpperCase() + str.slice(1)
+export const capitalize = (str: string): string =>
+  str.charAt(0).toUpperCase() + str.slice(1)
 
-// `umami:read-more` -> `umamireadmore`: a component id as a JS identifier
-// for the generated `import * as ...` bindings.
+// `umami:read-more` -> `umamireadmore`
 export const toIdentifier = (componentId: string): string =>
   componentId.replace(/[-:]/g, '')
 
@@ -17,33 +16,31 @@ export const deriveGroupFromPath = (fileName: string) => {
   const lower = parts.map((p) => p.toLowerCase())
   const index = lower.lastIndexOf('components')
 
-  // We need two segments after 'components' to count it as a real group:
-  // e.g. components/atoms/button -> group = atoms
-  // e.g. components/dummy -> fallback to SDC
-  if (index !== -1 && parts[index + 2]) {
-    return parts[index + 1]
+  // components/atoms/button -> atoms; components/button -> SDC
+  const group = parts[index + 1]
+  if (index !== -1 && group && parts[index + 2]) {
+    return group
   }
 
   return 'SDC'
 }
 
-// Sanitize story key to ensure it's a valid JavaScript identifier
+// Story keys starting with a digit get a `_` prefix.
 export const sanitizeStoryKey = (key: string): string => {
-  // If key starts with a digit, prefix it with an underscore
   if (/^\d/.test(key)) {
     return `_${key}`
   }
   return key
 }
 
-// Serialize a value as a JavaScript literal for generated source code.
-// JSON.stringify leaves the U+2028 / U+2029 line separators unescaped; they
-// are legal inside JS string literals only since ES2019 and still confuse some
-// tooling, so escape them (also satisfies CodeQL js/bad-code-sanitization).
-// `<` and `>` are left alone: the output is an ES module, never inline HTML.
+// A value as a JS literal for generated code. U+2028/U+2029 are escaped (they
+// trip some tooling); `<`/`>` stay as is, the output is never inline HTML.
+// JSON.stringify returns undefined for undefined, functions and symbols.
+const toJson = (value: unknown, indent?: number): string | undefined =>
+  JSON.stringify(value, null, indent)
+
 export const jsLiteral = (value: unknown, indent?: number): string => {
-  const json = JSON.stringify(value, null, indent)
-  // JSON.stringify(undefined) is undefined; keep emitting the `undefined` literal.
+  const json = toJson(value, indent)
   if (json === undefined) return 'undefined'
   return json.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
 }
@@ -54,12 +51,11 @@ const isPlainObject = (v: unknown): v is Record<string, unknown> =>
   !Array.isArray(v) &&
   Object.getPrototypeOf(v) === Object.prototype
 
-// Deep-merge addon options: plain objects merge key by key, everything else
-// (arrays, functions, class instances, scalars) is replaced by the override.
-// `undefined` in the override keeps the default. Inputs are never mutated.
+// Deep merge: plain objects merge per key, anything else is replaced.
+// `undefined` keeps the default; inputs are not mutated.
 export function mergeOptions<T extends object>(
   defaults: T,
-  overrides: Partial<T> | undefined
+  overrides: { [K in keyof T]?: T[K] | undefined } | undefined
 ): T {
   const out: Record<string, unknown> = {
     ...(defaults as Record<string, unknown>),
@@ -78,18 +74,16 @@ export function mergeOptions<T extends object>(
 export interface DirEntry {
   path: string
   name: string
-  // Posix-style path relative to the listed root, e.g. `icons/svg/home.svg`.
+  // Posix path relative to the listed root.
   relative: string
   isDirectory: boolean
 }
 
-// Directory part of a posix relative path, '' for a top-level entry.
+// Directory of a posix relative path, '' at the top level.
 export const posixDirname = (rel: string): string =>
   rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : ''
 
-// Every file and directory under `root`, recursively. A missing or
-// unreadable tree yields an empty list: the scanners built on this treat
-// "nothing there" and "cannot look" the same way.
+// Every file and directory under `root`; [] when missing or unreadable.
 export function listDir(root: string): DirEntry[] {
   let entries
   try {

@@ -1,19 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import type { Component } from '../sdc.d.ts'
+import type { StoryDefinition } from '../sdc.d.ts'
 import generate from '../generate/stories'
 
 describe('storiesGenerator', () => {
   test('generates export with capitalized key, description, props, slots and variants', () => {
-    const stories: Record<
-      string,
-      Partial<Component> & {
-        props?: Record<string, any>
-        slots?: Record<string, any>
-        variants?: Record<string, { title: string }>
-      }
-    > = {
+    const stories: Record<string, StoryDefinition> = {
       example: {
-        component: 'my-component',
         props: { title: 'Hello' },
         slots: { default: { type: 'markup', markup: '<span>slot</span>' } },
         variants: { small: { title: 'Small' } },
@@ -21,51 +13,40 @@ describe('storiesGenerator', () => {
       },
     }
 
-    const out = generate(stories as unknown as Component[])
+    const out = generate(stories)
 
     expect(out).toContain('export const Example')
     expect(out).toContain('An example story')
     expect(out).toContain('title: "Hello"')
     expect(out).toContain('small: "Small"')
-    // slot markup should be rendered into the args
     expect(out).toContain('<span>slot</span>')
   })
 
   test('adds Variant_ prefix when story key capitalizes to "Basic"', () => {
-    const stories: Record<
-      string,
-      Partial<Component> & {
-        props?: Record<string, any>
-      }
-    > = {
+    const stories: Record<string, StoryDefinition> = {
       basic: {
-        component: 'my-component',
         props: { title: 'Basic variant' },
         description: 'Basic variant story',
       },
     }
 
-    const out = generate(stories as unknown as Component[])
+    const out = generate(stories)
 
-    // Should prefix with Variant_ to avoid conflict with auto-generated Basic story
+    // 'Basic' is reserved for the generated Basic story.
     expect(out).toContain('export const Variant_Basic')
     expect(out).not.toContain('export const Basic')
     expect(out).toContain('Basic variant story')
   })
 
   test('converts props.attributes into defaultAttributes array', () => {
-    const stories: Record<
-      string,
-      Partial<Component> & { props?: Record<string, any> }
-    > = {
+    const stories: Record<string, StoryDefinition> = {
       withAttrs: {
-        component: 'my-component',
         props: { attributes: { class: 'a', id: 'x' }, title: 'T' },
         description: 'attrs story',
       },
     }
 
-    const out = generate(stories as unknown as Component[])
+    const out = generate(stories)
 
     expect(out).toContain('defaultAttributes')
     expect(out).toContain('[\'class\', "a"]')
@@ -73,40 +54,38 @@ describe('storiesGenerator', () => {
   })
 
   test('library_wrapper stories emit a static render, no browser decorator', () => {
-    const stories: Record<string, Partial<Component>> = {
+    const stories: Record<string, StoryDefinition> = {
       wrapped: {
-        component: 'my-component',
         library_wrapper: '<div class="wrap">{{ _story }}</div>',
       },
     }
-    const out = generate(stories as unknown as Component[])
+    const out = generate(stories)
     expect(out).toContain('render: () =>')
     expect(out).not.toContain('decorators')
     expect(out).not.toContain('_sdcMakeStory')
   })
 
   test('uses the pre-rendered wrapper HTML when provided', () => {
-    const stories: Record<string, Partial<Component>> = {
+    const stories: Record<string, StoryDefinition> = {
       wrapped: {
-        component: 'my-component',
         library_wrapper: '<div>{{ _story }}</div>',
       },
     }
-    const out = generate(stories as unknown as Component[], {}, 'ns:c', {
-      wrapped: '<div class="wrap">RENDERED</div>',
-    })
+    const out = generate(
+      stories,
+      {},
+      {
+        wrapped: '<div class="wrap">RENDERED</div>',
+      }
+    )
     expect(out).toContain(
       'render: () => "<div class=\\"wrap\\">RENDERED</div>"'
     )
   })
 
   test('renders complex variants with multiple keys and special titles', () => {
-    const stories: Record<
-      string,
-      Partial<Component> & { variants?: Record<string, { title: string }> }
-    > = {
+    const stories: Record<string, StoryDefinition> = {
       complex: {
-        component: 'my-component',
         props: { title: 'C' },
         variants: {
           alpha: { title: 'Alpha Title' },
@@ -117,24 +96,22 @@ describe('storiesGenerator', () => {
       },
     }
 
-    const out = generate(stories as unknown as Component[])
+    const out = generate(stories)
 
-    // variant keys should appear with their titles
     expect(out).toContain('alpha: "Alpha Title"')
     expect(out).toContain('beta-1: "Beta & More"')
     expect(out).toContain('123start: "StartsWithDigits"')
   })
 
   test('adds globals and merges with component globals', () => {
-    const stories: Record<string, Partial<Component>> = {
+    const stories: Record<string, StoryDefinition> = {
       withGlobals: {
-        component: 'my-component',
         description: 'globals story',
         globals: { theme: 'dark' },
       },
     }
 
-    const out = generate(stories as unknown as Component[], {
+    const out = generate(stories, {
       locale: 'en',
     })
 
