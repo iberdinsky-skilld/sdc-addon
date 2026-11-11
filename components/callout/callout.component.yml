@@ -1,0 +1,33 @@
+$schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
+name: Callout
+description: Classes from html_cva() (Drupal 11.4), driven by the component variant and a size prop.
+variants:
+  info:
+    title: Info
+  warning:
+    title: Warning
+props:
+  type: object
+  properties:
+    size:
+      type: string
+      title: Size
+      enum:
+        - sm
+        - lg
+slots:
+  content:
+    title: Content
+    examples:
+      - Check the delivery date before ordering.
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      large_warning:
+        name: Large warning
+        description: The warning variant at size lg adds the compound class.
+        props:
+          variant: warning
+          size: lg
+        slots:
+          content: Out of stock in your area.

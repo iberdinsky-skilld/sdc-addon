@@ -51,6 +51,7 @@ The SDC Storybook Addon simplifies the integration of Drupal Single Directory Co
 - **Default and Custom Story Rendering**: Use `type: component` to nest components, `type: element` for HTML markup, and `type: image` for images within stories. Or create your own custom renderers.
 - **Namespaces**: Supports multiple namespaces, allowing you to use components from different(parent/sibling) directories or packages.
 - **Drupal Icon API**: Automatically detects `*.icons.yml` files in registered namespaces and makes `{{ icon('pack_id', 'icon_id', settings) }}` available in every Twig template. Supports `svg_sprite`, `svg` (inline), and `path` extractors with no configuration required.
+- **`html_cva()`**: The class-variants Twig function from Drupal 11.4 works in templates on both engines, with the same arguments as in Drupal.
 - **Drupal Library CDN Resolution**: Resolves Drupal library dependencies (e.g. `core/jquery`) to CDN assets via `dependencyMap`. Assets are injected per-component — only when a story uses a component that declares the dependency in `libraryOverrides.dependencies`. Built-in defaults cover the Drupal runtime (`core/drupal`, `core/once`, etc.).
 
 ## Quickstart Guide

@@ -7,6 +7,7 @@ import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
 import { buildIconContext } from './icons.ts'
 import { patchDrupalAttribute, castVarsAttributes } from './attributes.ts'
+import { htmlCva, HTML_CVA_ARGUMENTS } from './cva.ts'
 
 export { twigArgs } from './nodes.ts'
 
@@ -88,6 +89,15 @@ export function createTwingCore(iconPacks: IconPacks) {
           { name: 'icon_id' },
           { name: 'settings', defaultValue: {} },
         ]
+      )
+    )
+
+    e.addFunction(
+      createSynchronousFunction(
+        'html_cva',
+        (_twingCtx, base, variants, compoundVariants, defaultVariant) =>
+          htmlCva(base, variants, compoundVariants, defaultVariant),
+        HTML_CVA_ARGUMENTS.map((name) => ({ name, defaultValue: [] }))
       )
     )
   }

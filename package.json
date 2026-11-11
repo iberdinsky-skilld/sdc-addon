@@ -52,6 +52,7 @@
     "@christianwiedemann/drupal-twig-extensions": "^2.0.0-beta.2",
     "@types/json-schema": "^7.0.15",
     "@types/twig": "^1.12.17",
+    "class-variance-authority": "^0.7.1",
     "drupal-twig-extensions": "^1.0.0-beta.5",
     "json-schema-faker": "^0.6.4",
     "jsonschema": "^1.5.0",

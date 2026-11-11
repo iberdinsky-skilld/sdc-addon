@@ -1,0 +1,24 @@
+.callout {
+  border-inline-start: 0.25rem solid;
+  padding: 0.75rem 1rem;
+  font-family: sans-serif;
+}
+.callout--info {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+.callout--warning {
+  border-color: #b45309;
+  background: #fffbeb;
+  color: #78350f;
+}
+.callout--sm {
+  font-size: 0.875rem;
+}
+.callout--lg {
+  font-size: 1.125rem;
+}
+.callout--strong {
+  font-weight: 700;
+}

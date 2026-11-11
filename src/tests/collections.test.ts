@@ -37,6 +37,17 @@ describe('entries', () => {
     ])
   })
 
+  test('follows the `_keys` order of a twig.js hash, then any later keys', () => {
+    // twig.js stores the literal { a, b, c } with its own keys reversed.
+    const hash = { c: 3, b: 2, a: 1, _keys: ['a', 'b', 'c'], d: 4 }
+    expect(entries(hash)).toEqual([
+      ['a', 1],
+      ['b', 2],
+      ['c', 3],
+      ['d', 4],
+    ])
+  })
+
   test('skips the `_keys` order list of a twig.js hash literal', () => {
     expect(entries({ a: 1, _keys: ['a'] })).toEqual([['a', 1]])
   })
