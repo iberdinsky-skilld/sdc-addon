@@ -90,6 +90,7 @@ const renderStory = async (
       .catch(() => '')
     if (box) errors.push(`storybook: ${box}`)
     if (!html) errors.push('empty render')
+    if (html.includes('_keys=')) errors.push('leaked `_keys` attribute')
   } finally {
     page.off('console', onConsole)
     page.off('pageerror', onPageError)
