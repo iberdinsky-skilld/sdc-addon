@@ -1,7 +1,7 @@
 // SDC guarantees `attributes` is always an Attribute object inside a component.
 import DrupalAttribute, { type DrupalAttributeEntry } from 'drupal-attribute'
 import { isRecord } from '../guards.ts'
-import { entries } from './collections.ts'
+import { entries, TWIG_JS_KEYS } from './collections.ts'
 
 // Duck-typed: twig.js and Twing bundle separate DrupalAttribute classes.
 export const isDrupalAttribute = (value: unknown): value is DrupalAttribute =>
@@ -63,6 +63,18 @@ export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
       function (this: DrupalAttribute, ...args: unknown[]): unknown {
         normalize(this)
         const result: unknown = Reflect.apply(original, this, args)
+        return result
+      }
+    )
+  }
+  const set: unknown = Reflect.get(proto, 'set')
+  if (typeof set === 'function') {
+    Reflect.set(
+      proto,
+      'set',
+      function (this: DrupalAttribute, key: unknown, value: unknown): unknown {
+        if (key === TWIG_JS_KEYS) return this
+        const result: unknown = Reflect.apply(set, this, [key, value])
         return result
       }
     )

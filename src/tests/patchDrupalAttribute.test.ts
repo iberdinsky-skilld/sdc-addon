@@ -2,6 +2,8 @@ import { describe, expect, test, beforeAll } from 'vitest'
 import DrupalAttribute from 'drupal-attribute'
 import twing from 'twing'
 import { addDrupalExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
+import Twig from 'twig'
+import { addDrupalExtensions as addTwigExtensions } from 'drupal-twig-extensions/twig'
 import { patchDrupalAttribute, toAttribute } from '../renderer/attributes.ts'
 
 // Twing passes `class` as a Map and templates may put a scalar there; build
@@ -127,5 +129,26 @@ describe('patchDrupalAttribute', () => {
       out = env.render('t', {})
     }).not.toThrow()
     expect(out).toContain('class="a b c"')
+  })
+
+  test('never stores the twig.js `_keys` order list', () => {
+    const attr = new DrupalAttribute([
+      ['_keys', ['id']],
+      ['id', 'x'],
+    ])
+    attr.setAttribute('_keys', ['id'])
+    expect([...attr.keys()]).toEqual(['id'])
+    expect(attr.toString()).toBe(' id="x"')
+  })
+
+  test('twig.js create_attribute() and link() do not print `_keys`', () => {
+    addTwigExtensions(Twig)
+    const render = (data: string): string => Twig.twig({ data }).render({})
+    expect(
+      render("<a{{ create_attribute({ class: ['x'], id: 'y' }) }}></a>")
+    ).toBe('<a id="y" class="x"></a>')
+    expect(render("{{ link('Home', '/', { class: ['menu__link'] }) }}")).toBe(
+      '<a href="/" class="menu__link">Home</a>'
+    )
   })
 })

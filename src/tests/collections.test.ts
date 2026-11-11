@@ -37,6 +37,10 @@ describe('entries', () => {
     ])
   })
 
+  test('skips the `_keys` order list of a twig.js hash literal', () => {
+    expect(entries({ a: 1, _keys: ['a'] })).toEqual([['a', 1]])
+  })
+
   test('primitive → []', () => {
     expect(entries('x')).toEqual([])
     expect(entries(5)).toEqual([])

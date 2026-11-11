@@ -2,12 +2,16 @@
 import type { DrupalAttributeEntry } from 'drupal-attribute'
 import { isRecord } from '../guards.ts'
 
+// Key order of a twig.js hash literal, stored on the hash itself.
+export const TWIG_JS_KEYS = '_keys'
+
 // [key, value] entries of a Map, array or object.
 export function entries(value: unknown): Array<[unknown, unknown]> {
   if (value == null) return []
   if (value instanceof Map) return [...value.entries()]
   if (Array.isArray(value)) return value.map((x, i) => [i, x])
-  if (typeof value === 'object') return Object.entries(value)
+  if (typeof value === 'object')
+    return Object.entries(value).filter(([key]) => key !== TWIG_JS_KEYS)
   return []
 }
 
