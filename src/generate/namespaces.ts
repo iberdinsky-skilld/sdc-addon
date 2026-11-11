@@ -173,6 +173,19 @@ export class Namespaces {
   }
 }
 
+// `<ns>.<kind>.yml` of every namespace that has one, as [namespace, path].
+export const namespaceFiles = (
+  namespaces: NamespaceRoots,
+  kind: string
+): Array<[string, string]> =>
+  namespaces
+    .entries()
+    .map(([ns, root]): [string, string] => [
+      ns,
+      join(root, `${ns}.${kind}.yml`),
+    ])
+    .filter(([, file]) => existsSync(file))
+
 // Read-only views of the registry.
 export type NamespaceRoots = Pick<Namespaces, 'entries'>
 export type TwingNamespaceRoots = Pick<

@@ -1,0 +1,22 @@
+.design-tokens__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+  font-family: sans-serif;
+}
+.design-tokens__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.design-tokens__swatch {
+  inline-size: 6rem;
+  block-size: 3rem;
+  border: 1px solid #ccc;
+}
+.design-tokens__space {
+  block-size: 1rem;
+  background: #1d4ed8;
+}

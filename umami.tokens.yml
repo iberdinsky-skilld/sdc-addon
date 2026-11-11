@@ -1,0 +1,36 @@
+# Design tokens (DTCG), exposed to every story as CSS variables.
+color:
+  $type: color
+  palette:
+    blue-50:
+      $value: '#eff6ff'
+    blue-700:
+      $value: '#1d4ed8'
+    blue-900:
+      $value: '#1e3a8a'
+    amber-50:
+      $value: '#fffbeb'
+    amber-700:
+      $value: '#b45309'
+    amber-900:
+      $value: '#78350f'
+  info:
+    border:
+      $value: '{color.palette.blue-700}'
+    background:
+      $value: '{color.palette.blue-50}'
+    text:
+      $value: '{color.palette.blue-900}'
+  warning:
+    border:
+      $value: '{color.palette.amber-700}'
+    background:
+      $value: '{color.palette.amber-50}'
+    text:
+      $value: '{color.palette.amber-900}'
+spacing:
+  $type: dimension
+  sm:
+    $value: { value: 0.75, unit: rem }
+  md:
+    $value: { value: 1, unit: rem }

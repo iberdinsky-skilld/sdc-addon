@@ -1,0 +1,18 @@
+<div{{ attributes.addClass('design-tokens') }}>
+  <ul class="design-tokens__list">
+{% for name in colors %}
+    <li class="design-tokens__item">
+      <span class="design-tokens__swatch" style="background: var(--color-{{ name }})"></span>
+      <code>--color-{{ name }}</code>
+    </li>
+{% endfor %}
+  </ul>
+  <ul class="design-tokens__list">
+{% for name in spacing %}
+    <li class="design-tokens__item">
+      <span class="design-tokens__space" style="inline-size: var(--spacing-{{ name }})"></span>
+      <code>--spacing-{{ name }}</code>
+    </li>
+{% endfor %}
+  </ul>
+</div>
