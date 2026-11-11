@@ -13,9 +13,16 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "target": "ES2022",
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "e2e/**/*"]
+  "include": ["src/**/*", "e2e/**/*", ".storybook/**/*.ts"]
 }

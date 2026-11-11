@@ -1,16 +1,17 @@
+import assert from 'node:assert/strict'
 import { describe, expect, test } from 'vitest'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createSdcTwigRuntimeHooks } from '../vite/sdcTwigRuntime.ts'
 import {
   injectTwingEnvAliases,
-  sdcTwigRuntimePlugin,
   twingEnvAliases,
-} from '../vite/sdcTwigRuntime.ts'
-import type { Namespaces } from '../generate/namespaces.ts'
+} from '../vite/twingSharedEnv.ts'
+import type { TwingNamespaceRoots } from '../generate/namespaces.ts'
 
-// What vite-plugin-twing-drupal >= 1.1.4 emits for `virtual:twing-env`,
-// reduced to the lines the addon anchors on.
+// The lines vite-plugin-twing-drupal >= 1.1.4 emits for `virtual:twing-env`
+// that the addon anchors on.
 const sharedEnvModule = (root: string) => `
     const t0 = "<div>badge</div>";
     const allSources = {
@@ -26,11 +27,10 @@ const sharedEnvModule = (root: string) => `
     export { env };
 `
 
-const namespacesOf = (root: string): Namespaces =>
-  ({
-    entries: () => [['umami', root]],
-    toTwingNamespaces: () => ({ umami: [join(root, 'components')] }),
-  }) as unknown as Namespaces
+const namespacesOf = (root: string): TwingNamespaceRoots => ({
+  entries: () => [['umami', root]],
+  toTwingNamespaces: () => ({ umami: [join(root, 'components')] }),
+})
 
 describe('twing shared environment (plugin >= 1.1.4)', () => {
   test('twingEnvAliases pairs every template file with its template-dir key', () => {
@@ -95,20 +95,18 @@ describe('twing shared environment (plugin >= 1.1.4)', () => {
     try {
       mkdirSync(join(root, 'components', 'badge'), { recursive: true })
       writeFileSync(join(root, 'components', 'badge', 'badge.twig'), 'b')
-      const plugin = sdcTwigRuntimePlugin(namespacesOf(root)) as {
-        transform: (code: string, id: string) => { code: string } | null
-      }
+      const plugin = createSdcTwigRuntimeHooks(namespacesOf(root))
       const first = plugin.transform(sharedEnvModule(root), 'virtual:twing-env')
-      expect(first).not.toBeNull()
-      expect(first!.code).toContain(
+      assert(first)
+      expect(first.code).toContain(
         "import { registerSdcRuntime as _sdcRegisterRuntime } from 'virtual:sdc-twig-runtime:twing'"
       )
-      expect(first!.code).toContain(
+      expect(first.code).toContain(
         'addDrupalExtensions(env);\n_sdcRegisterRuntime(env);'
       )
-      expect(first!.code).toContain('allSources[abs] = allSources[rel]')
+      expect(first.code).toContain('allSources[abs] = allSources[rel]')
       // Already-injected code is not touched again.
-      expect(plugin.transform(first!.code, 'virtual:twing-env')).toBeNull()
+      expect(plugin.transform(first.code, 'virtual:twing-env')).toBeNull()
       // Unrelated modules are ignored.
       expect(plugin.transform('export default 1', '/x/y.js')).toBeNull()
     } finally {

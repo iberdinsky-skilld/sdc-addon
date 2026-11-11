@@ -1,5 +1,5 @@
-// End-to-end run: starts the demo Storybook on each Twig engine and renders
-// every story in a real browser. Needs `npx playwright install chromium`.
+// Renders every demo story on both engines; needs
+// `npx playwright install chromium`.
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({

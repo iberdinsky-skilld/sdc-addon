@@ -1,19 +1,47 @@
 import { existsSync, statSync } from 'node:fs'
 import { dirname, relative } from 'node:path'
-import YamlStoriesPlugin, {
-  yamlStoriesIndexer,
-} from './vite/storybookYamlStories.ts'
+import YamlStoriesPlugin from './vite/storybookYamlStories.ts'
+import { yamlStoriesIndexer } from './vite/storyIndexer.ts'
 import { mergeConfig } from 'vite'
 import type { HtmlTagDescriptor, UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
 import type { StorybookConfig } from '@storybook/html-vite'
-import type { SDCAddonOptions } from './sdc.d.ts'
+import type { ExternalAsset, SDCAddonOptions } from './sdc.d.ts'
 import { isRemoteUrl, mergeOptions } from './utils.ts'
 import { toNamespaces } from './generate/namespaces.ts'
 import { loadAndMergeDefinitions } from './generate/definitions.ts'
 import { DEFAULT_ADDON_OPTIONS, DEFAULT_DEPENDENCY_MAP } from './constants.ts'
 import { sdcTwigRuntimePlugin } from './vite/sdcTwigRuntime.ts'
 import { iconPackFiles, loadIconPackFile } from './generate/iconPacks.ts'
+
+// Head tags for the core Drupal libraries, `dependencyMap` overriding them.
+// Each URL is emitted once.
+export const dependencyHeadTags = (
+  dependencyMap: Record<string, ExternalAsset[]> = {}
+): HtmlTagDescriptor[] => {
+  const effectiveMap = { ...DEFAULT_DEPENDENCY_MAP, ...dependencyMap }
+  const seen = new Set<string>()
+  return Object.keys(DEFAULT_DEPENDENCY_MAP)
+    .flatMap((k) => effectiveMap[k] ?? [])
+    .filter((asset) => (seen.has(asset.url) ? false : seen.add(asset.url)))
+    .map((asset) =>
+      asset.type === 'css'
+        ? {
+            tag: 'link' as const,
+            attrs: {
+              rel: 'stylesheet',
+              href: asset.url,
+              ...(asset.media ? { media: asset.media } : {}),
+            },
+            injectTo: 'head' as const,
+          }
+        : {
+            tag: 'script' as const,
+            attrs: { src: asset.url },
+            injectTo: 'head' as const,
+          }
+    )
+}
 
 export async function viteFinal(
   config: UserConfig,
@@ -40,7 +68,6 @@ export async function viteFinal(
       ...vitePluginTwingDrupalOptions,
       namespaces: { ...namespaces.toTwingNamespaces() },
     }
-    // @ts-ignore — no type declarations for this package
     const { default: twing } = await import('vite-plugin-twing-drupal')
     twigPlugin = twing(options.vitePluginTwingDrupalOptions)
   } else if (sdcStorybookOptions.twigLib === 'twig') {
@@ -48,35 +75,11 @@ export async function viteFinal(
       ...vitePluginTwigDrupalOptions,
       namespaces: { ...namespaces.toTwigJsNamespaces() },
     }
-    // @ts-ignore — no type declarations for this package
     const { default: twig } = await import('vite-plugin-twig-drupal')
     twigPlugin = twig(options.vitePluginTwigDrupalOptions)
   }
 
-  const userMap = sdcStorybookOptions.dependencyMap ?? {}
-  const effectiveMap = { ...DEFAULT_DEPENDENCY_MAP, ...userMap }
-
-  const seen = new Set<string>()
-  const headTags: HtmlTagDescriptor[] = Object.keys(DEFAULT_DEPENDENCY_MAP)
-    .flatMap((k) => effectiveMap[k] ?? [])
-    .filter((asset) => (seen.has(asset.url) ? false : seen.add(asset.url)))
-    .map((asset) =>
-      asset.type === 'css'
-        ? {
-            tag: 'link' as const,
-            attrs: {
-              rel: 'stylesheet',
-              href: asset.url,
-              ...(asset.media ? { media: asset.media } : {}),
-            },
-            injectTo: 'head' as const,
-          }
-        : {
-            tag: 'script' as const,
-            attrs: { src: asset.url },
-            injectTo: 'head' as const,
-          }
-    )
+  const headTags = dependencyHeadTags(sdcStorybookOptions.dependencyMap)
 
   return mergeConfig(config, {
     plugins: [
@@ -101,16 +104,22 @@ export async function viteFinal(
   })
 }
 
-export const experimental_indexers: StorybookConfig['experimental_indexers'] =
-  async (existingIndexers: Indexer[] | undefined) => [
-    ...(existingIndexers || []),
-    yamlStoriesIndexer,
-  ]
+export const indexersWithYaml = (existing?: Indexer[]): Indexer[] => [
+  ...(existing ?? []),
+  yamlStoriesIndexer,
+]
 
-export const staticDirs = async (
-  existing: (string | { from: string; to: string })[],
+export const experimental_indexers: StorybookConfig['experimental_indexers'] = (
+  existingIndexers
+) => indexersWithYaml(existingIndexers)
+
+type StaticDir = string | { from: string; to: string }
+
+// `undefined` when the project has no staticDirs.
+export const staticDirs = (
+  existing: StaticDir[] | undefined,
   options: SDCAddonOptions
-) => {
+): StaticDir[] => {
   const merged = mergeOptions(DEFAULT_ADDON_OPTIONS, options)
   const namespaces = toNamespaces(merged.sdcStorybookOptions)
 
@@ -137,5 +146,5 @@ export const staticDirs = async (
     }
   }
 
-  return [...(existing || []), ...iconDirs]
+  return [...(existing ?? []), ...iconDirs]
 }

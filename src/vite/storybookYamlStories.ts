@@ -1,355 +1,78 @@
-import { readFileSync, existsSync } from 'node:fs'
-import { parse as parseYaml } from 'yaml'
-import { join, basename, dirname } from 'node:path'
+// Vite plugin that turns a *.component.yml into a Storybook CSF module.
+import { dirname, basename, join } from 'node:path'
+import type { Plugin, Rollup } from 'vite'
+import type { Args, ArgTypes } from 'storybook/internal/types'
+import type { GenerateOptions } from 'json-schema-faker'
+import type { JSONSchema4 } from 'json-schema'
 import { logger } from '../logger.ts'
-import {
-  sanitizeStoryKey,
-  jsLiteral,
-  listDir,
-  posixDirname,
-  isRemoteUrl,
-} from '../utils.ts'
-
-import type {
-  Args,
-  ArgTypes,
-  Indexer,
-  IndexInput,
-} from 'storybook/internal/types'
 import argsGenerator from '../generate/args.ts'
 import argTypesGenerator from '../generate/argTypes.ts'
 import storiesGenerator from '../generate/stories.ts'
-import { registerCustomNodes } from '../renderer/nodes.ts'
+import componentMetadata from '../generate/componentMetadata.ts'
+import { componentModule } from '../generate/componentModule.ts'
+import type { Namespaces } from '../generate/namespaces.ts'
+import {
+  collectStoryFilesSync,
+  loadStoryFilesSync,
+  readSDC,
+} from '../generate/componentFiles.ts'
+import {
+  storyComponentImports,
+  twigDependencyImports,
+} from '../generate/componentImports.ts'
+import {
+  libraryOverridesImports,
+  libraryOverridesLocalImports,
+} from '../generate/libraryAssets.ts'
 import {
   createBuildWrapperEnv,
   renderWrapperStories,
+  type WrapperInitOptions,
 } from '../generate/wrapperBuild.ts'
+import { registerCustomNodes } from '../renderer/nodes.ts'
 import type { WrapperEnv } from '../renderer/wrapper.ts'
-
-let _wrapperEnv: Promise<WrapperEnv> | undefined
-import componentMetadata from '../generate/componentMetadata.ts'
-import type {
-  Component,
-  CssFileOptions,
-  ExternalAsset,
-  ExternalCssAsset,
-  ExternalJsAsset,
-  JsFileOptions,
-  LibraryDefinition,
-  SDCSchema,
-  SDCStorybookOptions,
-} from '../sdc.d.ts'
-import type { GenerateOptions } from 'json-schema-faker'
-import type { JSONSchema4 } from 'json-schema'
-import { schemaUrlFor, validateJson } from '../generate/validate.ts'
-import { capitalize, toIdentifier, deriveGroupFromPath } from '../utils.ts'
+import type { SDCStorybookOptions, StoryDefinition } from '../sdc.d.ts'
 import {
-  Namespaces,
-  getProjectName,
-  resolveComponentPath,
-} from '../generate/namespaces.ts'
+  assetInjectorModule,
+  VIRTUAL_ASSET_INJECTOR,
+  VIRTUAL_ASSET_INJECTOR_ID,
+} from './assetInjector.ts'
 import { VIRTUAL_TWIG, VIRTUAL_TWING } from './sdcTwigRuntime.ts'
 
-// Validation only warns: a broken or unreachable schema must not take the
-// component out of Storybook.
-const readSDC = async (
-  filePath: string,
-  defs?: JSONSchema4,
-  validate?: string | boolean
-): Promise<SDCSchema> => {
-  const sdcSchema = {
-    $defs: defs,
-    ...(parseYaml(readFileSync(filePath, 'utf8')) as SDCSchema),
-  }
-  const schemaUrl = schemaUrlFor(sdcSchema, validate)
-  if (schemaUrl) {
-    try {
-      await validateJson(sdcSchema, schemaUrl)
-    } catch (error) {
-      logger.warn(`Could not validate ${filePath}: ${error}`)
-    }
-  }
-  return sdcSchema
-}
+// Created on the first library_wrapper story, then shared.
+let _wrapperEnv: Promise<WrapperEnv> | undefined
 
-const VIRTUAL_ASSET_INJECTOR = 'virtual:sdc-asset-injector'
-const VIRTUAL_ASSET_INJECTOR_ID = '\0' + VIRTUAL_ASSET_INJECTOR
-
-// Exported for tests: evaluated in the browser, never on the server.
-export const assetInjectorModule = `
-function applyAttrs(el, attrs) {
-  if (!attrs) return
-  for (const [k, v] of Object.entries(attrs)) {
-    if (v === false || v == null) continue
-    el.setAttribute(k, v === true ? '' : String(v))
-  }
-}
-export async function injectAssets(assets) {
-  if (typeof document === 'undefined') return
-  await Promise.all(assets.map((asset) => {
-    const sel = asset.type === 'js' ? \`script[src="\${asset.url}"]\` : \`link[href="\${asset.url}"]\`
-    if (document.querySelector(sel)) return Promise.resolve()
-    return new Promise((res, rej) => {
-      if (asset.type === 'js') {
-        const s = document.createElement('script')
-        applyAttrs(s, asset.attributes)
-        // Inserted scripts run in load order unless async is off; dependencies
-        // (jquery before jquery-ui) must execute in the order they are listed.
-        s.async = false
-        s.src = asset.url; s.onload = res; s.onerror = rej; document.head.appendChild(s)
-      } else {
-        const l = document.createElement('link'); l.rel = 'stylesheet'
-        applyAttrs(l, asset.attributes)
-        l.href = asset.url
-        if (asset.media) l.media = asset.media; l.onload = res; document.head.appendChild(l)
-      }
-    })
-  }))
-}
-`
-
-const dynamicImports = (
-  stories: Component[],
+export interface YamlStoriesPluginOptions extends WrapperInitOptions {
+  jsonSchemaFakerOptions?: GenerateOptions
+  sdcStorybookOptions?: SDCStorybookOptions
+  globalDefs?: Record<string, JSONSchema4>
   namespaces: Namespaces
-): string => {
-  const imports = new Set<string>()
-
-  const importComponent = (item: Component) => {
-    const [namespace, componentName] = item.component.split(':')
-    const resolvedPath = resolveComponentPath(
-      namespace,
-      componentName,
-      namespaces
-    )
-    const identifier = toIdentifier(item.component)
-    if (resolvedPath) {
-      imports.add(`import * as ${identifier} from '${resolvedPath}';`)
-    }
-  }
-  const extractComponentImports = (args: Record<string, any>) => {
-    Object.values(args).forEach((value) => {
-      if (Array.isArray(value)) {
-        value.forEach((item) => {
-          if (item.type === 'component') {
-            importComponent(item)
-          }
-          extractComponentImports(value)
-        })
-      } else if (value && typeof value === 'object') {
-        if (value.type === 'component') {
-          importComponent(value)
-        }
-        extractComponentImports(value)
-      }
-    })
-  }
-
-  Object.values(stories).forEach(({ slots = {}, props = {} }) =>
-    extractComponentImports({ ...slots, ...props })
-  )
-  return Array.from(imports).join('\n')
 }
 
-const CSS_GROUPS = ['base', 'layout', 'component', 'state', 'theme'] as const
+export type LoadContext = Pick<Rollup.PluginContext, 'addWatchFile'>
 
-// Drupal `libraryOverrides` disables an asset when its value is `false`.
-const isDisabled = (opts: unknown): opts is false => opts === false
-
-const extractCssAssets = (library: LibraryDefinition): ExternalCssAsset[] =>
-  CSS_GROUPS.flatMap((group) =>
-    Object.entries(library.css?.[group] ?? {})
-      .filter(([url, opts]) => isRemoteUrl(url) && !isDisabled(opts))
-      .map(([url, opts]): ExternalCssAsset => ({
-        type: 'css',
-        url,
-        media: (opts as CssFileOptions).media,
-        attributes: (opts as CssFileOptions).attributes,
-      }))
-  )
-
-const extractJsAssets = (library: LibraryDefinition): ExternalJsAsset[] =>
-  Object.entries(library.js ?? {})
-    .filter(([url, opts]) => isRemoteUrl(url) && !isDisabled(opts))
-    .map(([url, opts]): ExternalJsAsset => ({
-      type: 'js',
-      url,
-      attributes: (opts as JsFileOptions).attributes as
-        Record<string, string> | undefined,
-    }))
-
-export const libraryOverridesImports = (
-  content: SDCSchema,
-  dependencyMap: Record<string, ExternalAsset[]> = {}
-): ExternalAsset[] => {
-  const overrides = content.libraryOverrides
-  if (!overrides) return []
-  return [
-    ...extractCssAssets(overrides),
-    ...extractJsAssets(overrides),
-    ...(overrides.dependencies ?? []).flatMap(
-      (dep) => dependencyMap[dep] ?? []
-    ),
-  ]
-}
-
-// Normalize a libraryOverrides path to a component-relative import specifier.
-const normalizeLocalPath = (p: string): string =>
-  p.startsWith('.') ? p : `./${p}`
-
-// Drupal core SDC auto-loads only `<name>.css` / `<name>.js` at the component
-// root; the generated module mirrors that with a flat `./*.css` / `./*.{js,mjs}`
-// glob. Any `libraryOverrides` path that is a root file with one of those
-// extensions is therefore already covered by the glob and must not be imported
-// again (de-dupe). Subfolder paths (e.g. `styles/alert.css`, `js/carousel.js`)
-// are not matched by the flat glob, so they fall through to explicit imports.
-const isGlobCoveredCss = (p: string): boolean => /^\.\/[^/]+\.css$/.test(p)
-const isGlobCoveredJs = (p: string): boolean => /^\.\/[^/]+\.(js|mjs)$/.test(p)
-
-export interface LocalCssImport {
-  path: string
-  // Carries `media` from the override so a media-scoped stylesheet can be
-  // injected as a `<link media>` rather than bundled, matching Drupal.
-  media?: string
-}
-
-// Collect local (non-external, non-disabled) `libraryOverrides` asset paths,
-// resolved relative to the component directory and de-duped against the flat
-// glob. These are loaded like the glob assets — CSS eagerly bundled, JS
-// dynamically imported after asset injection — rather than through
-// `injectAssets`, which only handles external URLs. A media-scoped CSS entry
-// keeps its `media` so the generator can inject it as a `<link>` instead.
-export const libraryOverridesLocalImports = (
-  content: SDCSchema
-): { css: LocalCssImport[]; js: string[] } => {
-  const overrides = content.libraryOverrides
-  if (!overrides) return { css: [], js: [] }
-
-  const css: LocalCssImport[] = []
-  const seenCss = new Set<string>()
-  for (const group of CSS_GROUPS) {
-    for (const [url, opts] of Object.entries(overrides.css?.[group] ?? {})) {
-      if (isDisabled(opts) || isRemoteUrl(url)) continue
-      const path = normalizeLocalPath(url)
-      if (isGlobCoveredCss(path) || seenCss.has(path)) continue
-      seenCss.add(path)
-      css.push({ path, media: (opts as CssFileOptions).media })
-    }
-  }
-
-  const js: string[] = []
-  const seenJs = new Set<string>()
-  for (const [url, opts] of Object.entries(overrides.js ?? {})) {
-    if (isDisabled(opts) || isRemoteUrl(url)) continue
-    const path = normalizeLocalPath(url)
-    if (isGlobCoveredJs(path) || seenJs.has(path)) continue
-    seenJs.add(path)
-    js.push(path)
-  }
-
-  return { css, js }
-}
-
-// Parse a .twig file for {% include/embed/extends 'ns:component' %} directives
-// and return import statements for each resolved component's .component.yml.
-// This ensures sub-component CSS/JS assets are loaded even when composition
-// happens inside a Twig template rather than in YAML story definitions.
-export const twigDependencyImports = (
-  twigFilePath: string,
-  namespaces: Namespaces
-): string => {
-  if (!existsSync(twigFilePath)) return ''
-
-  const twigContent = readFileSync(twigFilePath, 'utf8')
-  const imports = new Set<string>()
-
-  // Match include/embed/extends with a 'namespace:component' reference (SDC format).
-  // Intentionally excludes @namespace/path style (non-component asset refs).
-  const pattern =
-    /{%-?\s*(?:include|embed|extends)\s+['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g
-  let match: RegExpExecArray | null
-
-  while ((match = pattern.exec(twigContent)) !== null) {
-    const [namespace, componentName] = match[1].split(':')
-    const resolvedPath = resolveComponentPath(
-      namespace,
-      componentName,
-      namespaces
-    )
-    if (resolvedPath) {
-      imports.add(`import '${resolvedPath}';`)
-    }
-  }
-
-  return Array.from(imports).join('\n')
-}
-
-const createStoryIndex = (
-  fileName: string,
-  baseTitle: string,
-  stories: Record<string, any>,
-  disabledStories: string[],
-  tags: string[]
-): IndexInput[] => {
-  const storiesIndex: IndexInput[] = []
-  const isAllDisabled = disabledStories.includes('all')
-
-  if (!isAllDisabled && !disabledStories.includes('basic')) {
-    storiesIndex.push({
-      type: 'story',
-      importPath: fileName,
-      exportName: 'Basic',
-      title: baseTitle,
-      tags,
-    })
-  }
-
-  if (stories && !isAllDisabled) {
-    Object.keys(stories).forEach((storyKey) => {
-      if (!disabledStories.includes(storyKey)) {
-        const capitalizedKey = capitalize(storyKey)
-        const exportName =
-          capitalizedKey === 'Basic'
-            ? `Variant_${capitalizedKey}`
-            : capitalizedKey
-
-        storiesIndex.push({
-          type: 'story',
-          importPath: fileName,
-          exportName,
-          title: baseTitle,
-          tags,
-        })
-      }
-    })
-  }
-
-  return storiesIndex
-}
-
-// Vite plugin to process YAML component files
-export default ({
-  jsonSchemaFakerOptions = {} as GenerateOptions,
-  sdcStorybookOptions = {} as SDCStorybookOptions,
-  globalDefs = {} as JSONSchema4,
-  namespaces = {} as Namespaces,
-  vitePluginTwingDrupalOptions = undefined as { hooks?: string } | undefined,
-  vitePluginTwigDrupalOptions = undefined as
-    { functions?: Record<string, unknown> } | undefined,
-}) => ({
-  name: 'vite-plugin-storybook-yaml-stories',
-  resolveId(id: string) {
+// Hooks as plain functions; `YamlStoriesPlugin` wraps them.
+export const createYamlStoriesHooks = ({
+  jsonSchemaFakerOptions = {},
+  sdcStorybookOptions = {},
+  globalDefs = {},
+  namespaces,
+  vitePluginTwingDrupalOptions,
+  vitePluginTwigDrupalOptions,
+}: YamlStoriesPluginOptions) => ({
+  resolveId(id: string): string | undefined {
     if (id === VIRTUAL_ASSET_INJECTOR) return VIRTUAL_ASSET_INJECTOR_ID
+    return undefined
   },
-  async load(id: string) {
+  async load(this: LoadContext, id: string): Promise<string | undefined> {
     if (id === VIRTUAL_ASSET_INJECTOR_ID) return assetInjectorModule
 
     if (id.endsWith('story.yml')) {
-      // Indexed and watched, but their content is emitted by the component.yml
-      // load — resolve the module itself to empty.
+      // Story files are emitted with their component.yml.
       return ''
     }
 
-    if (!id.endsWith('component.yml')) return
+    if (!id.endsWith('component.yml')) return undefined
 
     try {
       const content = await readSDC(
@@ -362,31 +85,25 @@ export default ({
         sdcStorybookOptions.dependencyMap ?? {}
       )
       const localAssets = libraryOverridesLocalImports(content)
-      // Watch every *.story.yml in the component folder (including nested
-      // subfolders) so edits invalidate this module and regenerate stories.
-      // `this` is Rollup's PluginContext at runtime; absent in unit tests that
-      // call load() directly, so guard the optional call.
-      const ctx = this as unknown as {
-        addWatchFile?: (id: string) => void
-      }
+      // Story file edits must regenerate this module.
       collectStoryFilesSync(dirname(id)).forEach((file) =>
-        ctx.addWatchFile?.(file)
+        this.addWatchFile(file)
       )
 
-      const previewsStories = {
-        ...(content.thirdPartySettings?.sdcStorybook?.stories || {}),
+      const previewsStories: Record<string, StoryDefinition> = {
+        ...(content.thirdPartySettings?.sdcStorybook?.stories ?? {}),
         ...loadStoryFilesSync(id),
       }
       registerCustomNodes(sdcStorybookOptions.customNodes)
 
-      const storiesImports = dynamicImports(previewsStories, namespaces)
+      const storiesImports = storyComponentImports(previewsStories, namespaces)
       const componentBaseName = basename(id, '.component.yml')
       const namespace = namespaces.pathToNamespace(dirname(id))
       const twigFile = join(dirname(id), `${componentBaseName}.twig`)
       const twigImports = twigDependencyImports(twigFile, namespaces)
       const metadata = componentMetadata(id, content)
       const componentGlobals =
-        content?.thirdPartySettings?.sdcStorybook?.globals ?? {}
+        content.thirdPartySettings?.sdcStorybook?.globals ?? {}
 
       const argTypes: ArgTypes = {
         componentMetadata: { table: { disable: true } },
@@ -424,19 +141,18 @@ export default ({
 
       let wrapperHtml: Record<string, string> = {}
       const hasWrapper = Object.values(previewsStories).some(
-        (s) => (s as { library_wrapper?: string }).library_wrapper
+        (story) => story.library_wrapper
       )
       if (hasWrapper) {
-        if (!_wrapperEnv)
-          _wrapperEnv = createBuildWrapperEnv(
-            namespaces,
-            {
-              ...sdcStorybookOptions,
-              vitePluginTwingDrupalOptions,
-              vitePluginTwigDrupalOptions,
-            },
-            sdcStorybookOptions.resolveIconSource
-          )
+        _wrapperEnv ??= createBuildWrapperEnv(
+          namespaces,
+          {
+            ...sdcStorybookOptions,
+            vitePluginTwingDrupalOptions,
+            vitePluginTwigDrupalOptions,
+          },
+          sdcStorybookOptions.resolveIconSource
+        )
         wrapperHtml = renderWrapperStories(
           await _wrapperEnv,
           componentId,
@@ -445,194 +161,43 @@ export default ({
         )
       }
 
-      const stories = previewsStories
-        ? storiesGenerator(
-            previewsStories,
-            componentGlobals,
-            componentId,
-            wrapperHtml
-          )
-        : ''
+      const stories = storiesGenerator(
+        previewsStories,
+        componentGlobals,
+        wrapperHtml
+      )
 
-      // Local CSS without `media`: eager static imports (no global deps,
-      // bundled by Vite) alongside the flat-glob CSS.
-      const eagerCss = localAssets.css.filter((c) => !c.media)
-      // Local CSS with `media`: a bundled import can't carry a media query, so
-      // resolve its URL (`?url`) and inject a `<link media>` via injectAssets,
-      // matching how Drupal scopes the stylesheet.
-      const mediaCss = localAssets.css.filter((c) => c.media)
-
-      const localCssImports = eagerCss
-        .map((c) => `import '${c.path}';`)
-        .join('\n')
-      const localCssUrlImports = mediaCss
-        .map((c, i) => `import _sdcLocalCss${i} from '${c.path}?url';`)
-        .join('\n')
-      const localMediaAssets = mediaCss
-        .map(
-          (c, i) =>
-            `{ type: 'css', url: _sdcLocalCss${i}, media: ${jsLiteral(c.media)} }`
-        )
-        .join(', ')
-
-      // Merge external (CDN) assets and media-scoped local CSS into one
-      // injectAssets call. external assets are a static JSON literal; local
-      // media CSS references the `?url` import bindings, so it can't be
-      // JSON-stringified.
-      const injectParts = [
-        externalAssets.length > 0 ? `...${jsLiteral(externalAssets)}` : '',
-        localMediaAssets,
-      ].filter(Boolean)
-      const assetInjection =
-        injectParts.length > 0
-          ? `await injectAssets([${injectParts.join(', ')}]);`
-          : ''
-
-      // Local JS from libraryOverrides: dynamic imports placed AFTER asset
-      // injection so Drupal/once globals exist before behavior IIFEs run. Must
-      // be dynamic — static imports hoist above the injection await.
-      const localJsImports = localAssets.js
-        .map((p) => `await import('${p}');`)
-        .join('\n')
-
-      const iconModule =
-        sdcStorybookOptions.twigLib === 'twing' ? VIRTUAL_TWING : VIRTUAL_TWIG
-
-      return `
-import COMPONENT from '${namespace}/${componentBaseName}.twig';
-void import.meta.glob('./*.css', { eager: true });
-${localCssImports}
-${localCssUrlImports}
-import { injectAssets } from '${VIRTUAL_ASSET_INJECTOR}';
-import { renderIcon as _sdcRenderIcon, PrintableArray as TwigSafeArray } from '${iconModule}';
-${storiesImports}
-${twigImports}
-${assetInjection}
-${localJsImports}
-await Promise.all(Object.values(import.meta.glob('./*.{js,mjs}')).map(fn => fn()));
-
-export default {
-  component: COMPONENT,
-  parameters: {
-    ...${jsLiteral(content?.thirdPartySettings?.sdcStorybook?.parameters ?? {}, 2)},
-    docs: {description: {component: ${jsLiteral(content.description, 2)}}},
-  },
-  ${
-    Object.keys(componentGlobals).length > 0
-      ? `globals: ${jsLiteral(componentGlobals, 2)},`
-      : ''
-  }
-  argTypes: ${jsLiteral(argTypes, 2)},
-  args: ${jsLiteral(args, 2)},
-};
-
-export const Basic = {
-
-  args: ${jsLiteral(basicArgs, 2)},
-  baseArgs: ${jsLiteral(args, 2)},
-  play: async ({ canvasElement }) => {
-    Drupal.attachBehaviors(canvasElement, window.drupalSettings);
-  },
-};
-${stories}
-      `
+      return componentModule({
+        twigTemplate: `${namespace}/${componentBaseName}.twig`,
+        iconModule:
+          sdcStorybookOptions.twigLib === 'twing'
+            ? VIRTUAL_TWING
+            : VIRTUAL_TWIG,
+        assetInjector: VIRTUAL_ASSET_INJECTOR,
+        localAssets,
+        externalAssets,
+        componentImports: storiesImports,
+        templateImports: twigImports,
+        parameters: content.thirdPartySettings?.sdcStorybook?.parameters ?? {},
+        description: content.description,
+        globals: componentGlobals,
+        argTypes,
+        args,
+        basicArgs,
+        stories,
+      })
     } catch (error) {
-      logger.error(`Error loading component YAML file: ${id}, ${error}`)
+      logger.error(`Error loading component YAML file: ${id}, ${String(error)}`)
       throw error
     }
   },
 })
 
-// Indexer for YAML-based Storybook stories
-export const yamlStoriesIndexer: Indexer = {
-  test: /component\.yml$/,
-  createIndex: async (fileName, { makeTitle }) => {
-    try {
-      const content = await readSDC(fileName)
-
-      // Group set via metadata wins; else derive from path; else 'SDC'
-      const group = content.group || deriveGroupFromPath(fileName)
-
-      const baseTitle = makeTitle(
-        `${getProjectName(fileName)}/${capitalize(group)}/${content.name}`
-      )
-
-      const stories = content.thirdPartySettings?.sdcStorybook?.stories
-      const storiesContent = loadStoryFilesSync(fileName)
-      const mergedStories = { ...stories, ...storiesContent }
-      const tags = content?.thirdPartySettings?.sdcStorybook?.tags ?? []
-
-      // Handle both old and new configuration formats
-      const oldDisableBasicStory =
-        content.thirdPartySettings?.sdcStorybook?.disableBasicStory
-      const newDisabledStories =
-        content.thirdPartySettings?.sdcStorybook?.disabledStories
-
-      let disabledStories: string[] = []
-
-      // Backward compatibility: convert old boolean to new array format
-      if (oldDisableBasicStory === true) {
-        disabledStories = ['basic']
-      } else if (newDisabledStories) {
-        disabledStories = newDisabledStories
-      }
-
-      return createStoryIndex(
-        fileName,
-        baseTitle,
-        mergedStories,
-        disabledStories,
-        tags
-      )
-    } catch (error) {
-      logger.error(`Error creating index for YAML file: ${fileName}, ${error}`)
-      throw error
-    }
-  },
-}
-
-// Recursively collect *.story.yml files within a component's folder, at any
-// depth (e.g. a nested `stories/` subfolder). Subfolders that contain their own
-// *.component.yml are skipped so a nested component's stories don't leak into
-// its parent.
-export const collectStoryFilesSync = (rootDir: string): string[] => {
-  const files = listDir(rootDir).filter((entry) => !entry.isDirectory)
-  // A nested directory that owns a *.component.yml belongs to another
-  // component; its stories are not ours (the root's own yml does not count).
-  const foreign = files
-    .filter(
-      (entry) =>
-        entry.name.endsWith('.component.yml') && entry.relative.includes('/')
-    )
-    .map((entry) => posixDirname(entry.relative) + '/')
-  return files
-    .filter(
-      (entry) =>
-        entry.name.endsWith('.story.yml') &&
-        !foreign.some((dir) => entry.relative.startsWith(dir))
-    )
-    .map((entry) => entry.path)
-}
-
-const loadStoryFilesSync = (fileName: string) => {
-  const folderPath = dirname(fileName)
-  const storyFiles = collectStoryFilesSync(folderPath)
-
-  return storyFiles.reduce(
-    (acc, file) => {
-      const content = readFileSync(file, 'utf8')
-      const rawKey = basename(file).split('.')[1]
-      const key = sanitizeStoryKey(rawKey)
-      if (Object.prototype.hasOwnProperty.call(acc, key)) {
-        logger.warn(
-          `Duplicate story key "${key}" from ${file} overrides an earlier story while indexing ${fileName}`
-        )
-      }
-      return {
-        ...acc,
-        [key]: parseYaml(content),
-      }
-    },
-    {} as Record<string, any>
-  )
+export default function YamlStoriesPlugin(
+  options: YamlStoriesPluginOptions
+): Plugin {
+  return {
+    name: 'vite-plugin-storybook-yaml-stories',
+    ...createYamlStoriesHooks(options),
+  }
 }

@@ -1,12 +1,19 @@
 // SDC guarantees `attributes` is always an Attribute object inside a component.
 import DrupalAttribute, { type DrupalAttributeEntry } from 'drupal-attribute'
+import { isRecord } from '../guards.ts'
 import { entries } from './collections.ts'
 
-// Cast a plain mapping (Map / object / nothing) to a DrupalAttribute; pass an
-// existing DrupalAttribute through untouched.
+// Duck-typed: twig.js and Twing bundle separate DrupalAttribute classes.
+export const isDrupalAttribute = (value: unknown): value is DrupalAttribute =>
+  typeof value === 'object' &&
+  value !== null &&
+  'addClass' in value &&
+  typeof value.addClass === 'function'
+
+// Map / object / nothing -> DrupalAttribute; an attribute passes through.
 export function toAttribute(value: unknown): DrupalAttribute {
-  const v = value as { addClass?: unknown }
-  if (v && typeof v.addClass === 'function') return value as DrupalAttribute
+  if (isDrupalAttribute(value)) return value
+  // drupal-attribute takes more value shapes than its types list (Twing Maps).
   return new DrupalAttribute(
     entries(value) as Array<[string, DrupalAttributeEntry]>
   )
@@ -19,24 +26,22 @@ export function castVarsAttributes(vars: unknown): unknown {
     if (vars.has('attributes')) {
       vars.set('attributes', toAttribute(vars.get('attributes')))
     }
-  } else if (typeof vars === 'object') {
-    const o = vars as Record<string, unknown>
-    if (Object.prototype.hasOwnProperty.call(o, 'attributes')) {
-      o['attributes'] = toAttribute(o['attributes'])
+  } else if (isRecord(vars)) {
+    if (Object.prototype.hasOwnProperty.call(vars, 'attributes')) {
+      vars['attributes'] = toAttribute(vars['attributes'])
     }
   }
   return vars
 }
 
-// drupal-attribute's addClass()/removeClass()/hasClass() only array the *new*
-// value, so a non-array existing `class` (a Map from a template literal, or a
-// scalar) crashes them. Cast the existing class to an array first, like Drupal's
-// (array) cast. Patches the shared singleton's prototype once.
+// addClass/removeClass/hasClass crash on a non-array existing `class` (a Twing
+// Map, a scalar); cast it to an array first, like Drupal.
+const PATCHED = '__sdcClassPatched'
+
 export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
-  const proto = AttrClass.prototype as DrupalAttribute & {
-    __sdcClassPatched?: boolean
-  }
-  if (!proto || proto.__sdcClassPatched) return
+  const proto = AttrClass.prototype
+  // On the prototype: the twig.js and Twing bundles share drupal-attribute.
+  if (Object.prototype.hasOwnProperty.call(proto, PATCHED)) return
   const normalize = (self: DrupalAttribute): void => {
     if (typeof self.get !== 'function') return
     const existing = self.get('class')
@@ -49,15 +54,20 @@ export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
       self.set('class', [existing])
     }
   }
-  ;(['addClass', 'removeClass', 'hasClass'] as const).forEach((name) => {
-    const orig = proto[name] as (...a: unknown[]) => unknown
-    if (typeof orig !== 'function') return
-    proto[name] = function (this: DrupalAttribute, ...args: unknown[]) {
-      normalize(this)
-      return orig.apply(this, args)
-    } as never
-  })
-  Object.defineProperty(proto, '__sdcClassPatched', {
+  for (const name of ['addClass', 'removeClass', 'hasClass'] as const) {
+    const original: unknown = Reflect.get(proto, name)
+    if (typeof original !== 'function') continue
+    Reflect.set(
+      proto,
+      name,
+      function (this: DrupalAttribute, ...args: unknown[]): unknown {
+        normalize(this)
+        const result: unknown = Reflect.apply(original, this, args)
+        return result
+      }
+    )
+  }
+  Object.defineProperty(proto, PATCHED, {
     value: true,
     enumerable: false,
   })

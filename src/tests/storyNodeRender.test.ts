@@ -125,12 +125,10 @@ describe('renderStoryNode (build codegen)', () => {
   test('component with no props or slots produces empty args sections', () => {
     const item = { type: 'component', component: 'umami:card' }
     const out = renderStoryNode(item)
-    // should include base component invocation and empty story/props placeholders
     expect(out).toContain('umamicard.default.component(')
     expect(out).toContain('...{},')
   })
 
-  // tests from storiesRenderer.test.ts
   test.each([
     [
       { type: 'component', component: 'umami:card' },
@@ -229,8 +227,8 @@ describe('renderStoryNode (build codegen)', () => {
   test('custom node returning a string is emitted as a literal', () => {
     registerCustomNodes([
       {
-        match: (item: any) => item?.type === 'youtube',
-        render: (item: any) => `<iframe src="${item.id}"></iframe>`,
+        match: (item) => item.type === 'youtube',
+        render: (item) => `<iframe src="${String(item.id)}"></iframe>`,
       },
     ])
     expect(renderStoryNode({ type: 'youtube', id: 'x' })).toBe(
@@ -241,8 +239,8 @@ describe('renderStoryNode (build codegen)', () => {
   test('custom node returning a node is fed back through codegen', () => {
     registerCustomNodes([
       {
-        match: (item: any) => item?.type === 'link',
-        render: (item: any) => ({
+        match: (item) => item.type === 'link',
+        render: (item) => ({
           type: 'element',
           tag: 'a',
           attributes: { href: item.url },
@@ -280,10 +278,60 @@ describe('renderStoryNode (build codegen)', () => {
     expect(out).toBe('_sdcRenderIcon("p", "i", {})')
   })
 
+  test('theme:image joins plain-string srcset entries as-is', () => {
+    const out = renderStoryNode({
+      theme: 'image',
+      uri: 'x',
+      srcset: ['a.webp 600w', 'b.webp 1200w'],
+    })
+    expect(out).toBe(
+      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" />"'
+    )
+  })
+
+  test('type:markup without a markup string renders empty', () => {
+    expect(renderStoryNode({ type: 'markup' })).toBe('""')
+  })
+
+  test('element renders nested nodes under non-reserved keys as children', () => {
+    const out = renderStoryNode({
+      type: 'element',
+      tag: 'span',
+      value: 'x',
+      icon: { type: 'icon', pack_id: 'p', icon_id: 'i' },
+      attached: { library: ['x/y'] },
+    })
+    expect(out).toBe(
+      '("<span>" + "x" + _sdcRenderIcon("p", "i", {}) + "</span>")'
+    )
+  })
+
+  test('type:component needs a string component id', () => {
+    expect(() => renderStoryNode({ type: 'component' })).toThrow(
+      /needs a string "component"/
+    )
+    expect(() =>
+      renderStoryNode({ type: 'component', component: { ns: 'x' } })
+    ).toThrow(/needs a string "component"/)
+  })
+
+  test('type:component ignores non-object props/slots and non-string story', () => {
+    const out = renderStoryNode({
+      type: 'component',
+      component: 'ns:card',
+      props: 'nope',
+      slots: 42,
+      story: { bad: true },
+    })
+    expect(out).toBe(
+      'nscard.default.component({...nscard.Basic.baseArgs, ...{}, ...{ }, ...{}})'
+    )
+  })
+
   test('a custom node matching a built-in type takes precedence', () => {
     registerCustomNodes([
       {
-        match: (item: any) => item?.type === 'icon',
+        match: (item) => item.type === 'icon',
         render: () => '<custom-icon></custom-icon>',
       },
     ])

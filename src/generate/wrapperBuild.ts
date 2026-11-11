@@ -2,14 +2,29 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createWrapperEnv, type WrapperEnv } from '../renderer/wrapper.ts'
 import { discoverIconPacks } from './iconPacks.ts'
-import type { Namespaces } from './namespaces.ts'
+import type { NamespaceRoots, Namespaces } from './namespaces.ts'
 import { listDir } from '../utils.ts'
-import type { SDCStorybookOptions, ResolveIconSource } from '../sdc.d.ts'
+import Twig from 'twig'
+import type {
+  SDCStorybookOptions,
+  ResolveIconSource,
+  StoryDefinition,
+  VitePluginTwigDrupalOptions,
+  VitePluginTwingDrupalOptions,
+} from '../sdc.d.ts'
 
-// Collect every namespace's `.twig`/`.svg` templates, keyed `@ns/rel`, walking
-// `<path>/components` when it exists else `<path>` (mirrors the browser loader).
+// The twig plugin options the build-time wrapper renderer replays.
+export interface WrapperInitOptions {
+  vitePluginTwingDrupalOptions?:
+    Pick<VitePluginTwingDrupalOptions, 'hooks'> | undefined
+  vitePluginTwigDrupalOptions?:
+    Pick<VitePluginTwigDrupalOptions, 'functions'> | undefined
+}
+
+// Every namespace's .twig/.svg templates keyed `@ns/rel`, like the browser
+// loader.
 export function collectTemplates(
-  namespaces: Namespaces
+  namespaces: NamespaceRoots
 ): Record<string, string> {
   const out: Record<string, string> = {}
   for (const [ns, root] of namespaces.entries()) {
@@ -26,10 +41,7 @@ export function collectTemplates(
 
 async function buildInit(
   twigLib: 'twing' | 'twig',
-  options: {
-    vitePluginTwingDrupalOptions?: { hooks?: string }
-    vitePluginTwigDrupalOptions?: { functions?: Record<string, unknown> }
-  }
+  options: WrapperInitOptions
 ): Promise<((env: unknown) => void) | undefined> {
   if (twigLib === 'twing') {
     const hooks = options.vitePluginTwingDrupalOptions?.hooks
@@ -41,21 +53,18 @@ async function buildInit(
   }
   const fns = options.vitePluginTwigDrupalOptions?.functions
   if (!fns) return undefined
-  return (Twig: unknown) => {
+  // twig.js is a module singleton: the instance the wrapper env renders with.
+  return () => {
     for (const register of Object.values(fns)) {
       if (typeof register === 'function') register(Twig)
     }
   }
 }
 
-// Wrapper renderer for the active twigLib, wired with the namespace loaders,
-// Drupal extensions, init hooks and icon packs.
+// Wrapper renderer for the active twigLib.
 export async function createBuildWrapperEnv(
   namespaces: Namespaces,
-  options: SDCStorybookOptions & {
-    vitePluginTwingDrupalOptions?: { hooks?: string }
-    vitePluginTwigDrupalOptions?: { functions?: Record<string, unknown> }
-  },
+  options: SDCStorybookOptions & WrapperInitOptions,
   resolveIconSource?: ResolveIconSource
 ): Promise<WrapperEnv> {
   const twigLib = options.twigLib === 'twing' ? 'twing' : 'twig'
@@ -73,10 +82,7 @@ export async function createBuildWrapperEnv(
 export function renderWrapperStories(
   env: WrapperEnv,
   componentId: string,
-  stories: Record<
-    string,
-    { props?: object; slots?: object; library_wrapper?: string }
-  >,
+  stories: Record<string, StoryDefinition>,
   fakerArgs: Record<string, unknown>
 ): Record<string, string> {
   const out: Record<string, string> = {}

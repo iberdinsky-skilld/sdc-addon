@@ -1,13 +1,18 @@
-import { toAttribute } from './attributes.ts'
-import { entries } from './collections.ts'
+import { isRecord } from '../guards.ts'
+import { isDrupalAttribute, toAttribute } from './attributes.ts'
+import {
+  entries,
+  toAttributeEntry,
+  toPlainObject,
+  toText,
+} from './collections.ts'
 import type { CustomNode } from '../sdc.d.ts'
 export class PrintableArray {
   declare readonly length: number;
   [index: number]: unknown
   constructor(...items: unknown[]) {
     for (let i = 0; i < items.length; i++) this[i] = items[i]
-    // Non-enumerable: twig.js iterates plain objects with Object.keys(), so an
-    // enumerable `length` would show up as an extra loop item.
+    // Non-enumerable: twig.js loops over Object.keys().
     Object.defineProperty(this, 'length', {
       value: items.length,
       enumerable: false,
@@ -29,32 +34,40 @@ export class PrintableArray {
 }
 
 export function nodeGet(node: unknown, key: string): unknown {
-  return node instanceof Map
-    ? node.get(key)
-    : (node as Record<string, unknown>)[key]
+  if (node instanceof Map) {
+    const value: unknown = node.get(key)
+    return value
+  }
+  return isRecord(node) ? node[key] : undefined
 }
 
-// User-defined node types. One registry, consulted by both the build-time
-// codegen and this runtime resolver. `render` returns an HTML string or a node
-// (re-resolved through the pipeline), so a custom node works everywhere.
+// Custom node registry, shared by the build codegen and the runtime.
 let customNodes: CustomNode[] = []
 
 export function registerCustomNodes(list: CustomNode[] | undefined): void {
   customNodes = list ?? []
 }
 
-export function matchCustomNode(node: unknown): CustomNode | undefined {
+function matchCustomNode(node: unknown): CustomNode | undefined {
+  const item = toPlainObject(node)
+  if (!item) return undefined
   return customNodes.find((c) => {
     try {
-      return c.match(node)
+      return c.match(item)
     } catch {
       return false
     }
   })
 }
 
-// Keys of an element/html_tag node that are its own properties; every other
-// renderable key is a child (mirrors UI Patterns' html_tag known-properties).
+// Output of the first matching custom renderer, undefined when none matches.
+export function renderCustomNode(node: unknown): string | object | undefined {
+  const item = toPlainObject(node)
+  if (!item) return undefined
+  return matchCustomNode(item)?.render(item)
+}
+
+// Own keys of an element/html_tag node; any other renderable key is a child.
 export const TAG_RESERVED = new Set([
   'type',
   'theme',
@@ -68,11 +81,9 @@ export const TAG_RESERVED = new Set([
 export type NodeKind =
   'custom' | 'component' | 'icon' | 'image' | 'markup' | 'tag' | null
 
-// Single source of truth for classifying a render-array node.
 export function nodeKind(node: unknown): NodeKind {
   if (!node || typeof node !== 'object' || Array.isArray(node)) return null
-  if (typeof (node as { addClass?: unknown }).addClass === 'function')
-    return null
+  if (isDrupalAttribute(node)) return null
   if (matchCustomNode(node)) return 'custom'
   const type = nodeGet(node, 'type')
   const theme = nodeGet(node, 'theme')
@@ -94,6 +105,20 @@ function attributesString(node: unknown): string {
   return toAttribute(nodeGet(node, 'attributes')).toString()
 }
 
+// Context of a `type: component` node: resolved props and slots, and
+// `attributes` as a DrupalAttribute.
+export function componentNodeContext(
+  node: unknown,
+  resolve: (value: unknown) => unknown
+): Record<string, unknown> {
+  const ctx: Record<string, unknown> = {}
+  for (const src of [nodeGet(node, 'props'), nodeGet(node, 'slots')]) {
+    for (const [k, v] of entries(src)) ctx[toText(k)] = resolve(v)
+  }
+  ctx['attributes'] = toAttribute(ctx['attributes'])
+  return ctx
+}
+
 export interface NodeRenderers {
   renderComponent: (node: unknown) => string
   renderIcon: (packId: string, iconId: string, settings: unknown) => string
@@ -108,14 +133,13 @@ export function createNodeResolver(renderers: NodeRenderers) {
   }
 
   function toHtml(value: unknown): string {
-    const r = resolve(value)
-    return r == null ? '' : String(r)
+    return toText(resolve(value))
   }
 
   function renderNode(node: unknown): string {
     switch (nodeKind(node)) {
       case 'custom': {
-        const out = matchCustomNode(node)?.render(node)
+        const out = renderCustomNode(node)
         if (out == null) return ''
         return typeof out === 'string' ? out : toHtml(out)
       }
@@ -123,31 +147,31 @@ export function createNodeResolver(renderers: NodeRenderers) {
         return renderers.renderComponent(node)
       case 'icon':
         return renderers.renderIcon(
-          String(nodeGet(node, 'pack_id') ?? ''),
-          String(nodeGet(node, 'icon_id') ?? ''),
+          toText(nodeGet(node, 'pack_id')),
+          toText(nodeGet(node, 'icon_id')),
           nodeGet(node, 'settings') ?? {}
         )
       case 'image': {
         const attrs = toAttribute(nodeGet(node, 'attributes'))
         if (nodeGet(node, 'uri') != null) {
-          attrs.setAttribute('src', nodeGet(node, 'uri') as never)
+          attrs.setAttribute('src', toAttributeEntry(nodeGet(node, 'uri')))
         }
         for (const k of ['width', 'height', 'alt', 'sizes', 'title']) {
           if (nodeGet(node, k) != null)
-            attrs.setAttribute(k, nodeGet(node, k) as never)
+            attrs.setAttribute(k, toAttributeEntry(nodeGet(node, k)))
         }
         return `<img${attrs.toString()} />`
       }
       case 'markup':
-        return String(nodeGet(node, 'markup') ?? '')
+        return toText(nodeGet(node, 'markup'))
       case 'tag': {
-        const tag = String(nodeGet(node, 'tag') ?? 'div')
+        const tag = toText(nodeGet(node, 'tag')) || 'div'
         const parts: string[] = []
         const main = nodeGet(node, 'value') ?? nodeGet(node, 'children')
         if (main != null) parts.push(toHtml(main))
         for (const [key, value] of entries(node))
           if (
-            !TAG_RESERVED.has(key as string) &&
+            !TAG_RESERVED.has(toText(key)) &&
             value !== null &&
             typeof value === 'object'
           )

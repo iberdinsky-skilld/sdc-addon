@@ -1,8 +1,7 @@
-// Full Twing runtime for the build-time harness: the core (icon/include) plus
-// the `_story|merge` render-array machinery. Not shipped to the browser.
+// Twing runtime for the build-time wrapper renderer (not shipped).
 import { createSynchronousFilter } from 'twing'
 import type { IconPacks } from '../sdc.d.ts'
-import { entries } from './collections.ts'
+import { toPlainObject, toText } from './collections.ts'
 import { toAttribute } from './attributes.ts'
 import {
   isStory,
@@ -10,7 +9,7 @@ import {
   createStoryFactory,
   type StoryBase,
 } from './story.ts'
-import { createNodeResolver, nodeGet } from './nodes.ts'
+import { componentNodeContext, createNodeResolver, nodeGet } from './nodes.ts'
 import { createTwingCore, type SdcEnv } from './twing.ts'
 
 export function createTwingWrapperRuntime(iconPacks: IconPacks) {
@@ -20,13 +19,9 @@ export function createTwingWrapperRuntime(iconPacks: IconPacks) {
 
   function renderComponentNode(node: unknown): string {
     const env = core.getEnv()
-    const id = String(nodeGet(node, 'component') ?? '')
+    const id = toText(nodeGet(node, 'component'))
     if (!env || !id) return ''
-    const ctx: Record<string, unknown> = {}
-    for (const src of [nodeGet(node, 'props'), nodeGet(node, 'slots')]) {
-      for (const [k, v] of entries(src)) ctx[k as string] = resolve(v)
-    }
-    ctx['attributes'] = toAttribute(ctx['attributes'])
+    const ctx = componentNodeContext(node, resolve)
     try {
       return env.render(id, ctx)
     } catch (e) {
@@ -45,7 +40,7 @@ export function createTwingWrapperRuntime(iconPacks: IconPacks) {
     base: StoryBase | undefined
   ): string {
     const env = core.getEnv()
-    const id = story['#component'] as string
+    const id = toText(story['#component'])
     const ctx = storyContext(story, base, resolve)
     ctx['attributes'] = toAttribute(ctx['attributes'])
     if (env) {
@@ -71,7 +66,7 @@ export function createTwingWrapperRuntime(iconPacks: IconPacks) {
     const env = core.getEnv()
     if (!env || !template) return template || ''
     const loader = env.loader
-    if (!loader || typeof loader.setTemplate !== 'function') return template
+    if (typeof loader.setTemplate !== 'function') return template
     let name = inlineNames[template]
     if (!name) {
       name = '_sdc_inline_' + inlineSeq++
@@ -79,7 +74,7 @@ export function createTwingWrapperRuntime(iconPacks: IconPacks) {
     }
     try {
       loader.setTemplate(name, template)
-      return env.render(name, (context as Record<string, unknown>) || {})
+      return env.render(name, toPlainObject(context) ?? {})
     } catch (e) {
       console.error('[SDC] renderInline error:', e)
       return template
@@ -88,17 +83,18 @@ export function createTwingWrapperRuntime(iconPacks: IconPacks) {
 
   function registerSdcRuntime(env: SdcEnv): void {
     core.registerCore(env)
-    if (!env.__sdcMergeOverridden && typeof env.filters?.get === 'function') {
+    if (!env.__sdcMergeOverridden) {
       const origMerge = env.filters.get('merge')
       if (origMerge) {
         env.__sdcMergeOverridden = true
         env.addFilter(
           createSynchronousFilter(
             'merge',
-            (execCtx, a, b) =>
-              isStory(a) || isStory(b)
-                ? mergeStory(a, b)
-                : origMerge.callable(execCtx, a, b),
+            (execCtx, a, b) => {
+              if (isStory(a) || isStory(b)) return mergeStory(a, b)
+              const merged: unknown = origMerge.callable(execCtx, a, b)
+              return merged
+            },
             [{ name: 'source' }]
           )
         )

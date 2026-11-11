@@ -11,5 +11,5 @@
     "noUnusedParameters": true,
     "noImplicitOverride": true
   },
-  "include": ["src/renderer/**/*"]
+  "include": ["src/renderer/**/*", "src/types/**/*"]
 }

@@ -1,14 +1,20 @@
-import { describe, expect, test, vi } from 'vitest'
+import assert from 'node:assert/strict'
+import { describe, expect, onTestFinished, test, vi } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import YamlStoriesPlugin, {
-  yamlStoriesIndexer,
-  twigDependencyImports,
-  libraryOverridesImports,
-  libraryOverridesLocalImports,
-} from '../vite/storybookYamlStories.ts'
+import { createYamlStoriesHooks } from '../vite/storybookYamlStories.ts'
+import { yamlStoriesIndexer } from '../vite/storyIndexer.ts'
 import { toNamespaces } from '../generate/namespaces.ts'
+
+// A real `this` context: arrow-function mocks would hide an unbound hook call.
+class PluginContextMock {
+  watched: string[] = []
+  addWatchFile(id: string): void {
+    this.watched.push(id)
+  }
+}
+const ctx = new PluginContextMock()
 import { logger } from '../logger'
 
 describe('vite-plugin-storybook-yaml-stories (integration)', () => {
@@ -35,10 +41,10 @@ thirdPartySettings:
         namespaces: { umami: tmpRoot },
       })
 
-      const plugin = YamlStoriesPlugin({ namespaces })
+      const plugin = createYamlStoriesHooks({ namespaces })
       const id = join(compDir, 'banner.component.yml')
 
-      const result = await plugin.load(id)
+      const result = await plugin.load.call(ctx, id)
 
       expect(result).toContain('parameters:')
       expect(result).toContain('"layout": "fullscreen"')
@@ -75,23 +81,26 @@ thirdPartySettings:
           },
         },
       }
-      fetchMock.mockResolvedValue({ ok: true, json: async () => schema })
+      fetchMock.mockResolvedValue({ ok: true, json: () => schema })
 
       const namespaces = toNamespaces({
         namespace: '',
         namespaces: { umami: tmpRoot },
       })
-      const plugin = YamlStoriesPlugin({
+      const plugin = createYamlStoriesHooks({
         namespaces,
         sdcStorybookOptions: { validate: 'https://example.com/schema.json' },
       })
 
-      const result = await plugin.load(join(compDir, 'badge.component.yml'))
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'badge.component.yml')
+      )
 
       expect(result).toContain('export const Basic')
       expect(fetchMock).toHaveBeenCalledWith('https://example.com/schema.json')
       expect(warnSpy).toHaveBeenCalledTimes(1)
-      expect(String(warnSpy.mock.calls[0][0])).toMatch(/instance\.status/)
+      expect(String(warnSpy.mock.calls[0]?.[0])).toMatch(/instance\.status/)
     } finally {
       vi.unstubAllGlobals()
       warnSpy.mockRestore()
@@ -114,16 +123,19 @@ thirdPartySettings:
         namespace: '',
         namespaces: { umami: tmpRoot },
       })
-      const plugin = YamlStoriesPlugin({
+      const plugin = createYamlStoriesHooks({
         namespaces,
         sdcStorybookOptions: { validate: true },
       })
 
-      const result = await plugin.load(join(compDir, 'card.component.yml'))
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'card.component.yml')
+      )
 
       expect(result).toContain('export const Basic')
       expect(warnSpy).toHaveBeenCalledTimes(1)
-      expect(String(warnSpy.mock.calls[0][0])).toMatch(/Could not validate/)
+      expect(String(warnSpy.mock.calls[0]?.[0])).toMatch(/Could not validate/)
     } finally {
       vi.unstubAllGlobals()
       warnSpy.mockRestore()
@@ -151,10 +163,10 @@ thirdPartySettings:
         namespaces: { umami: tmpRoot },
       })
 
-      const plugin = YamlStoriesPlugin({ namespaces })
+      const plugin = createYamlStoriesHooks({ namespaces })
       const id = join(compDir, 'branding.component.yml')
 
-      const result = await plugin.load(id)
+      const result = await plugin.load.call(ctx, id)
 
       expect(result).toContain('parameters:')
       expect(result).toContain(
@@ -186,10 +198,10 @@ thirdPartySettings:
         namespaces: { umami: tmpRoot },
       })
 
-      const plugin = YamlStoriesPlugin({ namespaces })
+      const plugin = createYamlStoriesHooks({ namespaces })
       const id = join(compDir, 'menu.component.yml')
 
-      const result = await plugin.load(id)
+      const result = await plugin.load.call(ctx, id)
 
       expect(result).toContain('globals:')
       expect(result).toContain('"theme": "dark"')
@@ -225,10 +237,12 @@ thirdPartySettings:
         namespaces: { umami: tmpRoot },
       })
 
-      const plugin = YamlStoriesPlugin({ namespaces })
+      const plugin = createYamlStoriesHooks({ namespaces })
       const id = join(compDir, 'slider.component.yml')
 
-      const result = await plugin.load(id)
+      const result = await plugin.load.call(ctx, id)
+      // Story files are registered with Vite so edits regenerate the module.
+      expect(ctx.watched).toContain(storyFile)
 
       expect(result).toContain('export const WithGlobals')
       expect(result).toContain('globals:')
@@ -246,16 +260,13 @@ thirdPartySettings:
       mkdirSync(compDir, { recursive: true })
       mkdirSync(nested, { recursive: true })
 
-      // component YAML
       const compYaml = `name: Card\nstatus: stable\ndescription: Card desc`
       writeFileSync(join(compDir, 'card.component.yml'), compYaml)
-      // main twig + variant twig + assets
       writeFileSync(join(compDir, 'card.twig'), '<div>card</div>')
       writeFileSync(join(compDir, 'card~variant.twig'), '<div>variant</div>')
       writeFileSync(join(compDir, 'card.js'), '// js')
       writeFileSync(join(compDir, 'card.css'), '/* css */')
 
-      // nested component for dynamicImports
       writeFileSync(join(nested, 'title.component.yml'), 'name: Title')
       writeFileSync(join(nested, 'title.twig'), '<h1>title</h1>')
 
@@ -264,15 +275,14 @@ thirdPartySettings:
         namespaces: { umami: tmpRoot },
       })
 
-      const plugin = YamlStoriesPlugin({ namespaces })
+      const plugin = createYamlStoriesHooks({ namespaces })
       const id = join(compDir, 'card.component.yml')
 
-      const result = await plugin.load(id)
+      const result = await plugin.load.call(ctx, id)
       expect(typeof result).toBe('string')
-      // assets loaded via import.meta.glob
       expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
       expect(result).toContain("import.meta.glob('./*.css'")
-      // should import main twig as COMPONENT (namespace path may vary)
+      // Namespace path may vary.
       expect(result).toMatch(/import COMPONENT from '.*card.twig'/)
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
@@ -317,8 +327,11 @@ thirdPartySettings:
         namespaces: { umami: tmpRoot },
       })
 
-      const plugin = YamlStoriesPlugin({ namespaces })
-      const result = await plugin.load(join(compDir, 'card.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'card.component.yml')
+      )
 
       expect(result).toMatch(/import COMPONENT from '.*card.twig'/)
       expect(result).not.toContain('card~variant.twig')
@@ -346,8 +359,11 @@ thirdPartySettings:
         namespace: '',
         namespaces: { umami: tmpRoot },
       })
-      const plugin = YamlStoriesPlugin({ namespaces })
-      const result = await plugin.load(join(compDir, 'slider.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'slider.component.yml')
+      )
 
       expect(result).toContain("import.meta.glob('./*.css'")
       expect(result).not.toContain("import './slider.component.yml';")
@@ -372,9 +388,8 @@ thirdPartySettings:
       writeFileSync(join(nested, 'title.component.yml'), 'name: Title')
       writeFileSync(join(nested, 'title.twig'), '<h1>title</h1>')
 
-      // create story file referencing the title component in props
       const storyFile = join(compDir, 'card.withTitle.story.yml')
-      // The story file should contain just the story body (loadStoryFilesSync wraps it by filename)
+      // Story body only; the file name provides the key.
       writeFileSync(
         storyFile,
         'props:\n  title:\n    type: component\n    component: umami:title\n'
@@ -384,10 +399,10 @@ thirdPartySettings:
         namespace: '',
         namespaces: { umami: tmpRoot },
       })
-      const plugin = YamlStoriesPlugin({ namespaces })
+      const plugin = createYamlStoriesHooks({ namespaces })
       const id = join(compDir, 'card.component.yml')
 
-      const result = await plugin.load(id)
+      const result = await plugin.load.call(ctx, id)
 
       expect(result).toContain('import *')
       expect(result).toContain('title.component.yml')
@@ -477,11 +492,9 @@ thirdPartySettings:
       const compDir = join(tmpRoot, 'components', 'bad')
       mkdirSync(compDir, { recursive: true })
       const file = join(compDir, 'bad.component.yml')
-      // malformed YAML
       writeFileSync(file, `name: Bad\n  - invalid`, 'utf8')
 
       const spy = vi.spyOn(logger, 'error')
-      // Use a non-existent file to provoke read error
       const missing = join(compDir, 'does-not-exist.component.yml')
       await expect(
         yamlStoriesIndexer.createIndex(missing, {
@@ -511,335 +524,15 @@ thirdPartySettings:
         makeTitle: (s?: string) => s ?? '',
       })
 
-      // Should have Basic + Variant_Basic + Other
       expect(index.length).toBe(3)
-      expect(index.find((i: any) => i.exportName === 'Basic')).toBeDefined()
-      expect(
-        index.find((i: any) => i.exportName === 'Variant_Basic')
-      ).toBeDefined()
-      expect(index.find((i: any) => i.exportName === 'Other')).toBeDefined()
+      expect(index.find((i) => i.exportName === 'Basic')).toBeDefined()
+      expect(index.find((i) => i.exportName === 'Variant_Basic')).toBeDefined()
+      expect(index.find((i) => i.exportName === 'Other')).toBeDefined()
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
   })
 })
-
-// ---------------------------------------------------------------------------
-// twigDependencyImports — unit tests
-// ---------------------------------------------------------------------------
-
-describe('twigDependencyImports', () => {
-  test('returns empty string when twig file does not exist', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(join(tmpRoot, 'missing.twig'), ns)
-      expect(result).toBe('')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('returns empty string when twig has no SDC includes', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, '<div>{{ label }}</div>')
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      expect(twigDependencyImports(twigFile, ns)).toBe('')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('ignores @namespace/path style asset references', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, "{% include '@assets/icon.svg' %}")
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      expect(twigDependencyImports(twigFile, ns)).toBe('')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('ignores unknown namespace:component (no resolved path)', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, "{% include 'unknown:missing' %}")
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      expect(twigDependencyImports(twigFile, ns)).toBe('')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('generates import for {% include "ns:component" %} (double quotes)', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const titleDir = join(tmpRoot, 'components', 'title')
-      mkdirSync(titleDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, '{% include "umami:title" %}')
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toContain('title.component.yml')
-      expect(result).toMatch(/^import '.*title\.component\.yml';$/m)
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('generates import for {% include %} with single quotes', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const titleDir = join(tmpRoot, 'components', 'title')
-      mkdirSync(titleDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, "{% include 'umami:title' %}")
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toMatch(/^import '.*title\.component\.yml';$/m)
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('generates import for {% embed %} directive', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const cardDir = join(tmpRoot, 'components', 'card')
-      mkdirSync(cardDir, { recursive: true })
-      writeFileSync(join(cardDir, 'card.component.yml'), 'name: Card')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, "{% embed 'umami:card' %}{% endembed %}")
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toMatch(/^import '.*card\.component\.yml';$/m)
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('generates import for {% extends %} directive', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const baseDir = join(tmpRoot, 'components', 'base-layout')
-      mkdirSync(baseDir, { recursive: true })
-      writeFileSync(
-        join(baseDir, 'base-layout.component.yml'),
-        'name: Base Layout'
-      )
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, "{% extends 'umami:base-layout' %}")
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toMatch(/^import '.*base-layout\.component\.yml';$/m)
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('handles whitespace-control {%- include %} syntax', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const titleDir = join(tmpRoot, 'components', 'title')
-      mkdirSync(titleDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, "{%- include 'umami:title' -%}")
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toMatch(/^import '.*title\.component\.yml';$/m)
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('handles include with with...only clause', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const titleDir = join(tmpRoot, 'components', 'title')
-      mkdirSync(titleDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(
-        twigFile,
-        "{% include 'umami:title' with { label: 'Hello' } only %}"
-      )
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toMatch(/^import '.*title\.component\.yml';$/m)
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('deduplicates repeated includes of the same component', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const titleDir = join(tmpRoot, 'components', 'title')
-      mkdirSync(titleDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(
-        twigFile,
-        "{% include 'umami:title' %}\n{% include 'umami:title' %}"
-      )
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      const lines = result.split('\n').filter(Boolean)
-      expect(lines).toHaveLength(1)
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('collects multiple distinct component includes', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const titleDir = join(tmpRoot, 'components', 'title')
-      const badgeDir = join(tmpRoot, 'components', 'badge')
-      mkdirSync(titleDir, { recursive: true })
-      mkdirSync(badgeDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-      writeFileSync(join(badgeDir, 'badge.component.yml'), 'name: Badge')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(
-        twigFile,
-        "{% include 'umami:title' %}\n{% include 'umami:badge' %}"
-      )
-
-      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toContain('title.component.yml')
-      expect(result).toContain('badge.component.yml')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  // ----- namespace tests -----
-
-  test('resolves component from a different registered namespace', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      // 'ds-a' namespace has the included component
-      const dsARoot = join(tmpRoot, 'ds-a')
-      const titleDir = join(dsARoot, 'components', 'title')
-      mkdirSync(titleDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-
-      // 'ds-b' namespace owns the parent component whose twig we parse
-      const dsBRoot = join(tmpRoot, 'ds-b')
-      mkdirSync(join(dsBRoot, 'components', 'paragraph'), { recursive: true })
-
-      const twigFile = join(tmpRoot, 'paragraph.twig')
-      writeFileSync(twigFile, "{% include 'ds-a:title' %}")
-
-      const ns = toNamespaces({
-        namespace: '',
-        namespaces: { 'ds-a': dsARoot, 'ds-b': dsBRoot },
-      })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toContain('title.component.yml')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('resolves components from multiple different namespaces in one file', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const dsARoot = join(tmpRoot, 'ds-a')
-      const dsBRoot = join(tmpRoot, 'ds-b')
-
-      mkdirSync(join(dsARoot, 'components', 'title'), { recursive: true })
-      mkdirSync(join(dsBRoot, 'components', 'badge'), { recursive: true })
-      writeFileSync(
-        join(dsARoot, 'components', 'title', 'title.component.yml'),
-        'name: Title'
-      )
-      writeFileSync(
-        join(dsBRoot, 'components', 'badge', 'badge.component.yml'),
-        'name: Badge'
-      )
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(
-        twigFile,
-        "{% include 'ds-a:title' %}\n{% include 'ds-b:badge' %}"
-      )
-
-      const ns = toNamespaces({
-        namespace: '',
-        namespaces: { 'ds-a': dsARoot, 'ds-b': dsBRoot },
-      })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toContain('title.component.yml')
-      expect(result).toContain('badge.component.yml')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-
-  test('resolves nested (subdirectory) component via namespace', () => {
-    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
-    try {
-      const nsRoot = join(tmpRoot, 'theme')
-      // component lives under components/atoms/title/
-      const titleDir = join(nsRoot, 'components', 'atoms', 'title')
-      mkdirSync(titleDir, { recursive: true })
-      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
-
-      const twigFile = join(tmpRoot, 'comp.twig')
-      writeFileSync(twigFile, "{% include 'mytheme:title' %}")
-
-      const ns = toNamespaces({
-        namespace: '',
-        namespaces: { mytheme: nsRoot },
-      })
-      const result = twigDependencyImports(twigFile, ns)
-
-      expect(result).toContain('title.component.yml')
-    } finally {
-      rmSync(tmpRoot, { recursive: true, force: true })
-    }
-  })
-})
-
-// ---------------------------------------------------------------------------
-// load() integration — twig dependency imports
-// ---------------------------------------------------------------------------
 
 describe('vite-plugin-storybook-yaml-stories — twig dependency imports integration', () => {
   test('load() emits import for component included via {% include %} in twig', async () => {
@@ -863,8 +556,9 @@ describe('vite-plugin-storybook-yaml-stories — twig dependency imports integra
       writeFileSync(join(titleDir, 'title.css'), '/* title css */')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
         join(paragraphDir, 'paragraph.component.yml')
       )
 
@@ -894,8 +588,11 @@ describe('vite-plugin-storybook-yaml-stories — twig dependency imports integra
       )
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(parentDir, 'parent.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(parentDir, 'parent.component.yml')
+      )
 
       expect(result).toContain('card.component.yml')
     } finally {
@@ -934,8 +631,9 @@ describe('vite-plugin-storybook-yaml-stories — twig dependency imports integra
       writeFileSync(join(titleDir, 'title.twig'), '<h1>title</h1>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
         join(paragraphDir, 'paragraph.component.yml')
       )
 
@@ -974,8 +672,9 @@ describe('vite-plugin-storybook-yaml-stories — twig dependency imports integra
         namespace: '',
         namespaces: { 'ds-a': dsARoot, 'ds-b': dsBRoot },
       })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
         join(paragraphDir, 'paragraph.component.yml')
       )
 
@@ -985,363 +684,6 @@ describe('vite-plugin-storybook-yaml-stories — twig dependency imports integra
     }
   })
 })
-
-// ---------------------------------------------------------------------------
-// libraryOverridesImports — unit tests
-// ---------------------------------------------------------------------------
-
-describe('libraryOverridesImports', () => {
-  test('returns empty array when no libraryOverrides', () => {
-    expect(libraryOverridesImports({ name: 'Test' } as any)).toEqual([])
-  })
-
-  test('returns empty array when libraryOverrides is empty', () => {
-    expect(
-      libraryOverridesImports({ name: 'Test', libraryOverrides: {} } as any)
-    ).toEqual([])
-  })
-
-  test('returns empty array when css contains only local files', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: { css: { component: { 'slider.css': {} } } },
-    }
-    expect(libraryOverridesImports(content as any)).toEqual([])
-  })
-
-  test('returns empty array when js contains only local files', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        js: { 'slider.mjs': { attributes: { type: 'module' } } },
-      },
-    }
-    expect(libraryOverridesImports(content as any)).toEqual([])
-  })
-
-  test('returns empty array for protocol-relative URL (not http/https)', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: { js: { '//cdn.example.com/lib.js': {} } },
-    }
-    expect(libraryOverridesImports(content as any)).toEqual([])
-  })
-
-  test('returns ExternalCssAsset for external CSS in base group', () => {
-    const url = 'https://cdn.example.com/lib.css'
-    const content = {
-      name: 'Test',
-      libraryOverrides: { css: { base: { [url]: { minified: true } } } },
-    }
-    const result = libraryOverridesImports(content as any)
-    expect(result).toEqual([{ type: 'css', url, media: undefined }])
-  })
-
-  test('returns ExternalCssAsset with media when media is set', () => {
-    const url = 'https://cdn.example.com/print.css'
-    const content = {
-      name: 'Test',
-      libraryOverrides: { css: { base: { [url]: { media: 'print' } } } },
-    }
-    const result = libraryOverridesImports(content as any)
-    expect(result).toEqual([{ type: 'css', url, media: 'print' }])
-  })
-
-  test('collects external CSS assets from all five groups', () => {
-    const urls = {
-      base: 'https://cdn.example.com/base.css',
-      layout: 'https://cdn.example.com/layout.css',
-      component: 'https://cdn.example.com/component.css',
-      state: 'https://cdn.example.com/state.css',
-      theme: 'https://cdn.example.com/theme.css',
-    }
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: Object.fromEntries(
-          Object.entries(urls).map(([group, url]) => [group, { [url]: {} }])
-        ),
-      },
-    }
-    const result = libraryOverridesImports(content as any)
-    for (const url of Object.values(urls)) {
-      expect(result.some((a) => a.url === url && a.type === 'css')).toBe(true)
-    }
-  })
-
-  test('returns ExternalJsAsset for external JS URL', () => {
-    const url = 'https://cdn.example.com/lib.js'
-    const content = {
-      name: 'Test',
-      libraryOverrides: { js: { [url]: {} } },
-    }
-    const result = libraryOverridesImports(content as any)
-    expect(result).toEqual([{ type: 'js', url, attributes: undefined }])
-  })
-
-  test('preserves attributes on external JS', () => {
-    const url = 'https://cdn.example.com/widget.js'
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        js: {
-          [url]: { attributes: { defer: true, crossorigin: 'anonymous' } },
-        },
-      },
-    }
-    const result = libraryOverridesImports(content as any)
-    expect(result).toEqual([
-      {
-        type: 'js',
-        url,
-        attributes: { defer: true, crossorigin: 'anonymous' },
-      },
-    ])
-  })
-
-  test('preserves attributes on external CSS', () => {
-    const url = 'https://cdn.example.com/fonts.css'
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: {
-          theme: {
-            [url]: {
-              attributes: { integrity: 'sha384-abc', crossorigin: 'anonymous' },
-            },
-          },
-        },
-      },
-    }
-    const result = libraryOverridesImports(content as any)
-    expect(result).toEqual([
-      {
-        type: 'css',
-        url,
-        media: undefined,
-        attributes: { integrity: 'sha384-abc', crossorigin: 'anonymous' },
-      },
-    ])
-  })
-
-  test('returns both CSS and JS assets when both present', () => {
-    const cssUrl = 'https://cdn.example.com/style.css'
-    const jsUrl = 'https://cdn.example.com/lib.js'
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: { component: { [cssUrl]: {} } },
-        js: { [jsUrl]: {} },
-      },
-    }
-    const result = libraryOverridesImports(content as any)
-    expect(result.find((a) => a.url === cssUrl)?.type).toBe('css')
-    expect(result.find((a) => a.url === jsUrl)?.type).toBe('js')
-  })
-
-  test('filters out local files, keeps only external URLs', () => {
-    const url1 = 'https://cdn.example.com/swiper.css'
-    const url2 = 'https://cdn.example.com/scrollbar.css'
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: { base: { [url1]: {}, [url2]: {}, 'local.css': {} } },
-      },
-    }
-    const result = libraryOverridesImports(content as any)
-    expect(result.map((a) => a.url)).toEqual([url1, url2])
-  })
-
-  test('matches real slider component libraryOverrides structure', () => {
-    const content = {
-      name: 'Slider',
-      libraryOverrides: {
-        dependencies: ['core/drupal', 'core/once'],
-        js: { 'slider.mjs': { attributes: { type: 'module' } } },
-        css: {
-          base: {
-            'https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css': {
-              type: 'external',
-              minified: true,
-            },
-            'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/scrollbar.css':
-              { type: 'external', minified: true },
-            'slider.css': {},
-          },
-        },
-      },
-    }
-    const result = libraryOverridesImports(content as any)
-    // Only the two CDN CSS URLs — no local files, no Drupal deps
-    expect(result).toHaveLength(2)
-    expect(result.every((a) => a.type === 'css')).toBe(true)
-    expect(result.map((a) => a.url)).toContain(
-      'https://cdn.jsdelivr.net/npm/swiper@11.1.9/swiper.min.css'
-    )
-    expect(result.map((a) => a.url)).toContain(
-      'https://cdn.jsdelivr.net/npm/swiper@11.1.9/modules/scrollbar.css'
-    )
-  })
-
-  // ----- dependencyMap -----
-
-  test('dependencyMap maps a Drupal dependency to CDN assets', () => {
-    const content = {
-      name: 'Widget',
-      libraryOverrides: { dependencies: ['core/drupal', 'core/jquery'] },
-    }
-    const result = libraryOverridesImports(content as any, {
-      'core/jquery': [
-        {
-          type: 'js',
-          url: 'https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js',
-        },
-      ],
-    })
-    expect(result).toHaveLength(1)
-    expect(result[0]).toMatchObject({
-      type: 'js',
-      url: expect.stringContaining('jquery.min.js'),
-    })
-  })
-
-  test('dependencyMap assets combine with extracted CSS/JS URLs', () => {
-    const cssUrl = 'https://cdn.example.com/lib.css'
-    const jsUrl = 'https://cdn.example.com/extra.js'
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: { base: { [cssUrl]: {} } },
-        dependencies: ['some/lib'],
-      },
-    }
-    const result = libraryOverridesImports(content as any, {
-      'some/lib': [{ type: 'js', url: jsUrl }],
-    })
-    expect(result.map((a) => a.url)).toContain(cssUrl)
-    expect(result.map((a) => a.url)).toContain(jsUrl)
-  })
-
-  test('unknown dependencies are silently ignored', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: { dependencies: ['core/drupal', 'core/once'] },
-    }
-    const result = libraryOverridesImports(content as any, {})
-    expect(result).toEqual([])
-  })
-})
-
-describe('libraryOverridesLocalImports', () => {
-  test('returns empty when no libraryOverrides', () => {
-    expect(libraryOverridesLocalImports({ name: 'Test' } as any)).toEqual({
-      css: [],
-      js: [],
-    })
-  })
-
-  test('collects local subfolder CSS and JS, normalized to relative paths', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: { component: { 'styles/alert.css': {} } },
-        js: { 'js/carousel.js': {} },
-      },
-    }
-    expect(libraryOverridesLocalImports(content as any)).toEqual({
-      css: [{ path: './styles/alert.css', media: undefined }],
-      js: ['./js/carousel.js'],
-    })
-  })
-
-  test('de-dupes root files already covered by the flat glob', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: { component: { 'card.css': {} } },
-        js: { 'card.js': {} },
-      },
-    }
-    expect(libraryOverridesLocalImports(content as any)).toEqual({
-      css: [],
-      js: [],
-    })
-  })
-
-  test('keeps subfolder .mjs and drops root .mjs', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        js: { 'behaviors/widget.mjs': {}, 'widget.mjs': {} },
-      },
-    }
-    expect(libraryOverridesLocalImports(content as any)).toEqual({
-      css: [],
-      js: ['./behaviors/widget.mjs'],
-    })
-  })
-
-  test('excludes external URLs (those flow through injectAssets)', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: { theme: { 'https://cdn.example.com/x.css': {} } },
-        js: { 'https://cdn.example.com/x.js': {}, 'js/local.js': {} },
-      },
-    }
-    expect(libraryOverridesLocalImports(content as any)).toEqual({
-      css: [],
-      js: ['./js/local.js'],
-    })
-  })
-
-  test('de-dupes repeated declarations of the same local path', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: {
-          base: { 'styles/x.css': {} },
-          theme: { 'styles/x.css': {} },
-        },
-      },
-    }
-    expect(libraryOverridesLocalImports(content as any).css).toEqual([
-      { path: './styles/x.css', media: undefined },
-    ])
-  })
-
-  test('skips assets disabled via `false` (Drupal semantics)', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: {
-          component: { 'styles/keep.css': {}, 'styles/drop.css': false },
-        },
-        js: { 'js/keep.js': {}, 'js/drop.js': false },
-      },
-    }
-    expect(libraryOverridesLocalImports(content as any)).toEqual({
-      css: [{ path: './styles/keep.css', media: undefined }],
-      js: ['./js/keep.js'],
-    })
-  })
-
-  test('carries `media` from a CSS override entry', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        css: { theme: { 'styles/print.css': { media: 'print' } } },
-      },
-    }
-    expect(libraryOverridesLocalImports(content as any).css).toEqual([
-      { path: './styles/print.css', media: 'print' },
-    ])
-  })
-})
-
-// ---------------------------------------------------------------------------
-// load() integration — libraryOverrides external assets
-// ---------------------------------------------------------------------------
 
 describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', () => {
   test('load() imports local CSS/JS and injects CDN CSS via await in module', async () => {
@@ -1370,8 +712,11 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'slider.mjs'), '// js')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'slider.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'slider.component.yml')
+      )
 
       expect(result).toContain("import.meta.glob('./*.css'")
       expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
@@ -1403,8 +748,11 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'widget.js'), '// js')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'widget.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'widget.component.yml')
+      )
 
       expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
       expect(result).toContain('vendor.js')
@@ -1439,8 +787,11 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'card.twig'), '<div>card</div>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'card.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'card.component.yml')
+      )
 
       expect(result).not.toContain('sdcExternalAssets')
       expect(result).not.toContain('decorators')
@@ -1459,8 +810,11 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'badge.twig'), '<span>badge</span>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'badge.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'badge.component.yml')
+      )
 
       expect(result).not.toContain('sdcExternalAssets')
       expect(result).not.toContain('decorators')
@@ -1494,8 +848,9 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'carousel.twig'), '<div>carousel</div>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = (await plugin.load(
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = (await plugin.load.call(
+        ctx,
         join(compDir, 'carousel.component.yml')
       )) as string
 
@@ -1541,8 +896,11 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'card.twig'), '<div>card</div>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'card.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'card.component.yml')
+      )
 
       // Root files are loaded by the flat glob, not re-imported explicitly.
       expect(result).not.toContain("import './card.css';")
@@ -1572,8 +930,11 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'poster.twig'), '<div>poster</div>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'poster.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'poster.component.yml')
+      )
 
       // Media CSS is resolved as a URL and injected as a <link media>, not
       // bundled via a plain import.
@@ -1613,8 +974,11 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       writeFileSync(join(compDir, 'panel.twig'), '<div>panel</div>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'panel.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'panel.component.yml')
+      )
 
       expect(result).toContain("import './styles/keep.css';")
       expect(result).toContain("await import('./js/keep.js');")
@@ -1639,8 +1003,11 @@ describe('component asset imports via import.meta.glob', () => {
       writeFileSync(join(compDir, 'widget.mjs'), '// mjs')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'widget.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'widget.component.yml')
+      )
 
       expect(result).toContain("import.meta.glob('./*.css', { eager: true })")
       expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
@@ -1655,11 +1022,14 @@ describe('component asset imports via import.meta.glob', () => {
 
 describe('CDN asset injection via virtual:sdc-asset-injector', () => {
   test('virtual module resolves and returns injectAssets function', async () => {
-    const plugin = YamlStoriesPlugin({ namespaces: {} as any })
+    const plugin = createYamlStoriesHooks({ namespaces: toNamespaces({}) })
     const resolved = plugin.resolveId('virtual:sdc-asset-injector')
     expect(resolved).toBe('\0virtual:sdc-asset-injector')
 
-    const moduleCode = await plugin.load('\0virtual:sdc-asset-injector')
+    const moduleCode = await plugin.load.call(
+      ctx,
+      '\0virtual:sdc-asset-injector'
+    )
     expect(moduleCode).toContain('export async function injectAssets')
     expect(moduleCode).toContain("createElement('script')")
     expect(moduleCode).toContain("createElement('link')")
@@ -1667,39 +1037,48 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
   })
 
   test('injectAssets applies attributes to script and link elements', async () => {
-    const plugin = YamlStoriesPlugin({ namespaces: {} as any })
-    const moduleCode = (await plugin.load(
+    const plugin = createYamlStoriesHooks({ namespaces: toNamespaces({}) })
+    const moduleCode = await plugin.load.call(
+      ctx,
       '\0virtual:sdc-asset-injector'
-    )) as string
+    )
+    assert(typeof moduleCode === 'string')
 
-    // Evaluate the ESM source in a sandbox with a stub document so we can
-    // observe what injectAssets builds. appendChild fires onload to resolve.
-    const created: any[] = []
+    // Evaluate the module against a stub document; appendChild fires onload.
+    interface FakeElement {
+      tagName: string
+      _attrs: Record<string, string>
+      setAttribute: (k: string, v: string) => void
+      onload?: () => void
+      [prop: string]: unknown
+    }
+    const created: FakeElement[] = []
     const fakeDoc = {
-      querySelector: (): any => null,
+      querySelector: (): FakeElement | null => null,
       head: {
-        appendChild: (el: any) => {
+        appendChild: (el: FakeElement) => {
           created.push(el)
           if (el.onload) el.onload()
         },
       },
-      createElement: (tag: string) => {
+      createElement: (tag: string): FakeElement => {
         const _attrs: Record<string, string> = {}
         return {
           tagName: tag,
           _attrs,
-          setAttribute: (k: string, v: string) => {
+          setAttribute: (k, v) => {
             _attrs[k] = v
           },
-        } as any
+        }
       },
     }
-    const factory = new Function(
-      'document',
-      moduleCode.replace('export async function', 'async function') +
-        '\nreturn injectAssets;'
-    )
-    const injectAssets = factory(fakeDoc)
+    vi.stubGlobal('document', fakeDoc)
+    onTestFinished(() => {
+      vi.unstubAllGlobals()
+    })
+    const { injectAssets } = (await import(
+      'data:text/javascript,' + encodeURIComponent(moduleCode)
+    )) as { injectAssets: (assets: unknown[]) => Promise<void> }
 
     await injectAssets([
       {
@@ -1716,6 +1095,7 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
     ])
 
     const [script, link] = created
+    assert(script && link)
     expect(script.src).toBe('https://cdn.example.com/widget.js')
     expect(script._attrs.defer).toBe('') // boolean true → present, empty value
     expect(script._attrs.crossorigin).toBe('anonymous')
@@ -1734,8 +1114,11 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
       writeFileSync(join(compDir, 'plain.twig'), '<div/>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'plain.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'plain.component.yml')
+      )
 
       expect(result).not.toContain('injectAssets(')
       expect(result).not.toContain('document.createElement')
@@ -1761,8 +1144,11 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
       writeFileSync(join(compDir, 'jsdep.twig'), '<div/>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'jsdep.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'jsdep.component.yml')
+      )
 
       expect(result).toContain('injectAssets(')
       expect(result).toContain('https://cdn.example.com/lib.js')
@@ -1789,8 +1175,11 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
       writeFileSync(join(compDir, 'cssdep.twig'), '<div/>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({ namespaces: ns })
-      const result = await plugin.load(join(compDir, 'cssdep.component.yml'))
+      const plugin = createYamlStoriesHooks({ namespaces: ns })
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'cssdep.component.yml')
+      )
 
       expect(result).toContain('injectAssets(')
       expect(result).toContain('https://cdn.example.com/lib.css')
@@ -1816,7 +1205,7 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
       writeFileSync(join(compDir, 'jqdep.twig'), '<div/>')
 
       const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
-      const plugin = YamlStoriesPlugin({
+      const plugin = createYamlStoriesHooks({
         namespaces: ns,
         sdcStorybookOptions: {
           dependencyMap: {
@@ -1826,7 +1215,10 @@ describe('CDN asset injection via virtual:sdc-asset-injector', () => {
           },
         },
       })
-      const result = await plugin.load(join(compDir, 'jqdep.component.yml'))
+      const result = await plugin.load.call(
+        ctx,
+        join(compDir, 'jqdep.component.yml')
+      )
 
       expect(result).toContain('https://cdn.example.com/jquery.min.js')
       expect(result).toContain('injectAssets(')

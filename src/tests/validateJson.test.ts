@@ -1,8 +1,9 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach } from 'vitest'
 
 import { schemaUrlFor, validateJson } from '../generate/validate.ts'
 import { DEFAULT_SCHEMA_URL } from '../constants.ts'
 import { logger } from '../logger.ts'
+import type { SDCSchema } from '../sdc.d.ts'
 
 const fetchMock = vi.fn()
 vi.stubGlobal('fetch', fetchMock)
@@ -16,12 +17,11 @@ describe('validateJson', () => {
     const schemaUrl = 'https://example.com/schema.json'
     const schema = { type: 'object', properties: { name: { type: 'string' } } }
 
-    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => schema })
+    fetchMock.mockResolvedValueOnce({ ok: true, json: () => schema })
 
-    // first call should invoke fetch
-    await validateJson({ name: 'x' } as any, schemaUrl)
-    // second call with same url should use cache and not call fetch again
-    await validateJson({ name: 'y' } as any, schemaUrl)
+    await validateJson({ name: 'x' }, schemaUrl)
+    // The cached schema is reused.
+    await validateJson({ name: 'y' }, schemaUrl)
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -30,16 +30,16 @@ describe('validateJson', () => {
     const schemaUrl = 'https://example.com/schema2.json'
     const schema = {
       type: 'object',
-      properties: { name: { type: 'string' } },
-      required: ['name'],
+      properties: { name: { type: 'string' }, title: { type: 'string' } },
+      required: ['name', 'title'],
     }
 
-    fetchMock.mockResolvedValue({ ok: true, json: async () => schema })
+    fetchMock.mockResolvedValue({ ok: true, json: () => schema })
 
     const warnSpy = vi.spyOn(logger, 'warn')
 
-    // data missing required 'name' property
-    await validateJson({} as any, schemaUrl)
+    // data missing the required 'title' property
+    await validateJson({ name: 'untitled' }, schemaUrl)
 
     expect(warnSpy).toHaveBeenCalled()
   })
@@ -48,13 +48,12 @@ describe('validateJson', () => {
     const schemaUrl = 'https://example.com/bad.json'
     fetchMock.mockResolvedValue({ ok: false, statusText: 'Not Found' })
 
-    await expect(validateJson({} as any, schemaUrl)).rejects.toThrow()
+    await expect(validateJson({ name: 'x' }, schemaUrl)).rejects.toThrow()
   })
 
   test('resolves same-document $defs refs with a single fetch', async () => {
     const schemaUrl = 'https://example.com/self-ref.json'
-    // jsonschema lists every #/$defs pointer as unresolved; the loop must
-    // not re-fetch the same document for each of them.
+    // Every #/$defs pointer is reported unresolved; the document is fetched once.
     const schema = {
       type: 'object',
       properties: {
@@ -63,14 +62,15 @@ describe('validateJson', () => {
       },
       $defs: { thing: { type: 'string' } },
     }
-    fetchMock.mockResolvedValue({ ok: true, json: async () => schema })
+    fetchMock.mockResolvedValue({ ok: true, json: () => schema })
     const warnSpy = vi.spyOn(logger, 'warn')
 
-    await validateJson({ name: 'x', a: 'ok', b: 1 } as any, schemaUrl)
+    const data = { name: 'x', a: 'ok', b: 1 }
+    await validateJson(data, schemaUrl)
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(warnSpy).toHaveBeenCalledTimes(1)
-    expect(String(warnSpy.mock.calls[0][0])).toMatch(/instance\.b/)
+    expect(String(warnSpy.mock.calls[0]?.[0])).toMatch(/instance\.b/)
   })
 
   test('validates props against the bundled draft-04 meta-schema', async () => {
@@ -81,25 +81,22 @@ describe('validateJson', () => {
         props: { allOf: [{ $ref: 'http://json-schema.org/draft-04/schema#' }] },
       },
     }
-    fetchMock.mockResolvedValue({ ok: true, json: async () => schema })
+    fetchMock.mockResolvedValue({ ok: true, json: () => schema })
     const warnSpy = vi.spyOn(logger, 'warn')
 
-    await validateJson(
-      {
-        name: 'ok',
-        props: { type: 'object', properties: { t: { type: 'string' } } },
-      } as any,
-      schemaUrl
-    )
+    const ok: SDCSchema = {
+      name: 'ok',
+      props: { type: 'object', properties: { t: { type: 'string' } } },
+    }
+    await validateJson(ok, schemaUrl)
     expect(warnSpy).not.toHaveBeenCalled()
 
-    await validateJson(
-      {
-        name: 'bad',
-        props: { type: 'object', properties: { t: { type: 'strin' } } },
-      } as any,
-      schemaUrl
-    )
+    // minLength must be a non-negative integer per the draft-04 meta-schema.
+    const bad: SDCSchema = {
+      name: 'bad',
+      props: { type: 'object', properties: { t: { minLength: -1 } } },
+    }
+    await validateJson(bad, schemaUrl)
     expect(warnSpy).toHaveBeenCalledTimes(1)
     // The meta-schema is bundled: no network request for it.
     expect(fetchMock).toHaveBeenCalledTimes(1)

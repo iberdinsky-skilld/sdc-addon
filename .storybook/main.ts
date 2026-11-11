@@ -1,8 +1,8 @@
 import { join, resolve } from 'node:path'
 import { cwd } from 'node:process'
 import type { StorybookConfig } from '@storybook/html-vite'
-import type { SDCAddonOptions, SDCStorybookOptions } from '../src/sdc.d.ts'
-import { CUSTOM_TEST_DEFS } from './ui-patterns-definitions.js'
+import type { SDCAddonOptions, SDCStorybookOptions } from '../src/index.ts'
+import { CUSTOM_TEST_DEFS } from './ui-patterns-definitions.ts'
 
 const sdcStorybookOptions: SDCStorybookOptions = {
   namespace: 'umami',
@@ -10,7 +10,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
     assets: join(cwd(), './assets'),
     'parent-namespace': resolve('./parent-namespace'),
   },
-  // 'twig' (twig.js) or 'twing'; the e2e run sets SDC_TWIG_LIB for both.
+  // 'twig' or 'twing'; the e2e run sets SDC_TWIG_LIB.
   twigLib: process.env.SDC_TWIG_LIB === 'twing' ? 'twing' : 'twig',
   // Remap Drupal /libraries/... icon sources to CDNs for the demo packs.
   resolveIconSource: (source) => {
@@ -24,23 +24,21 @@ const sdcStorybookOptions: SDCStorybookOptions = {
     }
     return source
   },
-  // Custom node types: `match` selects the node, `render` returns its HTML. The
-  // same renderer is used in plain slots and in library_wrapper slots.
+  // Custom node types, used in plain and library_wrapper slots.
   customNodes: [
     {
-      match: (item) => item?.type === 'sample',
+      match: (item) => item.type === 'sample',
       render: () => 'SAMPLE',
     },
     {
       // Render a YouTube embed from { type: youtube, id }.
-      match: (item) => item?.type === 'youtube',
-      render: (item) =>
-        `<iframe width="${item.width ?? 560}" height="${item.height ?? 315}" src="https://www.youtube.com/embed/${item.id}" title="YouTube video" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`,
+      match: (item) => item.type === 'youtube',
+      render: ({ id, width, height }) =>
+        `<iframe width="${typeof width === 'number' ? width : 560}" height="${typeof height === 'number' ? height : 315}" src="https://www.youtube.com/embed/${typeof id === 'string' ? id : ''}" title="YouTube video" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`,
     },
     {
-      // Expand { type: link, url, value } to an <a> element; `value` (a string
-      // plus nested nodes) is resolved by the pipeline.
-      match: (item) => item?.type === 'link',
+      // { type: link, url, value } -> <a>; `value` is resolved by the pipeline.
+      match: (item) => item.type === 'link',
       render: (item) => ({
         type: 'element',
         tag: 'a',
@@ -49,7 +47,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
       }),
     },
   ],
-  customDefs: CUSTOM_TEST_DEFS as SDCStorybookOptions['customDefs'],
+  customDefs: CUSTOM_TEST_DEFS,
 
   dependencyMap: {
     'core/jquery': [

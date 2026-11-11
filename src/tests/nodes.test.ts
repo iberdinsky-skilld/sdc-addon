@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest'
 import twing from 'twing'
-// @ts-ignore — @christianwiedemann/drupal-twig-extensions ships no types
 import { addDrupalExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
 import {
   createNodeResolver,
@@ -69,6 +68,27 @@ describe('createNodeResolver', () => {
     )
   })
 
+  test('custom node sees a Twing Map hash as a plain object', () => {
+    registerCustomNodes([
+      {
+        match: (item) => item.type === 'youtube',
+        render: (item) => `<yt:${String(item.id)}>`,
+      },
+    ])
+    try {
+      expect(
+        html(
+          new Map<string, unknown>([
+            ['type', 'youtube'],
+            ['id', 'abc'],
+          ])
+        )
+      ).toBe('<yt:abc>')
+    } finally {
+      registerCustomNodes([])
+    }
+  })
+
   test('custom node returning a string renders at runtime', () => {
     registerCustomNodes([
       {
@@ -130,8 +150,7 @@ describe('createNodeResolver', () => {
   })
 
   test('PrintableArray exposes only its items to key-based iteration', () => {
-    // twig.js loops over non-arrays with Object.keys(); `length` must not leak
-    // in as an extra item.
+    // twig.js loops over Object.keys(); `length` must not show up as an item.
     const pa = new PrintableArray('a', 'b', 'c')
     expect(Object.keys(pa)).toEqual(['0', '1', '2'])
     expect(pa.length).toBe(3)
@@ -145,21 +164,15 @@ describe('createNodeResolver', () => {
 })
 
 // ── e2e through the real runtime ─────────────────────────────────────────────
-const { createSynchronousEnvironment, createSynchronousArrayLoader } =
-  twing as unknown as {
-    createSynchronousEnvironment: (loader: unknown) => {
-      render: (name: string, ctx: unknown) => string
-    }
-    createSynchronousArrayLoader: (t: Record<string, string>) => unknown
-  }
+const { createSynchronousEnvironment, createSynchronousArrayLoader } = twing
 
 function makeRuntime(templates: Record<string, string>) {
   const env = createSynchronousEnvironment(
     createSynchronousArrayLoader(templates)
   )
-  addDrupalExtensions(env as never)
+  addDrupalExtensions(env)
   const rt = createTwingWrapperRuntime({})
-  rt.registerSdcRuntime(env as never)
+  rt.registerSdcRuntime(env)
   return rt
 }
 
@@ -222,13 +235,7 @@ describe('_story node rendering (twing e2e)', () => {
 })
 
 // Printing a list renders its items (Drupal parity), not the literal "Array".
-const { createSynchronousTest } = twing as unknown as {
-  createSynchronousTest: (
-    name: string,
-    fn: (c: unknown, v: unknown) => boolean,
-    args: unknown[]
-  ) => unknown
-}
+const { createSynchronousTest } = twing
 
 // the theme's exact isSequence (ui_suite_bootstrap / daisyui twing-hooks)
 function isSequence(value: unknown): boolean {
@@ -250,12 +257,10 @@ function seqRuntime(templates: Record<string, string>) {
   const env = createSynchronousEnvironment(
     createSynchronousArrayLoader(templates)
   )
-  addDrupalExtensions(env as never)
-  ;(env as unknown as { addTest: (t: unknown) => void }).addTest(
-    createSynchronousTest('sequence', (_c, v) => isSequence(v), [])
-  )
+  addDrupalExtensions(env)
+  env.addTest(createSynchronousTest('sequence', (_c, v) => isSequence(v), []))
   const rt = createTwingWrapperRuntime({})
-  rt.registerSdcRuntime(env as never)
+  rt.registerSdcRuntime(env)
   return rt
 }
 

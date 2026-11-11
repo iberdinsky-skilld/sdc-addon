@@ -9,15 +9,15 @@ import {
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { listDir, posixDirname } from '../utils.ts'
-import { collectStoryFilesSync } from '../vite/storybookYamlStories.ts'
-import { readNamespaceYamlData } from '../vite/sdcTwigRuntime.ts'
+import { collectStoryFilesSync } from '../generate/componentFiles.ts'
+import { readNamespaceYamlData } from '../generate/remoteIcons.ts'
 import { collectTemplates } from '../generate/wrapperBuild.ts'
-import type { Namespaces } from '../generate/namespaces.ts'
+import type { NamespaceRoots } from '../generate/namespaces.ts'
 
-// Both scanners only need `entries()`; a real Namespaces would also register
-// the current working directory, pulling the repo's own components in.
-const namespacesOf = (map: Record<string, string>): Namespaces =>
-  ({ entries: () => Object.entries(map) }) as unknown as Namespaces
+// Only `entries()` is needed; a real Namespaces also adds the cwd.
+const namespacesOf = (map: Record<string, string>): NamespaceRoots => ({
+  entries: () => Object.entries(map),
+})
 
 const tmp = () => mkdtempSync(join(tmpdir(), 'sdc-walk-'))
 const touch = (p: string, content = '') => {

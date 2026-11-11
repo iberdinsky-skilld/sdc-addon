@@ -1,8 +1,9 @@
+import assert from 'node:assert/strict'
 import { describe, expect, test } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { toNamespaces, type Namespaces } from '../generate/namespaces.ts'
+import { toNamespaces, type NamespaceRoots } from '../generate/namespaces.ts'
 import {
   discoverIconPacks,
   loadIconPackFile,
@@ -12,8 +13,17 @@ import {
   fetchRemoteSprite,
 } from '../generate/iconPacks.ts'
 import type { IconPack } from '../generate/iconPacks.ts'
-import { sdcTwigRuntimePlugin } from '../vite/sdcTwigRuntime.ts'
+import { createSdcTwigRuntimeHooks } from '../vite/sdcTwigRuntime.ts'
+import { makeIconPack } from './helpers.ts'
 import { buildIconContext } from '../renderer/icons.ts'
+
+// A real `this` context: arrow-function mocks would hide an unbound hook call.
+class PluginContextMock {
+  watched: string[] = []
+  addWatchFile(id: string): void {
+    this.watched.push(id)
+  }
+}
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -29,7 +39,7 @@ function makeTmpNs(ns: string) {
 // ── discoverIconPacks ──────────────────────────────────────────────────────
 
 describe('discoverIconPacks', () => {
-  test('returns {} when no *.icons.yml exists', async () => {
+  test('returns {} when no *.icons.yml exists', () => {
     const { tmpRoot, cleanup } = makeTmpNs('noicons')
     try {
       const ns = toNamespaces({
@@ -42,7 +52,7 @@ describe('discoverIconPacks', () => {
     }
   })
 
-  test('skips packs with enabled: false', async () => {
+  test('skips packs with enabled: false', () => {
     const { tmpRoot, cleanup } = makeTmpNs('entest')
     try {
       writeFileSync(
@@ -68,7 +78,7 @@ disabled:
     }
   })
 
-  test('svg_sprite extractor: resolves sprite file URL, no per-icon data', async () => {
+  test('svg_sprite extractor: resolves sprite file URL, no per-icon data', () => {
     const { tmpRoot, cleanup } = makeTmpNs('sprite')
     try {
       writeFileSync(join(tmpRoot, 'sprite.svg'), '<svg></svg>')
@@ -94,6 +104,7 @@ sprite:
       })
       const packs = discoverIconPacks(ns)
       const pack = packs['sprite']
+      assert(pack)
 
       expect(pack.extractor).toBe('svg_sprite')
       expect(pack.label).toBe('Sprite Pack')
@@ -101,13 +112,13 @@ sprite:
       expect(pack.sourceUrls[0]).toContain('sprite.svg')
       expect(pack.svgIcons).toEqual({})
       expect(pack.pathIcons).toEqual({})
-      expect(pack.settings.size.default).toBe('md')
+      expect(pack.settings['size']?.default).toBe('md')
     } finally {
       cleanup()
     }
   })
 
-  test('svg extractor: inlines inner SVG content and parses attributes', async () => {
+  test('svg extractor: inlines inner SVG content and parses attributes', () => {
     const { tmpRoot, cleanup } = makeTmpNs('svgext')
     try {
       const iconsDir = join(tmpRoot, 'icons')
@@ -139,12 +150,13 @@ svgext:
       })
       const packs = discoverIconPacks(ns)
       const pack = packs['svgext']
+      assert(pack)
 
       expect(pack.extractor).toBe('svg')
 
       // star.svg: inner content (no <svg> wrapper) and attributes parsed
       const star = pack.svgIcons['star']
-      expect(star).toBeDefined()
+      assert(star)
       expect(star.content).toBe('<path d="M12 2"/>')
       expect(star.attrs['viewBox']).toBe('0 0 24 24')
       expect(star.attrs['class']).toBe('my-icon')
@@ -153,6 +165,7 @@ svgext:
 
       // home.svg
       const home = pack.svgIcons['home']
+      assert(home)
       expect(home.content).toContain('<rect')
       expect(home.attrs['viewBox']).toBe('0 0 16 16')
     } finally {
@@ -160,7 +173,7 @@ svgext:
     }
   })
 
-  test('resolveIconSource: remaps source paths before resolving', async () => {
+  test('resolveIconSource: remaps source paths before resolving', () => {
     const { tmpRoot, cleanup } = makeTmpNs('iconmap')
     try {
       // Vendor "heroicons" at a real local dir.
@@ -187,7 +200,7 @@ hero_outline_24:
 
       // Without a resolver the absolute path resolves to nothing.
       const withoutResolver = loadIconPackFile(iconsFile)
-      expect(withoutResolver.packs['hero_outline_24'].svgIcons).toEqual({})
+      expect(withoutResolver.packs['hero_outline_24']?.svgIcons).toEqual({})
 
       // With a resolver remapping /libraries/heroicons to the local vendor dir.
       const seen: Array<{ packId: string; namespace: string }> = []
@@ -202,15 +215,15 @@ hero_outline_24:
       expect(seen).toEqual([
         { packId: 'hero_outline_24', namespace: 'iconmap' },
       ])
-      const heart = resolved.packs['hero_outline_24'].svgIcons['heart']
-      expect(heart).toBeDefined()
+      const heart = resolved.packs['hero_outline_24']?.svgIcons['heart']
+      assert(heart)
       expect(heart.content).toContain('<path')
     } finally {
       cleanup()
     }
   })
 
-  test('svg extractor with {group} subdirectory structure', async () => {
+  test('svg extractor with {group} subdirectory structure', () => {
     const { tmpRoot, cleanup } = makeTmpNs('grouped')
     try {
       const socialDir = join(tmpRoot, 'icons', 'social')
@@ -238,17 +251,18 @@ grouped:
       })
       const packs = discoverIconPacks(ns)
       const pack = packs['grouped']
+      assert(pack)
 
       expect(pack.svgIcons['twitter']).toBeDefined()
-      expect(pack.svgIcons['twitter'].group).toBe('social')
+      expect(pack.svgIcons['twitter']?.group).toBe('social')
       expect(pack.svgIcons['home']).toBeDefined()
-      expect(pack.svgIcons['home'].group).toBe('nav')
+      expect(pack.svgIcons['home']?.group).toBe('nav')
     } finally {
       cleanup()
     }
   })
 
-  test('path extractor: discovers icons with source URLs', async () => {
+  test('path extractor: discovers icons with source URLs', () => {
     const { tmpRoot, cleanup } = makeTmpNs('pathext')
     try {
       const imgDir = join(tmpRoot, 'img')
@@ -273,18 +287,19 @@ pathext:
       })
       const packs = discoverIconPacks(ns)
       const pack = packs['pathext']
+      assert(pack)
 
       expect(pack.extractor).toBe('path')
       expect(pack.pathIcons['arrow']).toBeDefined()
-      expect(pack.pathIcons['arrow'].sourceUrl).toMatch(/^sdc-icons\//)
-      expect(pack.pathIcons['arrow'].sourceUrl).toContain('arrow.png')
+      expect(pack.pathIcons['arrow']?.sourceUrl).toMatch(/^sdc-icons\//)
+      expect(pack.pathIcons['arrow']?.sourceUrl).toContain('arrow.png')
       expect(pack.pathIcons['star']).toBeDefined()
     } finally {
       cleanup()
     }
   })
 
-  test('skips malformed YAML without throwing', async () => {
+  test('skips malformed YAML without throwing', () => {
     const { tmpRoot, cleanup } = makeTmpNs('bad')
     try {
       writeFileSync(join(tmpRoot, 'bad.icons.yml'), ':: invalid yaml ::')
@@ -296,7 +311,7 @@ pathext:
     }
   })
 
-  test('discovers packs from multiple namespaces', async () => {
+  test('discovers packs from multiple namespaces', () => {
     const { tmpRoot: r1, cleanup: c1 } = makeTmpNs('ns1')
     const { tmpRoot: r2, cleanup: c2 } = makeTmpNs('ns2')
     try {
@@ -321,7 +336,44 @@ pathext:
     }
   })
 
-  test('defaults extractor to svg when extractor field is omitted', async () => {
+  test('keeps an unknown extractor and ignores malformed fields', () => {
+    const { tmpRoot, cleanup } = makeTmpNs('odd')
+    try {
+      writeFileSync(
+        join(tmpRoot, 'odd.icons.yml'),
+        [
+          'font:',
+          '  extractor: font',
+          '  label: 42',
+          '  template: "<i class=\'i-{{ icon_id }}\'></i>"',
+          '  config:',
+          '    sources: [https://cdn.example/font.css, 7]',
+          '  settings:',
+          '    size: { default: 16 }',
+          '    broken: nope',
+          'off:',
+          '  enabled: false',
+          'junk: just a string',
+        ].join('\n')
+      )
+      const packs = discoverIconPacks(
+        toNamespaces({ namespace: '', namespaces: { odd: tmpRoot } })
+      )
+      expect(Object.keys(packs)).toEqual(['font'])
+      const pack = packs['font']
+      assert(pack)
+      expect(pack.extractor).toBe('font')
+      expect(pack.label).toBe('font')
+      expect(pack.sources).toEqual(['https://cdn.example/font.css'])
+      expect(pack.settings).toEqual({ size: { default: 16 } })
+      expect(pack.svgIcons).toEqual({})
+      expect(pack.pathIcons).toEqual({})
+    } finally {
+      cleanup()
+    }
+  })
+
+  test('defaults extractor to svg when extractor field is omitted', () => {
     const { tmpRoot, cleanup } = makeTmpNs('defext')
     try {
       writeFileSync(
@@ -332,7 +384,7 @@ pathext:
         namespace: '',
         namespaces: { defext: tmpRoot },
       })
-      expect(discoverIconPacks(ns)['defext'].extractor).toBe('svg')
+      expect(discoverIconPacks(ns)['defext']?.extractor).toBe('svg')
     } finally {
       cleanup()
     }
@@ -342,13 +394,13 @@ pathext:
 // ── loadIconPackFile ───────────────────────────────────────────────────────
 
 describe('loadIconPackFile', () => {
-  test('returns empty packs and watchFiles=[path] for non-existent file', async () => {
+  test('returns empty packs and watchFiles=[path] for non-existent file', () => {
     const result = loadIconPackFile('/nonexistent/path.icons.yml')
     expect(result.packs).toEqual({})
     expect(result.watchFiles).toEqual(['/nonexistent/path.icons.yml'])
   })
 
-  test('returns empty packs for malformed YAML', async () => {
+  test('returns empty packs for malformed YAML', () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-bad')
     try {
       writeFileSync(join(tmpRoot, 'lf-bad.icons.yml'), ':: invalid ::')
@@ -359,7 +411,7 @@ describe('loadIconPackFile', () => {
     }
   })
 
-  test('svg extractor: adds SVG files to watchFiles', async () => {
+  test('svg extractor: adds SVG files to watchFiles', () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-svg')
     try {
       const iconsDir = join(tmpRoot, 'icons')
@@ -379,7 +431,7 @@ describe('loadIconPackFile', () => {
     }
   })
 
-  test('svg_sprite extractor: adds sprite file to watchFiles', async () => {
+  test('svg_sprite extractor: adds sprite file to watchFiles', () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-sprite')
     try {
       writeFileSync(join(tmpRoot, 'sprite.svg'), '<svg></svg>')
@@ -396,7 +448,7 @@ describe('loadIconPackFile', () => {
     }
   })
 
-  test('path extractor: does not add source files to watchFiles', async () => {
+  test('path extractor: does not add source files to watchFiles', () => {
     const { tmpRoot, cleanup } = makeTmpNs('lf-path')
     try {
       mkdirSync(join(tmpRoot, 'img'))
@@ -420,10 +472,10 @@ describe('loadIconPackFile', () => {
 
 describe('sdcTwigRuntimePlugin', () => {
   function makePlugin(ns: ReturnType<typeof toNamespaces>) {
-    return sdcTwigRuntimePlugin(ns) as any
+    return createSdcTwigRuntimeHooks(ns)
   }
 
-  test('resolves virtual module IDs including icons-pack prefix', async () => {
+  test('resolves virtual module IDs including icons-pack prefix', () => {
     const { tmpRoot, cleanup } = makeTmpNs('vns')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { vns: tmpRoot } })
@@ -467,7 +519,7 @@ tvns:
       )
       const ns = toNamespaces({ namespace: '', namespaces: { tvns: tmpRoot } })
       const p = makePlugin(ns)
-      const mockThis = { addWatchFile: () => {} }
+      const mockThis = new PluginContextMock()
       const twigCode = await p.load.call(
         mockThis,
         '\0virtual:sdc-twig-runtime:twig'
@@ -500,16 +552,13 @@ tvns:
       )
       const ns = toNamespaces({ namespace: '', namespaces: { tgvns: tmpRoot } })
       const p = makePlugin(ns)
-      const mockThis = { addWatchFile: () => {} }
+      const mockThis = new PluginContextMock()
       const code = await p.load.call(
         mockThis,
         '\0virtual:sdc-twig-runtime:twing'
       )
 
-      // Structural/wiring smoke only: asserts the glue imports the pack data,
-      // delegates to the factory, and re-exports the surface the rest of the
-      // addon consumes. Runtime BEHAVIOUR is covered in renderArray.test.ts /
-      // includeAttributes.test.ts against the real factory.
+      // Wiring only; runtime behaviour is tested in renderArray.test.ts.
       expect(code).toContain('\0icons-pack:')
       expect(code).toContain("from 'storybook-addon-sdc/renderer/twing'")
       expect(code).toContain('createTwingRuntime(')
@@ -520,7 +569,7 @@ tvns:
     }
   })
 
-  test('transform injects twig.js icon registration', async () => {
+  test('transform injects twig.js icon registration', () => {
     const { tmpRoot, cleanup } = makeTmpNs('injt')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { injt: tmpRoot } })
@@ -532,15 +581,14 @@ addDrupalExtensions(Twig);
 export default (ctx) => Twig.render(ctx);
 `
       const result = p.transform(fakeJs, 'comp.twig')
-      expect(result).not.toBeNull()
-      expect(result.code).toContain("from 'virtual:sdc-twig-runtime:twig'")
-      expect(result.code).toContain('_sdcRegisterRuntime(Twig)')
+      expect(result?.code).toContain("from 'virtual:sdc-twig-runtime:twig'")
+      expect(result?.code).toContain('_sdcRegisterRuntime(Twig)')
     } finally {
       cleanup()
     }
   })
 
-  test('transform injects twing icon registration', async () => {
+  test('transform injects twing icon registration', () => {
     const { tmpRoot, cleanup } = makeTmpNs('injtg')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { injtg: tmpRoot } })
@@ -553,15 +601,14 @@ addDrupalExtensions(env);
 export default render;
 `
       const result = p.transform(fakeJs, 'comp.twig')
-      expect(result).not.toBeNull()
-      expect(result.code).toContain("from 'virtual:sdc-twig-runtime:twing'")
-      expect(result.code).toContain('_sdcRegisterRuntime(env)')
+      expect(result?.code).toContain("from 'virtual:sdc-twig-runtime:twing'")
+      expect(result?.code).toContain('_sdcRegisterRuntime(env)')
     } finally {
       cleanup()
     }
   })
 
-  test('transform is idempotent', async () => {
+  test('transform is idempotent', () => {
     const { tmpRoot, cleanup } = makeTmpNs('idem')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { idem: tmpRoot } })
@@ -578,7 +625,7 @@ _sdcRegisterRuntime(Twig);
     }
   })
 
-  test('transform returns null for non-twig files', async () => {
+  test('transform returns null for non-twig files', () => {
     const { tmpRoot, cleanup } = makeTmpNs('nt')
     try {
       const ns = toNamespaces({ namespace: '', namespaces: { nt: tmpRoot } })
@@ -591,13 +638,11 @@ _sdcRegisterRuntime(Twig);
   })
 
   describe('buildIconContext settings resolution', () => {
-    const spritePack = {
+    const spritePack = makeIconPack({
       extractor: 'svg_sprite',
       sourceUrls: ['sdc-icons/sprite.svg'],
       settings: { size: { default: 'md' }, color: { default: 'black' } },
-      svgIcons: {},
-      pathIcons: {},
-    } as unknown as IconPack
+    })
 
     test('plain object settings override defaults', () => {
       const ctx = buildIconContext(spritePack, 'home', { size: 'lg' })
@@ -635,34 +680,22 @@ _sdcRegisterRuntime(Twig);
     })
 
     test('path extractor substitutes {icon_id} in a remote source URL', () => {
-      const pack = {
-        extractor: 'path',
+      const pack = makeIconPack({
         sourceUrls: ['https://cdn.example/icons/{icon_id}.svg'],
-        settings: {},
-        svgIcons: {},
-        pathIcons: {},
-      } as unknown as IconPack
+      })
       const ctx = buildIconContext(pack, 'heart', {})
       expect(ctx.source).toBe('https://cdn.example/icons/heart.svg')
     })
 
     test('path extractor appends id when there is no placeholder', () => {
-      const pack = {
-        extractor: 'path',
-        sourceUrls: ['https://cdn.example/icons'],
-        settings: {},
-        svgIcons: {},
-        pathIcons: {},
-      } as unknown as IconPack
+      const pack = makeIconPack({ sourceUrls: ['https://cdn.example/icons'] })
       const ctx = buildIconContext(pack, 'heart', {})
       expect(ctx.source).toBe('https://cdn.example/icons/heart')
     })
 
     test('builds attributes (DrupalAttribute) and group', () => {
-      const pack = {
+      const pack = makeIconPack({
         extractor: 'svg',
-        sourceUrls: [],
-        settings: {},
         svgIcons: {
           heart: {
             sourceUrl: 's',
@@ -671,8 +704,7 @@ _sdcRegisterRuntime(Twig);
             group: 'shapes',
           },
         },
-        pathIcons: {},
-      } as unknown as IconPack
+      })
       const ctx = buildIconContext(pack, 'heart', {})
       expect(ctx.group).toBe('shapes')
       expect(String(ctx.attributes)).toContain('viewBox="0 0 24 24"')
@@ -688,13 +720,13 @@ _sdcRegisterRuntime(Twig);
       )
       const ns = toNamespaces({ namespace: '', namespaces: { ctx: tmpRoot } })
       const p = makePlugin(ns)
-      const mockThis = { addWatchFile: () => {} }
+      const mockThis = new PluginContextMock()
       const code = await p.load.call(
         mockThis,
         '\0virtual:sdc-twig-runtime:twig'
       )
 
-      // Structural/wiring smoke only (see renderArray.test.ts for behaviour).
+      // Wiring only; see renderArray.test.ts.
       expect(code).toContain('\0icons-pack:')
       expect(code).toContain("from 'storybook-addon-sdc/renderer/twig'")
       expect(code).toContain('createTwigRuntime(')
@@ -709,7 +741,7 @@ _sdcRegisterRuntime(Twig);
 // ── remote (CDN) svg icons ─────────────────────────────────────────────────
 
 describe('collectIconIdsFromData', () => {
-  test('collects icon_ids from props and type:icon nodes for a pack', async () => {
+  test('collects icon_ids from props and type:icon nodes for a pack', () => {
     const data = {
       props: { icon: { pack_id: 'hero_outline_24', icon_id: 'heart' } },
       slots: {
@@ -725,13 +757,13 @@ describe('collectIconIdsFromData', () => {
     expect([...out].sort()).toEqual(['bolt', 'heart', 'star'])
   })
 
-  test('ignores entries without a string icon_id', async () => {
+  test('ignores entries without a string icon_id', () => {
     const out = new Set<string>()
     collectIconIdsFromData({ pack_id: 'p', icon_id: 123 }, 'p', out)
     expect(out.size).toBe(0)
   })
 
-  test('also collects the compact { pack, id } shape', async () => {
+  test('also collects the compact { pack, id } shape', () => {
     const data = {
       icons: [
         { pack: 'hero', id: 'heart' },
@@ -762,9 +794,11 @@ describe('fetchRemoteSvgIcons', () => {
       'https://cdn.example/heroicons/24/outline/{icon_id}.svg',
     ])
     const fetched: string[] = []
-    const fetchSvg = async (url: string) => {
+    const fetchSvg = (url: string) => {
       fetched.push(url)
-      return '<svg viewBox="0 0 24 24" class="ico"><path d="M1"/></svg>'
+      return Promise.resolve(
+        '<svg viewBox="0 0 24 24" class="ico"><path d="M1"/></svg>'
+      )
     }
 
     await fetchRemoteSvgIcons(pack, ['heart', 'star'], fetchSvg)
@@ -773,9 +807,9 @@ describe('fetchRemoteSvgIcons', () => {
       'https://cdn.example/heroicons/24/outline/heart.svg',
       'https://cdn.example/heroicons/24/outline/star.svg',
     ])
-    expect(pack.svgIcons['heart'].content).toBe('<path d="M1"/>')
-    expect(pack.svgIcons['heart'].attrs['viewBox']).toBe('0 0 24 24')
-    expect(pack.svgIcons['heart'].sourceUrl).toBe(
+    expect(pack.svgIcons['heart']?.content).toBe('<path d="M1"/>')
+    expect(pack.svgIcons['heart']?.attrs['viewBox']).toBe('0 0 24 24')
+    expect(pack.svgIcons['heart']?.sourceUrl).toBe(
       'https://cdn.example/heroicons/24/outline/heart.svg'
     )
   })
@@ -783,9 +817,9 @@ describe('fetchRemoteSvgIcons', () => {
   test('is a no-op when the pack has no remote sources', async () => {
     const pack = makePack(['/local/icons/{icon_id}.svg'])
     let called = false
-    await fetchRemoteSvgIcons(pack, ['heart'], async () => {
+    await fetchRemoteSvgIcons(pack, ['heart'], () => {
       called = true
-      return '<svg></svg>'
+      return Promise.resolve('<svg></svg>')
     })
     expect(called).toBe(false)
     expect(pack.svgIcons).toEqual({})
@@ -793,7 +827,7 @@ describe('fetchRemoteSvgIcons', () => {
 
   test('skips icons that fail to fetch', async () => {
     const pack = makePack(['https://cdn.example/{icon_id}.svg'])
-    await fetchRemoteSvgIcons(pack, ['missing'], async () => null)
+    await fetchRemoteSvgIcons(pack, ['missing'], () => Promise.resolve(null))
     expect(pack.svgIcons['missing']).toBeUndefined()
   })
 })
@@ -813,9 +847,8 @@ describe('fetchRemoteSprite', () => {
 
   test('fetches a remote sprite and switches source to inline reference', async () => {
     const pack = makeSpritePack(['https://cdn.example/sprite.svg'])
-    const content = await fetchRemoteSprite(
-      pack,
-      async () => '<svg><symbol id="house"></symbol></svg>'
+    const content = await fetchRemoteSprite(pack, () =>
+      Promise.resolve('<svg><symbol id="house"></symbol></svg>')
     )
     expect(content).toBe('<svg><symbol id="house"></symbol></svg>')
     expect(pack.sources).toEqual([''])
@@ -824,14 +857,18 @@ describe('fetchRemoteSprite', () => {
 
   test('returns null for non-sprite or local packs', async () => {
     const local = makeSpritePack(['icons/sprite.svg'])
-    expect(await fetchRemoteSprite(local, async () => '<svg/>')).toBeNull()
+    expect(
+      await fetchRemoteSprite(local, () => Promise.resolve('<svg/>'))
+    ).toBeNull()
     expect(local.sources).toEqual(['icons/sprite.svg'])
 
     const svgPack = {
       ...makeSpritePack(['https://cdn/x.svg']),
       extractor: 'svg' as const,
     }
-    expect(await fetchRemoteSprite(svgPack, async () => '<svg/>')).toBeNull()
+    expect(
+      await fetchRemoteSprite(svgPack, () => Promise.resolve('<svg/>'))
+    ).toBeNull()
   })
 })
 
@@ -843,12 +880,12 @@ describe('iconPackFiles', () => {
       writeFileSync(join(withPack, 'alpha.icons.yml'), 'p:\n  extractor: svg\n')
       // A file under the wrong name does not count.
       writeFileSync(join(without, 'other.icons.yml'), '')
-      const namespaces = {
+      const namespaces: NamespaceRoots = {
         entries: () => [
           ['alpha', withPack],
           ['beta', without],
         ],
-      } as unknown as Namespaces
+      }
       expect(iconPackFiles(namespaces)).toEqual([
         ['alpha', join(withPack, 'alpha.icons.yml')],
       ])

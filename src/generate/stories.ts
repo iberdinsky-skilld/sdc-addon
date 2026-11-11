@@ -1,11 +1,12 @@
-import type { Component } from '../sdc.d.ts'
+import type { Globals } from 'storybook/internal/types'
+import type { StoryDefinition, VariantDefinition } from '../sdc.d.ts'
 import { capitalize, jsLiteral } from '../utils.ts'
+import { isRecord } from '../guards.ts'
 import { generateArgs } from './nodeCodegen.ts'
 
 export default (
-  stories: Component[],
-  componentGlobals: Record<string, any> = {},
-  componentId = '',
+  stories: Record<string, StoryDefinition>,
+  componentGlobals: Globals = {},
   wrapperHtml: Record<string, string> = {}
 ): string =>
   Object.entries(stories)
@@ -69,7 +70,7 @@ ${globalsBlock}
     .join('\n')
 
 const generateVariants = (
-  variants: Record<string, { title: string }>
+  variants: Record<string, VariantDefinition>
 ): string => {
   return Object.entries(variants)
     .map(
@@ -81,16 +82,11 @@ const generateVariants = (
 
 // An `attributes` prop becomes a `defaultAttributes` array-of-tuples
 // ([['key', 'value'], ...]) — the shape Twig's Attribute object expects.
-const processPropsAttributes = (props: Record<string, any>): string => {
-  if (
-    !props ||
-    !props.attributes ||
-    Object.keys(props.attributes).length === 0
-  ) {
+const processPropsAttributes = (props: Record<string, unknown>): string => {
+  const { attributes, ...otherProps } = props
+  if (!isRecord(attributes) || Object.keys(attributes).length === 0) {
     return generateArgs(props, false)
   }
-
-  const { attributes, ...otherProps } = props
   const propsArgs = generateArgs(otherProps, false)
 
   const attributeEntries = Object.entries(attributes)

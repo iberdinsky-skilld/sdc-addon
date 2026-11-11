@@ -1,14 +1,23 @@
-// Twig.js browser runtime: env capture and icon(). The wrapper machinery lives
-// in twigWrapper.ts (build-time harness only).
+// Twig.js browser runtime: env capture and icon().
 import type Twig from 'twig'
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
+import { toText } from './collections.ts'
 import { buildIconContext } from './icons.ts'
 import { patchDrupalAttribute } from './attributes.ts'
 
 export { PrintableArray } from './nodes.ts'
 
-export type TwigJs = typeof Twig & {
+// Filters may return non-strings (merge returns story objects).
+export type TwigJs = Omit<typeof Twig, 'extendFilter'> & {
+  extendFilter(
+    name: string,
+    definition: (
+      this: unknown,
+      left: unknown,
+      params: unknown[] | false
+    ) => unknown
+  ): void
   filters?: Record<string, (value: unknown, params: unknown) => unknown>
   __sdcMergeOverridden?: boolean
   __sdcIconRegistered?: boolean
@@ -25,7 +34,7 @@ export function createTwigCore(iconPacks: IconPacks) {
   ): string {
     const pack = iconPacks[packId]
     if (!twig || !pack || !iconId) return ''
-    const ctx = buildIconContext(pack, iconId, settings || {})
+    const ctx = buildIconContext(pack, iconId, settings ?? {})
     try {
       return twig.twig({ data: pack.template }).render(ctx)
     } catch (e) {
@@ -41,8 +50,10 @@ export function createTwigCore(iconPacks: IconPacks) {
     twig = Twig
     if (Twig.__sdcIconRegistered) return
     Twig.__sdcIconRegistered = true
-    Twig.extendFunction('icon', (packId, iconId, settings) =>
-      renderIcon(packId, iconId, settings)
+    Twig.extendFunction(
+      'icon',
+      (packId: unknown, iconId: unknown, settings: unknown) =>
+        renderIcon(toText(packId), toText(iconId), settings)
     )
   }
 

@@ -2,10 +2,18 @@ import { describe, expect, test, vi } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import type {
+  Alias,
+  AliasOptions,
+  HtmlTagDescriptor,
+  Plugin,
+  PluginOption,
+  UserConfig,
+} from 'vite'
+import type { SDCAddonOptions } from '../sdc.d.ts'
 
-// Mock dependencies before importing module under test
 vi.mock('./definitions.ts', () => ({
-  loadAndMergeDefinitions: async () => ({}),
+  loadAndMergeDefinitions: () => Promise.resolve({}),
 }))
 
 vi.mock('./namespaces.ts', () => ({
@@ -18,131 +26,161 @@ vi.mock('./namespaces.ts', () => ({
 }))
 
 vi.mock('vite-plugin-node-polyfills', () => ({
-  nodePolyfills: (opts: any) => ({ name: 'nodePolyfills', opts }),
+  nodePolyfills: (opts: unknown) => ({ name: 'nodePolyfills', opts }),
 }))
 
-vi.mock('vite-plugin-twing-drupal', async () => {
-  return { default: (opts: any) => ({ name: 'twing-plugin', opts }) }
+vi.mock('vite-plugin-twing-drupal', () => {
+  return { default: (opts: unknown) => ({ name: 'twing-plugin', opts }) }
 })
 
-vi.mock('vite-plugin-twig-drupal', async () => {
-  return { default: (opts: any) => ({ name: 'twig-plugin', opts }) }
+vi.mock('vite-plugin-twig-drupal', () => {
+  return { default: (opts: unknown) => ({ name: 'twig-plugin', opts }) }
 })
 
-import { viteFinal, experimental_indexers, staticDirs } from '../preset'
+import {
+  viteFinal,
+  dependencyHeadTags,
+  indexersWithYaml,
+  staticDirs,
+} from '../preset'
 
 import { DEFAULT_DEPENDENCY_MAP } from '../constants'
 
+// Vite's config types allow nested arrays, promises and alias maps; the preset
+// only produces flat plugin objects and an alias list.
+const isPlugin = (p: PluginOption): p is Plugin =>
+  typeof p === 'object' &&
+  p !== null &&
+  !Array.isArray(p) &&
+  !(p instanceof Promise) &&
+  'name' in p
+
+const pluginsOf = (config: UserConfig): Plugin[] =>
+  (config.plugins ?? []).filter(isPlugin)
+
+const pluginNames = (config: UserConfig): string[] =>
+  pluginsOf(config).map((p) => p.name)
+
+const isAliasList = (a: AliasOptions | undefined): a is readonly Alias[] =>
+  Array.isArray(a)
+
+const aliasesOf = (config: UserConfig): readonly Alias[] => {
+  const alias = config.resolve?.alias
+  return isAliasList(alias) ? alias : []
+}
+
+const attr = (tag: HtmlTagDescriptor, name: string): string => {
+  const value = tag.attrs?.[name]
+  return typeof value === 'string' ? value : ''
+}
+
+type StaticDir = { from: string; to: string }
+const dirEntries = (list: (string | StaticDir)[]): StaticDir[] =>
+  list.filter((d): d is StaticDir => typeof d !== 'string')
+
 describe('preset.viteFinal and helpers', () => {
   test('viteFinal includes nodePolyfills and twing plugin when twigLib=twing', async () => {
-    const config: any = { plugins: [] }
-    const options: any = { sdcStorybookOptions: { twigLib: 'twing' } }
+    const config: UserConfig = { plugins: [] }
+    const options: SDCAddonOptions = {
+      sdcStorybookOptions: { twigLib: 'twing' },
+    }
 
     const result = await viteFinal(config, options)
 
-    // resolve.alias should be an array of alias objects with `find` and `replacement`
-    expect(Array.isArray(result.resolve.alias)).toBe(true)
-    expect(result.resolve.alias.length).toBeGreaterThan(0)
-    ;(result.resolve.alias || []).forEach((a: any) => {
+    const aliases = aliasesOf(result)
+    expect(aliases.length).toBeGreaterThan(0)
+    for (const a of aliases) {
       expect(typeof a.find).toBe('string')
-      expect(a.find.startsWith('@')).toBe(true)
+      expect(String(a.find).startsWith('@')).toBe(true)
       expect(typeof a.replacement).toBe('string')
       expect(a.replacement.length).toBeGreaterThan(0)
-    })
+    }
 
-    // plugins should include nodePolyfills and twing-plugin
-    const pluginNames = (result.plugins || []).map((p: any) => p.name)
-    expect(pluginNames).toEqual(
+    expect(pluginNames(result)).toEqual(
       expect.arrayContaining(['nodePolyfills', 'twing-plugin'])
     )
   })
 
   test('viteFinal includes twig plugin when twigLib=twig', async () => {
-    const config: any = { plugins: [] }
-    const options: any = { sdcStorybookOptions: { twigLib: 'twig' } }
+    const config: UserConfig = { plugins: [] }
+    const options: SDCAddonOptions = {
+      sdcStorybookOptions: { twigLib: 'twig' },
+    }
 
     const result = await viteFinal(config, options)
-    const pluginNames = (result.plugins || []).map((p: any) => p.name)
-    expect(pluginNames).toEqual(
+    expect(pluginNames(result)).toEqual(
       expect.arrayContaining(['nodePolyfills', 'twig-plugin'])
     )
   })
 
   test('viteFinal injects DEFAULT_DEPENDENCY_MAP as head tags', async () => {
-    const result = await viteFinal(
-      { plugins: [] } as any,
-      { sdcStorybookOptions: {} } as any
-    )
-    const headPlugin = result.plugins?.find(
-      (p: any) => p?.name === 'vite-plugin-sdc-head'
-    )
-    expect(headPlugin).toBeDefined()
-    const tags = headPlugin.transformIndexHtml()
+    const result = await viteFinal({ plugins: [] }, { sdcStorybookOptions: {} })
+    expect(pluginNames(result)).toContain('vite-plugin-sdc-head')
+    const tags = dependencyHeadTags()
     expect(
       tags.some(
-        (t: any) => t.tag === 'script' && t.attrs?.src?.includes('drupal.js')
+        (t) => t.tag === 'script' && attr(t, 'src').includes('drupal.js')
       )
     ).toBe(true)
     expect(
       tags.some(
-        (t: any) =>
-          t.tag === 'link' && t.attrs?.href?.includes('hidden.module.css')
+        (t) => t.tag === 'link' && attr(t, 'href').includes('hidden.module.css')
       )
     ).toBe(true)
     expect(Object.keys(DEFAULT_DEPENDENCY_MAP).length).toBeGreaterThan(0)
   })
 
-  test('viteFinal allows overriding a default dep via dependencyMap', async () => {
-    const result = await viteFinal(
-      { plugins: [] } as any,
-      { sdcStorybookOptions: { dependencyMap: { 'core/once': [] } } } as any
-    )
-    const headPlugin = result.plugins?.find(
-      (p: any) => p?.name === 'vite-plugin-sdc-head'
-    )
-    expect(headPlugin).toBeDefined()
-    const tags = headPlugin.transformIndexHtml()
-    expect(tags.every((t: any) => !t.attrs?.src?.includes('once'))).toBe(true)
-  })
-
-  test('experimental_indexers includes yamlStoriesIndexer', async () => {
-    const arr = await (
-      experimental_indexers as (e?: unknown) => Promise<unknown[]>
-    )(undefined)
-    expect(Array.isArray(arr)).toBe(true)
-    // should have an indexer with a test regexp for component.yml
+  test('dependencyHeadTags lets dependencyMap override a default library', () => {
     expect(
-      arr.some(
-        (i: any) => i.test && i.test.test && i.test.test('file.component.yml')
-      )
+      dependencyHeadTags().some((t) => attr(t, 'src').includes('once'))
     ).toBe(true)
-    // and at least one indexer should expose createIndex as a function
-    expect(arr.some((i: any) => typeof i.createIndex === 'function')).toBe(true)
+    const tags = dependencyHeadTags({ 'core/once': [] })
+    expect(tags.every((t) => !attr(t, 'src').includes('once'))).toBe(true)
   })
 
-  test('staticDirs serves icon source directories (not namespace roots) under /sdc-icons/{ns}/', async () => {
-    const options: any = { sdcStorybookOptions: { namespace: 'umami' } }
-    const result = await staticDirs([], options)
-    expect(Array.isArray(result)).toBe(true)
+  test('dependencyHeadTags emits each URL once', () => {
+    const url = 'https://cdn.example/dup.js'
+    const tags = dependencyHeadTags({
+      'core/once': [{ type: 'js', url }],
+      'core/drupal': [{ type: 'js', url }],
+    })
+    expect(tags.filter((t) => attr(t, 'src') === url)).toHaveLength(1)
+  })
+
+  test('experimental_indexers includes yamlStoriesIndexer', () => {
+    const arr = indexersWithYaml(undefined)
+    expect(arr.some((i) => i.test.test('file.component.yml'))).toBe(true)
+    expect(arr.some((i) => typeof i.createIndex === 'function')).toBe(true)
+  })
+
+  test('staticDirs serves icon source directories (not namespace roots) under /sdc-icons/{ns}/', () => {
+    const options: SDCAddonOptions = {
+      sdcStorybookOptions: { namespace: 'umami' },
+    }
+    const result = dirEntries(staticDirs([], options))
     expect(result.length).toBeGreaterThan(0)
     expect(
       result.every(
-        (d: any) => typeof d.from === 'string' && d.to.startsWith('/sdc-icons/')
+        (d) => typeof d.from === 'string' && d.to.startsWith('/sdc-icons/')
       )
     ).toBe(true)
     const nsRoot = process.cwd()
-    expect(result.every((d: any) => d.from !== nsRoot)).toBe(true)
+    expect(result.every((d) => d.from !== nsRoot)).toBe(true)
   })
 
-  test('staticDirs preserves existing entries', async () => {
-    const options: any = { sdcStorybookOptions: { namespace: 'umami' } }
+  test('staticDirs preserves existing entries', () => {
+    const options: SDCAddonOptions = {
+      sdcStorybookOptions: { namespace: 'umami' },
+    }
     const existing = [{ from: '../components', to: '/components' }]
-    const result = await staticDirs(existing, options)
+    const result = staticDirs(existing, options)
     expect(result).toContainEqual({ from: '../components', to: '/components' })
-    expect(result.some((d: any) => d.to?.startsWith('/sdc-icons/'))).toBe(true)
+    expect(dirEntries(result).some((d) => d.to.startsWith('/sdc-icons/'))).toBe(
+      true
+    )
   })
 
-  test('staticDirs: svg-only pack adds no static entries', async () => {
+  test('staticDirs: svg-only pack adds no static entries', () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-preset-svg-'))
     const ns = 'presetsvg'
     try {
@@ -152,17 +190,17 @@ describe('preset.viteFinal and helpers', () => {
         join(tmpRoot, `${ns}.icons.yml`),
         `pack:\n  extractor: svg\n  config:\n    sources:\n      - icons\n  template: ""\n`
       )
-      const options: any = {
+      const options: SDCAddonOptions = {
         sdcStorybookOptions: { namespaces: { [ns]: tmpRoot } },
       }
-      const result = await staticDirs([], options)
-      expect(result.every((d: any) => !d.to?.includes(ns))).toBe(true)
+      const result = dirEntries(staticDirs([], options))
+      expect(result.every((d) => !d.to.includes(ns))).toBe(true)
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
   })
 
-  test('staticDirs: path extractor adds source directory', async () => {
+  test('staticDirs: path extractor adds source directory', () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-preset-path-'))
     const ns = 'presetpath'
     try {
@@ -172,40 +210,39 @@ describe('preset.viteFinal and helpers', () => {
         join(tmpRoot, `${ns}.icons.yml`),
         `pack:\n  extractor: path\n  config:\n    sources:\n      - img/*.png\n  template: ""\n`
       )
-      const options: any = {
+      const options: SDCAddonOptions = {
         sdcStorybookOptions: { namespaces: { [ns]: tmpRoot } },
       }
-      const result = await staticDirs([], options)
-      const entry = result.find((d: any) =>
-        d.to?.startsWith(`/sdc-icons/${ns}/`)
-      )
+      const result = dirEntries(staticDirs([], options))
+      const entry = result.find((d) => d.to.startsWith(`/sdc-icons/${ns}/`))
       expect(entry).toBeDefined()
-      expect((entry as { from: string }).from).toContain('img')
+      expect(entry?.from).toContain('img')
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
   })
 
   test('viteFinal preserves existing plugins and merges aliases', async () => {
-    const existingPlugin = { name: 'existing' }
-    const config: any = { plugins: [existingPlugin], resolve: { alias: [] } }
-    const options: any = { sdcStorybookOptions: { twigLib: 'twing' } }
+    const existingPlugin: Plugin = { name: 'existing' }
+    const config: UserConfig = {
+      plugins: [existingPlugin],
+      resolve: { alias: [] },
+    }
+    const options: SDCAddonOptions = {
+      sdcStorybookOptions: { twigLib: 'twing' },
+    }
 
     const result = await viteFinal(config, options)
-    const pluginNames = (result.plugins || []).map((p: any) => p.name)
+    const names = pluginNames(result)
 
-    // existing plugin should be preserved
-    expect(pluginNames).toContain('existing')
-    // and polyfills + twing plugin should be added
-    expect(pluginNames).toEqual(
+    expect(names).toContain('existing')
+    expect(names).toEqual(
       expect.arrayContaining(['existing', 'nodePolyfills', 'twing-plugin'])
     )
 
-    // aliases should include at least one entry with find starting with '@'
-    expect(Array.isArray(result.resolve.alias)).toBe(true)
     expect(
-      result.resolve.alias.some(
-        (a: any) => typeof a.find === 'string' && a.find.startsWith('@')
+      aliasesOf(result).some(
+        (a) => typeof a.find === 'string' && a.find.startsWith('@')
       )
     ).toBe(true)
   })

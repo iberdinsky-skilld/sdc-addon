@@ -2,19 +2,19 @@ import type { JSONSchema4 } from 'json-schema'
 import type { GenerateOptions } from 'json-schema-faker'
 import type { Parameters } from '@storybook/html-vite'
 import type { Globals } from 'storybook/internal/types'
+import type Twig from 'twig'
 
-// A user-defined render-array node type. `match` selects the node; `render`
-// returns either an HTML string (a leaf) or another node — a built-in node or
-// array — which the pipeline resolves the same way everywhere (plain and
-// wrapper slots). One registry serves both the build codegen and the runtime.
+// A user-defined render node: `match` selects it, `render` returns HTML or
+// another node. Works in plain and wrapper slots; Twing Maps arrive as objects.
 export interface CustomNode {
-  match: (item: any) => boolean
-  render: (item: any) => string | object
+  match: (item: Record<string, unknown>) => boolean
+  render: (item: Record<string, unknown>) => string | object
 }
 
 export interface SDCSchema {
   $schema?: string
-  $defs?: JSONSchema4
+  // Keyed by `$ref`, e.g. `ui-patterns://links`.
+  $defs?: Record<string, JSONSchema4>
   name: string
   description?: string
   group?: string
@@ -23,7 +23,13 @@ export interface SDCSchema {
   slots?: SlotDefinition
   libraryOverrides?: LibraryDefinition
   thirdPartySettings?: ThirdPartySettings
-  variants?: string[]
+  // Drupal 11.2+ variants.
+  variants?: Record<string, VariantDefinition>
+}
+
+export interface VariantDefinition {
+  title: string
+  description?: string
 }
 
 interface SlotDefinition {
@@ -35,7 +41,7 @@ interface SlotDefinition {
 }
 
 export interface CssFileOptions {
-  attributes?: Record<string, any>
+  attributes?: Record<string, string | boolean>
   group?: string
   media?: string
   minified?: boolean
@@ -93,16 +99,18 @@ export interface ExternalJsAsset {
 
 export type ExternalAsset = ExternalCssAsset | ExternalJsAsset
 
-interface ThirdPartySettings {
-  [key: string]: Record<string, any>
+// The addon reads `sdcStorybook`; other modules keep their own keys.
+export interface ThirdPartySettings {
+  sdcStorybook?: SDCStorybookSettings
+  [key: string]: unknown
 }
 
-interface SDCStorybookSettings {
+export interface SDCStorybookSettings {
   tags?: string[]
   disabledStories?: string[]
   parameters?: Parameters
   globals?: Globals
-  stories?: Record<string, Component>
+  stories?: Record<string, StoryDefinition>
 }
 export interface NamespaceDefinition {
   namespace?: string
@@ -128,34 +136,42 @@ export interface SDCStorybookOptions extends NamespaceDefinition {
   validate?: string | boolean
 }
 
-export interface Component {
-  variants?: JSONSchema4
+// A story from `sdcStorybook.stories` or a *.story.yml. Prop and slot values
+// are YAML: scalars, render nodes or arrays of them.
+export interface StoryDefinition {
   name?: string
-  description: string
-  component: string
-  props?: JSONSchema4
-  slots?: SlotDefinition
-  story?: string
+  description?: string
+  props?: Record<string, unknown>
+  slots?: Record<string, unknown>
+  variants?: Record<string, VariantDefinition>
   library_wrapper?: string
   parameters?: Parameters
   globals?: Globals
   thirdPartySettings?: {
-    sdcStorybook?: SDCStorybookSettings
+    sdcStorybook?: Pick<SDCStorybookSettings, 'parameters' | 'globals'>
   }
 }
 
-export interface TwigPluginOptions {}
+// `type: component` node: embeds a component, optionally from a story's args.
+export interface ComponentNode {
+  type: 'component'
+  component: string
+  props?: Record<string, unknown>
+  slots?: Record<string, unknown>
+  story?: string
+}
 
-export interface VitePluginTwingDrupalOptions extends TwigPluginOptions {
+export interface VitePluginTwingDrupalOptions {
   namespaces?: Record<string, string[]>
   include?: string | RegExp
   hooks?: string
 }
 
-export interface VitePluginTwigDrupalOptions extends TwigPluginOptions {
+export interface VitePluginTwigDrupalOptions {
   namespaces?: Record<string, string>
-  functions?: {}
-  globalContext?: {}
+  // Serialized into each compiled template and called with twig.js.
+  functions?: Record<string, (twig: typeof Twig) => void>
+  globalContext?: Record<string, unknown>
 }
 
 export interface SDCAddonOptions {
@@ -165,13 +181,12 @@ export interface SDCAddonOptions {
   jsonSchemaFakerOptions?: GenerateOptions
 }
 
-export interface IconPackSettings {
-  [key: string]: {
-    type?: string
-    default?: any
-    [key: string]: any
-  }
-}
+// *.icons.yml `settings`; `default` applies when icon() omits the key.
+export type IconPackSettings = Record<string, { default?: unknown }>
+
+// Any other extractor still renders, like `path` (source and icon_id).
+export type KnownIconExtractor = 'svg_sprite' | 'svg' | 'path'
+export type IconExtractor = KnownIconExtractor | (string & {})
 
 export interface SvgIconData {
   content: string
@@ -188,7 +203,7 @@ export interface PathIconData {
 export interface IconPack {
   packId: string
   label: string
-  extractor: 'svg_sprite' | 'svg' | 'path'
+  extractor: IconExtractor
   sources: string[]
   sourceUrls: string[]
   settings: IconPackSettings

@@ -128,6 +128,24 @@ const config = {
 export default config
 ```
 
+In a TypeScript config (`.storybook/main.ts`) the addon options are typed:
+
+```ts
+import type { StorybookConfig } from '@storybook/html-vite'
+import type { SDCAddonOptions } from 'storybook-addon-sdc'
+
+const sdcOptions: SDCAddonOptions = {
+  sdcStorybookOptions: { twigLib: 'twing' },
+}
+
+const config: StorybookConfig = {
+  stories: ['../components/**/*.component.yml'],
+  addons: [{ name: 'storybook-addon-sdc', options: sdcOptions }],
+  framework: { name: '@storybook/html-vite', options: {} },
+}
+export default config
+```
+
 ## Creating Stories
 
 The `sdcStorybook` configuration in the SDC YAML file provides a flexible way to define custom stories for your components. This feature allows you to use predefined props, custom slots, or even reuse stories defined elsewhere. Here's how it works:
@@ -263,7 +281,7 @@ A leaf, returning HTML — e.g. a YouTube embed reused across stories:
 sdcStorybookOptions: {
   customNodes: [
     {
-      match: item => item?.type === 'youtube',
+      match: (item) => item.type === 'youtube',
       render: item =>
         `<iframe src="https://www.youtube.com/embed/${item.id}" allowfullscreen></iframe>`,
     },
@@ -283,7 +301,7 @@ the pipeline:
 ```js
 customNodes: [
   {
-    match: (item) => item?.type === 'link',
+    match: (item) => item.type === 'link',
     render: (item) => ({
       type: 'element',
       tag: 'a',
@@ -834,13 +852,13 @@ thirdPartySettings:
 
 Below is a list of all available configuration options for `thirdPartySettings.sdcStorybook`:
 
-| Key               | Type     | Description                                                                                                                                                                                                               |
-| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tags`            | `array`  | Optional. Adds additional [Storybook tags](https://storybook.js.org/docs/writing-docs/autodocs) (e.g. `autodocs`).                                                                                                        |
-| `disabledStories` | `array`  | Optional. Array of story names to disable. Supports `basic`, `preview`, or any custom story name. Use `all` to disable all stories. **Note:** `disableBasicStory` is deprecated in favor of `disabledStories: ['basic']`. |
-| `parameters`      | `object` | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories.                                                                                                 |
-| `globals`         | `object` | Global [Storybook globals](https://storybook.js.org/docs/essentials/toolbars-and-globals) applied to all generated stories. Story-level `globals` override component-level values.                                        |
-| `stories`         | `object` | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `props`, `slots`, `parameters`, `globals`, `description`, `name`, and `library_wrapper`.  |
+| Key               | Type     | Description                                                                                                                                                                                                              |
+| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `tags`            | `array`  | Optional. Adds additional [Storybook tags](https://storybook.js.org/docs/writing-docs/autodocs) (e.g. `autodocs`).                                                                                                       |
+| `disabledStories` | `array`  | Optional. Array of story names to disable. Supports `basic`, `preview`, or any custom story name. Use `all` to disable all stories.                                                                                      |
+| `parameters`      | `object` | Global [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters) applied to all generated stories.                                                                                                |
+| `globals`         | `object` | Global [Storybook globals](https://storybook.js.org/docs/essentials/toolbars-and-globals) applied to all generated stories. Story-level `globals` override component-level values.                                       |
+| `stories`         | `object` | Allows defining or overriding specific stories. Each key (e.g. `preview`) represents a story. Within each story, you can define `props`, `slots`, `parameters`, `globals`, `description`, `name`, and `library_wrapper`. |
 
 ### Disabled Stories Examples
 

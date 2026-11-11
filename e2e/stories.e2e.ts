@@ -1,8 +1,6 @@
-// Starts the demo Storybook dev server on each Twig engine and renders every
-// story in Chromium. Fails on a console error, an uncaught page error, a
-// visible Storybook error box or an empty render. The dev server is the point:
-// template registries and runtime injection behave differently there than in
-// a static build.
+// Renders every story of the demo dev server on both engines; fails on console
+// or page errors, a visible error box or an empty render.
+import assert from 'node:assert/strict'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { chromium, type Browser, type Page } from 'playwright'
@@ -70,8 +68,10 @@ const renderStory = async (
         () => {
           const root = document.querySelector('#storybook-root')
           const box = document.querySelector('.sb-errordisplay')
-          const boxVisible = box && getComputedStyle(box).display !== 'none'
-          return (root && root.innerHTML.trim().length > 0) || boxVisible
+          const hasContent = (root?.innerHTML.trim().length ?? 0) > 0
+          const boxVisible =
+            box !== null && getComputedStyle(box).display !== 'none'
+          return hasContent || boxVisible
         },
         null,
         { timeout: 20000 }
@@ -85,7 +85,7 @@ const renderStory = async (
       .$eval('.sb-errordisplay', (el) =>
         getComputedStyle(el).display === 'none'
           ? ''
-          : (el as HTMLElement).innerText.replace(/\s+/g, ' ').slice(0, 300)
+          : el.textContent.replace(/\s+/g, ' ').slice(0, 300)
       )
       .catch(() => '')
     if (box) errors.push(`storybook: ${box}`)
@@ -122,7 +122,8 @@ describe.each(ENGINES)('every story renders on %s', (engine) => {
     )
     expect(stories.length).toBeGreaterThan(0)
 
-    const page = await browser!.newPage({
+    assert(browser, 'browser was not launched')
+    const page = await browser.newPage({
       viewport: { width: 1200, height: 800 },
     })
     const problems: StoryProblem[] = []

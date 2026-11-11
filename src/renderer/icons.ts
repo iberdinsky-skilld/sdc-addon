@@ -1,26 +1,19 @@
-// Build the render context for an icon node (type: icon), the same way the
-// icon() Twig function does.
+// Context for an icon template, shared by icon() and `type: icon` nodes.
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPack } from '../sdc.d.ts'
+import { toPlainObject } from './collections.ts'
 
 export function buildIconContext(
   pack: IconPack,
   iconId: string,
   settings: unknown
 ): Record<string, unknown> {
-  const settingsObj: Record<string, unknown> =
-    settings instanceof Map
-      ? Object.fromEntries(settings)
-      : ((settings as Record<string, unknown>) ?? {})
+  const settingsObj = toPlainObject(settings) ?? {}
   const resolved: Record<string, unknown> = {}
-  const packSettings = pack.settings || {}
-  for (const key of Object.keys(packSettings)) {
-    const def = packSettings[key]
+  for (const [key, def] of Object.entries(pack.settings)) {
     resolved[key] = Object.prototype.hasOwnProperty.call(settingsObj, key)
       ? settingsObj[key]
-      : def && def.default !== undefined
-        ? def.default
-        : ''
+      : (def.default ?? '')
   }
 
   let source = ''
@@ -29,22 +22,22 @@ export function buildIconContext(
   let group = ''
 
   if (pack.extractor === 'svg_sprite') {
-    source = pack.sourceUrls && pack.sourceUrls[0] ? pack.sourceUrls[0] : ''
+    source = pack.sourceUrls[0] ?? ''
   } else if (pack.extractor === 'svg') {
-    const svgData = pack.svgIcons && pack.svgIcons[iconId]
+    const svgData = pack.svgIcons[iconId]
     if (svgData) {
-      source = svgData.sourceUrl || ''
-      content = svgData.content || ''
-      svgAttrs = svgData.attrs || {}
-      group = svgData.group || ''
+      source = svgData.sourceUrl
+      content = svgData.content
+      svgAttrs = svgData.attrs
+      group = svgData.group
     }
   } else {
-    const pathData = pack.pathIcons && pack.pathIcons[iconId]
+    const pathData = pack.pathIcons[iconId]
+    const base = pack.sourceUrls[0]
     if (pathData) {
-      source = pathData.sourceUrl || ''
-      group = pathData.group || ''
-    } else if (pack.sourceUrls && pack.sourceUrls[0]) {
-      const base = pack.sourceUrls[0]
+      source = pathData.sourceUrl
+      group = pathData.group
+    } else if (base) {
       source =
         base.indexOf('{icon_id}') !== -1
           ? base.replace(/\{icon_id\}/g, iconId)

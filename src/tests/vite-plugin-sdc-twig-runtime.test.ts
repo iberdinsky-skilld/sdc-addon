@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
 import { toNamespaces } from '../generate/namespaces.ts'
 import {
-  sdcTwigRuntimePlugin,
+  createSdcTwigRuntimeHooks,
   VIRTUAL_TWIG,
   VIRTUAL_TWING,
 } from '../vite/sdcTwigRuntime.ts'
@@ -9,12 +9,8 @@ import {
 const RESOLVED_TWIG = '\0' + VIRTUAL_TWIG
 const RESOLVED_TWING = '\0' + VIRTUAL_TWING
 
-const makePlugin = (
-  namespaces: Record<string, string> = {}
-): Record<string, (arg: unknown) => unknown> =>
-  sdcTwigRuntimePlugin(
-    toNamespaces({ namespace: '', namespaces })
-  ) as unknown as Record<string, (arg: unknown) => unknown>
+const makePlugin = (namespaces: Record<string, string> = {}) =>
+  createSdcTwigRuntimeHooks(toNamespaces({ namespace: '', namespaces }))
 
 describe('sdcTwigRuntimePlugin: handleHotUpdate', () => {
   test('full-reloads when a virtual runtime / icon-pack module changes', () => {
@@ -51,9 +47,7 @@ describe('sdcTwigRuntimePlugin: configureServer', () => {
       namespace: '',
       namespaces: { a: '/root/a', b: '/root/b' },
     })
-    const p = sdcTwigRuntimePlugin(ns) as unknown as {
-      configureServer: (server: unknown) => void
-    }
+    const p = createSdcTwigRuntimeHooks(ns)
 
     const add = vi.fn()
     let onAdd: (path: string) => void = () => {}
