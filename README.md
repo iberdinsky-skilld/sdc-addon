@@ -13,6 +13,7 @@ This addon streamlines the integration of Drupal Single Directory Components (SD
 - [Configuration](#configuration)
 - [Creating Stories](#creating-stories)
 - [Support for Single Story Files (\*.story.yml)](#support-for-single-story-files-storyyml)
+- [Components as form elements](#components-as-form-elements)
 - [Namespaces](#namespaces)
 - [Drupal Icon API](#drupal-icon-api)
 - [Advanced Grouping and Nesting](#advanced-grouping-and-nesting)
@@ -361,6 +362,25 @@ slots:
       slots:
         text: Ciao
 ```
+
+## Components as form elements
+
+A component used as a form element (Drupal 11.4, `'#type' => 'component'`) receives the element's name, value and required flag in `form_state`. In stories, pass it as a prop:
+
+```yaml
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      required:
+        props:
+          form_state:
+            value:
+              name: email
+              value: me@example.com
+              required: true
+```
+
+See `components/form-input` in the demo.
 
 ## Namespaces
 

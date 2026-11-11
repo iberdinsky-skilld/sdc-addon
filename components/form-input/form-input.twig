@@ -1,0 +1,13 @@
+{% set input_attributes = create_attribute({
+  type: 'text',
+  name: form_state.value.name,
+  id: id,
+  value: form_state.value.value,
+}) %}
+{% if form_state.value.required %}
+{% set input_attributes = input_attributes.setAttribute('required', true) %}
+{% endif %}
+<div{{ attributes }}>
+  <label for="{{ id }}">{{ label }}</label>
+  <input{{ input_attributes }}>
+</div>
