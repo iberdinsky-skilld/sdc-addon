@@ -49,10 +49,13 @@
     "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
+    "@christianwiedemann/drupal-twig-extensions": "^2.0.0-beta.2",
     "@types/json-schema": "^7.0.15",
     "@types/twig": "^1.12.17",
+    "drupal-twig-extensions": "^1.0.0-beta.5",
     "json-schema-faker": "^0.6.4",
     "jsonschema": "^1.5.0",
+    "twig": "^1.16.0 || ^2 || ^3",
     "vite-plugin-twig-drupal": "^1.7.0",
     "vite-plugin-twing-drupal": "^1.1.4",
     "yaml": "^2.9.1"
@@ -68,7 +71,7 @@
     "@storybook/addon-a11y": "^11.0.0-beta.1",
     "@storybook/addon-docs": "^11.0.0-beta.1",
     "@storybook/html-vite": "^11.0.0-beta.1",
-    "@types/node": "^24.19.2",
+    "@types/node": "^22.20.5",
     "auto": "^11.3.6",
     "boxen": "^9.0.0",
     "dedent": "^1.7.2",

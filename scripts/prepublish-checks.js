@@ -15,6 +15,26 @@ let exitCode = 0
 $.verbose = false
 
 /**
+ * Releases are cut from main: on any other branch `auto shipit` publishes a
+ * canary version instead.
+ */
+const branch = (await $`git branch --show-current`).stdout.trim()
+if (branch !== 'main') {
+  console.error(
+    boxen(
+      dedent`
+      ${chalk.red.bold('Not on main')}
+
+      ${chalk.red(dedent`Releases are made from main, this is ${chalk.bold(branch || 'a detached HEAD')}.
+      Run: git switch main && git pull`)}`,
+      { padding: 1, borderColor: 'red' }
+    )
+  )
+
+  exitCode = 1
+}
+
+/**
  * Check that meta data has been updated
  */
 if (name.includes('addon-kit') || displayName.includes('Addon Kit')) {

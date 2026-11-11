@@ -3,6 +3,7 @@ node_modules/
 .npmrc
 storybook-static/
 build-storybook.log
+debug-storybook.log
 .DS_Store
 .env
 .idea
