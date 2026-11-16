@@ -1,7 +1,7 @@
 $schema: https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json
 name: Design tokens
 group: Addon
-description: Tokens from umami.tokens.yml (Drupal's experimental Design Tokens API) as CSS variables on :root. Semantic colors refer to the palette.
+description: Tokens from umami.tokens.yml (Drupal 11.5 Design Tokens API) as CSS variables on :root. Semantic colors refer to the palette.
 props:
   type: object
   properties:

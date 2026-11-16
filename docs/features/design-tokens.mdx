@@ -5,7 +5,7 @@ import * as DesignTokens from '../../components/design-tokens/design-tokens.comp
 
 # Design tokens
 
-Drupal 12 adds an experimental Design Tokens API. A theme describes its colors, sizes and fonts once, in `{theme}.tokens.yml`, and Drupal prints them on every page as CSS variables. Component CSS uses `var(--…)` instead of repeating hex codes, so a change in one file updates every component.
+Drupal 11.5 adds a [Design Tokens API](https://www.drupal.org/node/3622344). A theme describes its colors, sizes and fonts once, in `{theme}.tokens.yml`, and Drupal prints them on every page as CSS variables. Component CSS uses `var(--…)` instead of repeating hex codes, so a change in one file updates every component.
 
 Storybook needs the same variables, or a component that uses them renders without colors and spacing. The addon reads the same file and adds the same variables to every story. There is nothing to configure.
 
@@ -79,4 +79,4 @@ The demo component below has no colors of its own. Its template only names the v
 - `number`: printed as is.
 - `typography`: `{ fontWeight, fontSize, lineHeight, fontFamily }` becomes the `font` shorthand, for example `700 1rem/1.5 Inter`.
 
-The Drupal API is experimental, so the file format may still change. Every namespace can have its own tokens file, and all variables are available to every component, so a subtheme's components can use the base theme's tokens.
+Drupal plans to extend the API in later releases, so the file format may still change. Every namespace can have its own tokens file, and all variables are available to every component, so a subtheme's components can use the base theme's tokens.

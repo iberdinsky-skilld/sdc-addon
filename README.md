@@ -98,7 +98,7 @@ Drupal APIs:
 
 - [Namespaces](https://iberdinsky-skilld.github.io/sdc-addon/?path=/docs/features-namespaces--docs): components from base themes, modules and other folders.
 - [Icon API](https://iberdinsky-skilld.github.io/sdc-addon/?path=/docs/features-icon-api--docs): `{theme}.icons.yml` and `icon()`, Drupal 11.1.
-- [Design tokens](https://iberdinsky-skilld.github.io/sdc-addon/?path=/docs/features-design-tokens--docs): `{theme}.tokens.yml` as CSS variables, experimental.
+- [Design tokens](https://iberdinsky-skilld.github.io/sdc-addon/?path=/docs/features-design-tokens--docs): `{theme}.tokens.yml` as CSS variables, Drupal 11.5.
 - [Variants and html_cva()](https://iberdinsky-skilld.github.io/sdc-addon/?path=/docs/features-variants-and-html-cva--docs): component variants (Drupal 11.2) and `html_cva()` (Drupal 11.4).
 - [Form elements](https://iberdinsky-skilld.github.io/sdc-addon/?path=/docs/features-form-elements--docs): `form_state` for components used as form fields, Drupal 11.4.
 - [Libraries and CDN](https://iberdinsky-skilld.github.io/sdc-addon/?path=/docs/features-libraries-and-cdn--docs): library dependencies from a CDN, Drupal behaviors.
