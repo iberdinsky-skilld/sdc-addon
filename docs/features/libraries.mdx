@@ -1,0 +1,52 @@
+import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks'
+import * as Accordion from '../../components/drupal-accordion/drupal-accordion.component.yml'
+import behavior from '../../components/drupal-accordion/drupal-accordion.js?raw'
+
+<Meta title="Features/Libraries and CDN" />
+
+# Libraries and CDN
+
+## The component's own CSS and JS
+
+CSS and JS files in the component folder load automatically with its stories, as they do in Drupal. If the JS defines a [Drupal behavior](https://www.drupal.org/docs/drupal-apis/javascript-api/javascript-api-overview), the addon runs it when the story renders, so `Drupal`, `drupalSettings` and `once` are available as on a real site.
+
+## Libraries from Drupal
+
+A component often needs more than its own files: jQuery, a slider library, a date picker. In Drupal, the component YAML names these as library dependencies, and Drupal adds the files from core or the theme:
+
+```yaml
+# drupal-accordion.component.yml
+libraryOverrides:
+  dependencies:
+    - core/jquery
+    - jquery/ui.accordion
+```
+
+Storybook has no Drupal, so names like `core/jquery` mean nothing there. `dependencyMap` tells the addon which files stand for each name, usually from a CDN:
+
+```js
+// .storybook/main.js, in sdcStorybookOptions
+dependencyMap: {
+  'core/jquery': [
+    { type: 'js', url: 'https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js' },
+  ],
+  'jquery/ui.accordion': [
+    { type: 'css', url: 'https://cdn.jsdelivr.net/npm/jquery-ui@1.13/dist/themes/base/jquery-ui.min.css' },
+    { type: 'js', url: 'https://cdn.jsdelivr.net/npm/jquery-ui@1.13/dist/jquery-ui.min.js' },
+  ],
+},
+```
+
+The files load only for stories of components that list the dependency, so a page without jQuery components does not get jQuery.
+
+`core/drupal`, `core/drupalSettings` and `core/once` are built in and always loaded, because behaviors need them. The [README](https://github.com/iberdinsky-skilld/sdc-addon#dependencymap) shows how to replace or turn them off.
+
+## Example
+
+The accordion's template is plain HTML: a heading and a block of text. Its JS file, `drupal-accordion.js`, has a behavior that calls jQuery UI's `accordion()` on it. jQuery and jQuery UI come from the CDN through the `dependencyMap` above.
+
+<Source code={behavior} language="js" />
+
+<Canvas of={Accordion.Basic} />
+
+Show code has the template's HTML from before the behavior ran; the classes jQuery UI adds afterwards are not in it.

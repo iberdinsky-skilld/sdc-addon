@@ -27,10 +27,6 @@ const sdcStorybookOptions: SDCStorybookOptions = {
   // Custom node types, used in plain and library_wrapper slots.
   customNodes: [
     {
-      match: (item) => item.type === 'sample',
-      render: () => 'SAMPLE',
-    },
-    {
       // Render a YouTube embed from { type: youtube, id }.
       match: (item) => item.type === 'youtube',
       render: ({ id, width, height }) =>
@@ -75,10 +71,35 @@ const sdcStorybookOptions: SDCStorybookOptions = {
 }
 
 const config: StorybookConfig = {
+  storySorts: [
+    {
+      order: [
+        'Introduction',
+        'Features',
+        [
+          'Stories in YAML',
+          'Story nodes',
+          'Custom nodes',
+          'Namespaces',
+          'Schemas and mock data',
+          'Icon API',
+          'Design tokens',
+          'Variants and html_cva()',
+          'Libraries and CDN',
+          'Form elements',
+          'Sidebar and noUi',
+          'SDC in CSF stories',
+          'Accessibility',
+        ],
+        '*',
+      ],
+    },
+  ],
   stories: [
     '../components/**/*.component.yml',
     '../parent-namespace/components/**/*.component.yml',
     '../stories/*.stories.js',
+    '../docs/**/*.mdx',
   ],
   addons: [
     '@storybook/addon-docs',

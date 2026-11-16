@@ -1,0 +1,48 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as Page from '../../stories/page-example.stories.js'
+
+<Meta title="Features/SDC in CSF stories" />
+
+# SDC in CSF stories
+
+YAML stories cover one component at a time. Sometimes you want more: a whole page built from several components, or a story with custom logic. For that, Storybook's usual format works too, a `.stories.js` file in [CSF](https://storybook.js.org/docs/api/csf), and you can import components into it.
+
+## Importing a component
+
+Importing a `*.component.yml` gives two things:
+
+- the default export, with `component(args)`, a function that renders the component to HTML;
+- the component's stories, by name, such as `Preview`, each with its `args`.
+
+```js
+// stories/page-example.stories.js
+import header, {
+  Preview as HeaderPreview,
+} from '../components/header/header.component.yml'
+import banner, {
+  Preview as BannerPreview,
+} from '../components/banner/banner.component.yml'
+
+export default {
+  title: 'Storybook/Page with imported SDC',
+  render: () => `
+    ${header.component({ ...HeaderPreview.args })}
+    ${banner.component({ ...BannerPreview.args })}
+  `,
+  play: async ({ canvasElement }) => {
+    Drupal.attachBehaviors(canvasElement, window.drupalSettings)
+  },
+}
+
+export const Basic = {}
+```
+
+`component()` takes the same props and slots as the YAML. Passing a story's `args` renders that story; you can change any of them.
+
+YAML stories run Drupal behaviors on their own. A CSF story renders plain HTML, so it calls `Drupal.attachBehaviors()` in `play` to run the components' JS.
+
+## Example
+
+A page with a header, a banner, paragraphs, a slider and accordions, all imported from YAML:
+
+<Canvas of={Page.Basic} />

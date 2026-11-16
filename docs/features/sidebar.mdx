@@ -1,0 +1,34 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import * as Title from '../../components/atoms/title/title.component.yml'
+import { StoryLink } from '../StoryLink.tsx'
+
+<Meta title="Features/Sidebar and noUi" />
+
+# Sidebar and noUi
+
+## Where a component appears
+
+The addon places every component in the sidebar by three levels:
+
+1. **The project folder**, the folder that holds `components/`. In this demo that is `sdc` for the theme and `parent-namespace` for the second namespace.
+2. **The group.** If the component YAML has `group`, that is the folder. If not, a subfolder of `components/` is used, so `components/atoms/title` goes to **Atoms**. Components directly in `components/` go to **SDC**.
+3. **The component**, by its `name`, with its stories inside.
+
+`group` is the same key Drupal uses to group components in its UI:
+
+```yaml
+# menu.component.yml
+name: Menu
+group: Navigation
+```
+
+## noUi
+
+Some components are only building blocks for other components, like a title used inside a card. Since Drupal 11.3, `noUi: true` hides such a component from page builders, so editors cannot place it on a page alone:
+
+```yaml
+# title.component.yml
+noUi: true
+```
+
+In Storybook these components stay visible, because developers still work on them. Their stories get the `no-ui` tag. To hide them, open the tag filter at the top of the sidebar and exclude `no-ui`. In this demo, <StoryLink of={Title.Basic}>Title</StoryLink> is such a component.

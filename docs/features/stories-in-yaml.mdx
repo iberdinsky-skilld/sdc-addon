@@ -1,0 +1,97 @@
+import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks'
+import * as Callout from '../../components/callout/callout.component.yml'
+import * as Badge from '../../components/badge/badge.component.yml'
+import * as Breadcrumbs from '../../components/breadcrumbs/breadcrumbs.component.yml'
+import * as Paragraph from '../../components/paragraph/paragraph.component.yml'
+import { StoryLink } from '../StoryLink.tsx'
+import timerStory from '../../components/badge/stories/badge.timer.story.yml?raw'
+
+<Meta title="Features/Stories in YAML" />
+
+# Stories in YAML
+
+A story is one state of a component: a card with an image or without one, an info message or a warning. Storybook normally wants stories in JavaScript files. With this addon you write them in YAML, next to the component, with the same props and slots its schema describes.
+
+## The Basic story
+
+Every component gets a story called **Basic** without any work. Its values come from the component's schema, see [Schemas and mock data](?path=/docs/features-schemas-and-mock-data--docs). Everything else on this page is about adding more stories.
+
+## Adding a story
+
+Stories go into the component YAML under `thirdPartySettings.sdcStorybook.stories`. `thirdPartySettings` is the part of a component YAML that Drupal leaves to other tools, so Drupal ignores it.
+
+The `callout` component has one extra story:
+
+```yaml
+# callout.component.yml
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      large_warning:
+        name: Large warning
+        description: The warning variant at size lg adds the compound class.
+        props:
+          variant: warning
+          size: lg
+        slots:
+          content: Out of stock in your area.
+```
+
+- `large_warning` is the story's key. It names the story in the sidebar unless `name` is set.
+- `props` and `slots` set this story's values. Everything you leave out keeps its value from Basic.
+- `description` appears on the component's docs page.
+
+<Canvas of={Callout.Large_warning} />
+
+## Stories in separate files
+
+When a component has many stories, put each one in its own file in the component folder or any folder below it. The file name is `{component}.{story}.story.yml`, and the part before `.story.yml` is the story's key. The content is the same as above, without the nesting. `components/badge/stories/badge.timer.story.yml`:
+
+<Source code={timerStory} language="yaml" />
+
+<Canvas of={Badge.Timer} />
+
+This is the story format of the [UI Patterns 2](https://www.drupal.org/project/ui_patterns) module, so stories written for it work here too.
+
+## Settings for all stories of a component
+
+```yaml
+thirdPartySettings:
+  sdcStorybook:
+    tags: [autodocs]
+    disabledStories: [basic]
+    parameters:
+      layout: centered
+```
+
+- `tags`: Storybook tags. `autodocs` adds a docs page with all stories of the component.
+- `disabledStories`: stories to hide. Hide `basic` when the component makes no sense with schema values alone, or use `all` to hide every story.
+- `parameters`: [Storybook parameters](https://storybook.js.org/docs/writing-stories/parameters), such as `layout: centered` to center the component.
+
+`parameters` and `globals` also work inside a single story.
+
+## Globals
+
+A global is a value from the Storybook toolbar that changes the whole preview. This demo has one, `theme`, the light/dark switch at the top. A story can set it, so it always opens in dark mode:
+
+```yaml
+stories:
+  dark:
+    globals:
+      theme: dark
+```
+
+Open <StoryLink of={Paragraph.Dark}>Paragraph, Dark theme global</StoryLink> to see it. Globals only exist if `.storybook/preview.js` defines them in `globalTypes`; the [README](https://github.com/iberdinsky-skilld/sdc-addon#globals) has the code for this demo's `theme`.
+
+## library_wrapper
+
+Some components only make sense inside something else: a list item inside a list, a form field inside a form. `library_wrapper` puts the story inside Twig markup, and `{{ _story }}` marks where the component goes. The key also comes from UI Patterns 2.
+
+```yaml
+# breadcrumbs.component.yml
+stories:
+  wrapped:
+    library_wrapper: '<fieldset><legend>{{ "library_wrapper"|upper }}</legend>{{ _story }}</fieldset>'
+```
+
+<Canvas of={Breadcrumbs.Wrapped} />

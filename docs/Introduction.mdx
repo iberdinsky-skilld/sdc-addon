@@ -1,0 +1,85 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Introduction" />
+
+# storybook-addon-sdc
+
+This addon shows Drupal [Single Directory Components](https://www.drupal.org/docs/develop/theming-drupal/using-single-directory-components) (SDC) in Storybook, without a Drupal site.
+
+## Why
+
+An SDC is a folder with everything a component needs: `card.component.yml` describes its props and slots, `card.twig` is its template, and its CSS and JS sit next to them. Drupal renders the component from these files alone.
+
+Building components inside a Drupal site is slow: you need a database, a page to put the component on and a cache clear after every change. This addon reads the same folder and shows the component in Storybook. You edit the files, Storybook updates, and the same files go to Drupal unchanged.
+
+## What happens to a component
+
+For every `*.component.yml`, the addon:
+
+- creates a story called **Basic**, filled with the values from the schema;
+- turns props and slots into **Controls**, the panel where you change them in the browser;
+- renders the Twig template the way Drupal does, with Drupal's Twig functions and filters;
+- loads the CSS and JS files from the component folder and runs its Drupal behaviors;
+- adds more stories if you describe them in YAML.
+
+## Get started
+
+Install the addon, Vite and a Twig engine:
+
+```bash
+npm i vite twig storybook-addon-sdc --save-dev
+```
+
+Point Storybook at your components:
+
+```js
+// .storybook/main.js
+export default {
+  stories: ['../components/**/*.component.yml'],
+  addons: ['storybook-addon-sdc'],
+  framework: { name: '@storybook/html-vite', options: {} },
+}
+```
+
+Run `npm run storybook`.
+
+There are two Twig engines. **Twig.js** (`twig`) is the default. **Twing** (`twing`) is closer to PHP Twig and is needed when a base theme lives outside the Storybook project. To use Twing, install `twing` instead of `twig` and set the engine in the addon options:
+
+```js
+addons: [
+  {
+    name: 'storybook-addon-sdc',
+    options: { sdcStorybookOptions: { twigLib: 'twing' } },
+  },
+],
+```
+
+Every option is in the [README](https://github.com/iberdinsky-skilld/sdc-addon#readme).
+
+## Features
+
+Writing stories:
+
+- [Stories in YAML](?path=/docs/features-stories-in-yaml--docs): more stories for a component, written in YAML.
+- [Story nodes](?path=/docs/features-story-nodes--docs): put other components, HTML, images and icons into slots.
+- [Custom nodes](?path=/docs/features-custom-nodes--docs): your own short names for markup you repeat.
+- [Schemas and mock data](?path=/docs/features-schemas-and-mock-data--docs): where the values in a story come from.
+
+Drupal APIs:
+
+- [Namespaces](?path=/docs/features-namespaces--docs): use components from a base theme or a module.
+- [Icon API](?path=/docs/features-icon-api--docs): the `icon()` function and icon packs.
+- [Design tokens](?path=/docs/features-design-tokens--docs): theme colors and sizes as CSS variables.
+- [Variants and html_cva()](?path=/docs/features-variants-and-html-cva--docs): versions of a component and the classes for them.
+- [Form elements](?path=/docs/features-form-elements--docs): components used as form fields.
+- [Libraries and CDN](?path=/docs/features-libraries-and-cdn--docs): jQuery and other Drupal libraries, and behaviors.
+
+Storybook:
+
+- [Sidebar and noUi](?path=/docs/features-sidebar-and-noui--docs): how components are sorted in the sidebar.
+- [SDC in CSF stories](?path=/docs/features-sdc-in-csf-stories--docs): use components in regular `.stories.js` files.
+- [Accessibility](?path=/docs/features-accessibility--docs): check stories for accessibility problems.
+
+## This demo
+
+The components in the sidebar belong to a small Drupal theme called `umami`, plus one component from a second namespace, `parent-namespace`. Components in the **Addon** group are not part of the theme: they only show a feature.

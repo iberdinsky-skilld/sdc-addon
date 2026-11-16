@@ -1,0 +1,81 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as Card from '../../components/card/card.component.yml'
+
+<Meta title="Features/Custom nodes" />
+
+# Custom nodes
+
+[Story nodes](?path=/docs/features-story-nodes--docs) cover components, HTML, images and icons. But stories often repeat some other piece of markup: a video embed, a link with an arrow icon. Copied as HTML into every story, it is long, easy to break and hard to change everywhere at once.
+
+A custom node gives that markup a short name. You write the markup once, in `.storybook/main.js`, and stories only say which node they want and with which values:
+
+```yaml
+- type: youtube
+  id: aqz-KE-bpKQ
+```
+
+## Defining a node type
+
+Add a renderer to `customNodes` in the addon options. Each renderer has two functions:
+
+- `match(node)` receives the node from the story YAML as a plain object and returns `true` if this renderer handles it.
+- `render(node)` returns what to print instead of the node.
+
+```js
+// .storybook/main.js, in sdcStorybookOptions
+customNodes: [
+  {
+    match: (node) => node.type === 'youtube',
+    render: (node) =>
+      `<iframe src="https://www.youtube.com/embed/${node.id}" allowfullscreen></iframe>`,
+  },
+],
+```
+
+Every `type: youtube` node in any story now becomes an `<iframe>`, and the `id` comes from the YAML. The `custom_node` story of `card` uses it:
+
+<Canvas of={Card.Custom_node} />
+
+## Returning HTML or another node
+
+`render` can return two things, and they behave differently.
+
+**An HTML string** is printed as is. That is enough when the node only takes plain values, like the video `id` above.
+
+**A node**, or a list of nodes, is rendered by the addon as if it were written in the story YAML. Use this when the node wraps content that may itself contain nodes. If `render` built the HTML string itself, it would also have to render every node inside the content, icons and components included.
+
+A link with text and an icon is such a case. Its content is a list, a string followed by an `icon` node:
+
+```yaml
+- type: link
+  url: 'https://example.com'
+  value:
+    - 'Read the docs '
+    - type: icon
+      pack_id: heroicons_cdn
+      icon_id: arrow-long-right
+```
+
+The renderer does not build the HTML itself. It returns a built-in `element` node and passes `value` through untouched:
+
+```js
+{
+  match: (node) => node.type === 'link',
+  render: (node) => ({
+    type: 'element',
+    tag: 'a',
+    attributes: { class: 'custom-link', href: node.url ?? '#' },
+    value: node.value,
+  }),
+},
+```
+
+The addon renders that `element` node like any other, together with the string and the icon inside `value`. Show code under the example has the resulting `<a>`.
+
+<Canvas of={Card.Custom_node_nested} />
+
+## Good to know
+
+- A custom node works anywhere a node can appear: in slots, inside `value` of other nodes, in slots of nested components.
+- Custom renderers are checked before the built-in types, in the order they are listed. A renderer whose `match` accepts `type: image` replaces the built-in image node.
+- `render` runs in Node.js when Storybook builds the story, not in the browser, so `window` and `document` are not available there.

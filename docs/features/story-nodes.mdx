@@ -1,0 +1,85 @@
+import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks'
+import * as Paragraph from '../../components/paragraph/paragraph.component.yml'
+import template from '../../components/paragraph/paragraph.twig?raw'
+
+<Meta title="Features/Story nodes" />
+
+# Story nodes
+
+A slot is a hole in a component that other content fills: the body of a card, the slides of a slider. The template only prints it, `{{ content }}`, and does not care what is inside. In Drupal, a slot is usually filled with other components, text and images.
+
+A story needs to fill slots the same way to look real. You could paste finished HTML into the story, but it would go out of date as soon as the nested component changes. Instead, you describe the content in YAML, "a card here, an image there", and the addon renders every piece when the story opens. These pieces are called story nodes.
+
+## How a slot is filled
+
+Take the `paragraph` component of this demo. Its template, `paragraph.twig`, prints a title and the `content` slot:
+
+<Source code={template} language="twig" />
+
+A story fills `content` with a list of nodes. Each node has a `type`:
+
+```yaml
+# paragraph.component.yml
+thirdPartySettings:
+  sdcStorybook:
+    stories:
+      nodes:
+        props:
+          label: Paragraph with story nodes
+        slots:
+          content:
+            - type: element
+              tag: h3
+              value: '<span>type: element</span>'
+              attributes:
+                class: custom-class
+            - type: image
+              uri: 'https://placehold.co/600x200?text=type:+image'
+            - type: icon
+              pack_id: heroicons_cdn
+              icon_id: star
+```
+
+The nodes render one after another in place of `{{ content }}`. Show code under the example has the resulting HTML.
+
+<Canvas of={Paragraph.Nodes} />
+
+A slot can also be a plain string, `content: Hello`, printed as text or HTML.
+
+## Nesting components
+
+A `component` node renders another component, with any of its stories or with your own props and slots. The `grid` story of `paragraph` fills its slot with three cards:
+
+```yaml
+slots:
+  content:
+    - type: component
+      component: 'umami:card'
+    - type: component
+      component: 'umami:card'
+      story: Preview
+    - type: component
+      component: 'umami:card'
+      props:
+        html_tag: div
+      slots:
+        content: 'Hello from third grid card!'
+```
+
+- The first card renders with its Basic args, the values from its schema.
+- The second takes the args of its `Preview` story.
+- The third starts from Basic and overrides one prop and one slot.
+
+<Canvas of={Paragraph.Grid} />
+
+The nested card's own slots can hold nodes again, to any depth.
+
+## Node reference
+
+- `component`: `component` is `namespace:name`. Optional `story` picks one of its stories by name; `props` and `slots` override on top.
+- `element` (also `html_tag`): `tag`, default `div`; `value` is text, HTML or more nodes; `attributes`.
+- `image`: `uri` becomes `src`; `alt`, `width`, `height`, `title` and `sizes` become attributes; other HTML attributes go under `attributes`.
+- `icon`: `pack_id` and `icon_id` from the [Icon API](?path=/docs/features-icon-api--docs); optional `settings`.
+- `markup`: `markup` is printed as is.
+
+Components from other themes or modules use their own namespace, see [Namespaces](?path=/docs/features-namespaces--docs). For markup you repeat in many stories, define your own node type: [Custom nodes](?path=/docs/features-custom-nodes--docs).

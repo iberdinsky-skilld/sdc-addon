@@ -1,0 +1,88 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as IconApi from '../../components/icon-api/icon-api.component.yml'
+
+<Meta title="Features/Icon API" />
+
+# Icon API
+
+Drupal 11.1 added an [Icon API](https://www.drupal.org/docs/develop/drupal-apis/icon-api). A theme lists its icon sets, called **packs**, in one file, `{theme}.icons.yml`. Templates then ask for an icon by pack and name and don't need to know where the file is or how to embed it:
+
+```twig
+{{ icon('umami_svg', 'star') }}
+```
+
+The addon reads the same `{theme}.icons.yml`, so `icon()` works in Storybook without any setup. The file sits in the theme root, next to `components/`.
+
+## Describing a pack
+
+```yaml
+# umami.icons.yml
+umami_svg:
+  extractor: svg
+  config:
+    sources:
+      - icons/svg
+  settings:
+    color:
+      type: string
+      default: currentColor
+  template: >
+    <svg {{ attributes.setAttribute('fill', color) }}>{{ content }}</svg>
+```
+
+- `sources`: where the icon files are, relative to the theme.
+- `extractor`: what kind of files they are, see below.
+- `template`: the HTML for one icon. It gets `icon_id`, `source` (the file URL), `content` (the SVG's inner markup, for `svg` packs), `attributes`, and every setting as a variable.
+- `settings`: options with defaults, here the fill color.
+
+## Three kinds of packs
+
+**`svg`**: every icon is its own `.svg` file, copied into the page. The icon can be recolored with CSS or a setting. Good for most icons.
+
+<Canvas of={IconApi.Svg} />
+
+**`svg_sprite`**: all icons are in one file, as `<symbol>` elements, and the page links to them with `<use href="sprite.svg#home">`. The browser downloads one file for all icons.
+
+<Canvas of={IconApi.Sprite} />
+
+**`path`**: the page links to the icon file with `<img src>`. Works for any image format, but the icon can't be recolored.
+
+## Settings
+
+Settings change one icon call. The third argument of `icon()` overrides the defaults from `icons.yml`:
+
+```twig
+{{ icon('umami_sprite', 'search', { size: 'lg' }) }}
+{{ icon('umami_svg', 'close', { color: '#e53935' }) }}
+```
+
+<Canvas of={IconApi.Settings} />
+
+## Icons in story YAML
+
+A story can put an icon into a slot with an `icon` [story node](?path=/docs/features-story-nodes--docs):
+
+```yaml
+- type: icon
+  pack_id: umami_svg
+  icon_id: star
+  settings:
+    color: '#e53935'
+```
+
+## Icons from /libraries
+
+Drupal themes often point a pack at `/libraries/...`, a folder where the site keeps third-party files such as an icon set from npm. Storybook has no such folder. `resolveIconSource` rewrites those paths to a CDN:
+
+```js
+// .storybook/main.js, in sdcStorybookOptions
+resolveIconSource: (source) =>
+  source.replace(
+    '/libraries/heroicons',
+    'https://cdn.jsdelivr.net/npm/heroicons@2.2.0',
+  ),
+```
+
+The addon downloads only the icons your stories use, when Storybook builds, and puts them into the page like local ones, so they can still be recolored:
+
+<Canvas of={IconApi.Cdn} />

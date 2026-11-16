@@ -28,6 +28,7 @@
     "src/**/*",
     "e2e/**/*",
     "e2e/fixtures/**/.storybook/*.ts",
-    ".storybook/**/*.ts"
+    ".storybook/**/*.ts",
+    "docs/**/*.tsx"
   ]
 }
