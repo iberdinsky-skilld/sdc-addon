@@ -92,7 +92,7 @@ export default {
   component: (args) => COMPONENT(_sdcTwigArgs(args, ${jsLiteral(slotNames)}, ${jsLiteral(propNames)})),
   parameters: {
     ...${jsLiteral(parameters, 2)},
-    docs: {description: {component: ${jsLiteral(description, 2)}}},
+    docs: {description: {component: ${jsLiteral(description, 2)}}, story: {autoplay: true}},
   },
   ${Object.keys(globals).length > 0 ? `globals: ${jsLiteral(globals, 2)},` : ''}
   argTypes: ${jsLiteral(argTypes, 2)},

@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest'
+import { afterAll, describe, expect, test, vi } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -30,6 +30,7 @@ import {
   indexersWithYaml,
   prebundledDeps,
   staticDirs,
+  twigRawPlugin,
 } from '../preset'
 
 import { DEFAULT_DEPENDENCY_MAP } from '../constants'
@@ -253,4 +254,28 @@ describe('preset.viteFinal and helpers', () => {
       )
     ).toBe(true)
   })
+})
+
+describe('twigRawPlugin', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'sdc-raw-'))
+  const file = join(dir, 'card.twig')
+  writeFileSync(file, '<div>{{ label }}</div>')
+  const load = twigRawPlugin().load as (id: string) => string | null
+
+  test('loads card.twig?raw as its text', () => {
+    expect(load(`${file}?raw`)).toBe('export default "<div>{{ label }}</div>"')
+  })
+
+  test.each(['', '?import', '?t=1'])(
+    'leaves card.twig%s to the Twig plugin',
+    (q) => {
+      expect(load(`${file}${q}`)).toBeNull()
+    }
+  )
+
+  test('ignores other files', () => {
+    expect(load(join(dir, 'card.css?raw'))).toBeNull()
+  })
+
+  afterAll(() => rmSync(dir, { recursive: true, force: true }))
 })

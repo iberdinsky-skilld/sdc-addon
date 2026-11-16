@@ -21,6 +21,7 @@ export default tseslint.config(
       'e2e/**/*.ts',
       'e2e/fixtures/**/.storybook/*.ts',
       '.storybook/**/*.ts',
+      'docs/**/*.tsx',
     ],
     extends: [
       js.configs.recommended,

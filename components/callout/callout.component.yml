@@ -15,6 +15,7 @@ props:
       enum:
         - sm
         - lg
+      default: sm
 slots:
   content:
     title: Content

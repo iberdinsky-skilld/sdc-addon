@@ -51,7 +51,7 @@ thirdPartySettings:
       expect(result).toContain('"controls": {')
       expect(result).toContain('"expanded": true')
       expect(result).toContain(
-        'docs: {description: {component: "Banner desc"}}'
+        'docs: {description: {component: "Banner desc"}, story: {autoplay: true}}'
       )
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
@@ -170,7 +170,7 @@ thirdPartySettings:
 
       expect(result).toContain('parameters:')
       expect(result).toContain(
-        'docs: {description: {component: "Branding desc"}}'
+        'docs: {description: {component: "Branding desc"}, story: {autoplay: true}}'
       )
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })

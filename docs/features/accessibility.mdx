@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import * as BrokenA11y from '../../components/broken-a11y/broken-a11y.component.yml'
+import { StoryLink } from '../StoryLink.tsx'
+
+<Meta title="Features/Accessibility" />
+
+# Accessibility
+
+SDC stories are ordinary Storybook stories, so Storybook addons work with them. The most useful one for themes is [@storybook/addon-a11y](https://storybook.js.org/docs/writing-tests/accessibility-testing). It checks every story with [axe](https://github.com/dequelabs/axe-core), the engine behind most accessibility checkers, and lists problems in an **Accessibility** panel under the story.
+
+## Setup
+
+```bash
+npm i @storybook/addon-a11y --save-dev
+```
+
+```js
+// .storybook/main.js
+addons: ['@storybook/addon-a11y', 'storybook-addon-sdc'],
+```
+
+## Example
+
+The <StoryLink of={BrokenA11y.Violations}>Broken a11y</StoryLink> component has five mistakes on purpose. Open it and the Accessibility panel lists them:
+
+- an image without `alt` text;
+- a button with only an icon and no accessible name;
+- a link with only an icon and no accessible name;
+- a form field without a label;
+- text with too little contrast against its background.
+
+Each item in the panel explains the rule and highlights the element in the preview.

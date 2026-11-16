@@ -107,23 +107,29 @@ export interface StoryIndexEntry {
   type: string
 }
 
-export const storiesOf = async (base: string): Promise<StoryIndexEntry[]> => {
+const indexEntries = async (
+  base: string,
+  type: 'story' | 'docs'
+): Promise<StoryIndexEntry[]> => {
   const index = (await (await fetch(`${base}/index.json`)).json()) as {
     entries: Record<string, StoryIndexEntry>
   }
-  return Object.values(index.entries).filter((e) => e.type === 'story')
+  return Object.values(index.entries).filter((e) => e.type === type)
 }
+
+export const storiesOf = (base: string) => indexEntries(base, 'story')
+export const docsOf = (base: string) => indexEntries(base, 'docs')
 
 export interface RenderResult {
   html: string
   errors: string[]
 }
 
-export const renderStory = async (
+// Console errors, page errors and failed requests while `run` drives the page.
+const collectErrors = async <T>(
   page: Page,
-  base: string,
-  id: string
-): Promise<RenderResult> => {
+  run: (errors: string[]) => Promise<T>
+): Promise<{ result: T; errors: string[] }> => {
   const errors: string[] = []
   const onConsole = (msg: { type(): string; text(): string }) => {
     if (msg.type() === 'error') errors.push(`console: ${msg.text()}`)
@@ -135,8 +141,25 @@ export const renderStory = async (
   page.on('console', onConsole)
   page.on('pageerror', onPageError)
   page.on('response', onResponse)
-  let html: string
   try {
+    const result = await run(errors)
+    return {
+      result,
+      errors: [...new Set(errors.filter((e) => !IGNORED.test(e)))],
+    }
+  } finally {
+    page.off('console', onConsole)
+    page.off('pageerror', onPageError)
+    page.off('response', onResponse)
+  }
+}
+
+export const renderStory = async (
+  page: Page,
+  base: string,
+  id: string
+): Promise<RenderResult> => {
+  const { result: html, errors } = await collectErrors(page, async (errors) => {
     await page.goto(`${base}/iframe.html?id=${id}&viewMode=story`, {
       waitUntil: 'load',
     })
@@ -155,7 +178,7 @@ export const renderStory = async (
       )
       .catch(() => {})
     await page.waitForTimeout(300)
-    html = await page
+    const html = await page
       .$eval('#storybook-root', (el) => el.innerHTML.trim())
       .catch(() => '')
     const box = await page
@@ -199,12 +222,43 @@ export const renderStory = async (
       errors.push(
         `class instances in args (no plain Controls): ${instances.join(', ')}`
       )
-  } finally {
-    page.off('console', onConsole)
-    page.off('pageerror', onPageError)
-    page.off('response', onResponse)
-  }
-  return { html, errors: [...new Set(errors.filter((e) => !IGNORED.test(e)))] }
+    return html
+  })
+  return { html, errors }
+}
+
+export const renderDocs = async (
+  page: Page,
+  base: string,
+  id: string
+): Promise<string[]> => {
+  const { errors } = await collectErrors(page, async (errors) => {
+    await page.goto(`${base}/iframe.html?id=${id}&viewMode=docs`, {
+      waitUntil: 'load',
+    })
+    const rendered = await page
+      .waitForSelector('.sbdocs-content', { timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    if (!rendered) errors.push('docs page did not render')
+    await page.waitForLoadState('networkidle')
+    const emptyCanvases = await page.$$eval(
+      '.docs-story',
+      (stories) =>
+        stories.filter(
+          (s) =>
+            !(s as HTMLElement).innerText.trim() &&
+            !s.querySelector('img, svg, iframe, input')
+        ).length
+    )
+    if (emptyCanvases) errors.push(`${emptyCanvases} empty example(s)`)
+    const text = await page
+      .$eval('.sbdocs-content', (el) => (el as HTMLElement).innerText)
+      .catch(() => '')
+    if (/An error occurred whilst rendering|Unable to find template/.test(text))
+      errors.push('template error in an example')
+  })
+  return errors
 }
 
 export const formatProblems = (

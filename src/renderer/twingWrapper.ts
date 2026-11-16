@@ -2,7 +2,6 @@
 import { createSynchronousFilter } from 'twing'
 import type { IconPacks } from '../sdc.d.ts'
 import { toPlainObject, toText } from './collections.ts'
-import { toAttribute } from './attributes.ts'
 import {
   isStory,
   storyContext,
@@ -42,7 +41,6 @@ export function createTwingWrapperRuntime(iconPacks: IconPacks) {
     const env = core.getEnv()
     const id = toText(story['#component'])
     const ctx = storyContext(story, base, resolve)
-    ctx['attributes'] = toAttribute(ctx['attributes'])
     if (env) {
       try {
         return env.render(id, ctx)

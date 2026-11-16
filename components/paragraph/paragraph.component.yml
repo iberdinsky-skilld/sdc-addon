@@ -16,6 +16,7 @@ props:
       type: array
       items:
         type: string
+      default: []
     label:
       type: string
       title: Title
@@ -71,3 +72,25 @@ thirdPartySettings:
               component: 'umami:badge'
               props:
                 icon: 'difficulty'
+      nodes:
+        name: Story nodes
+        props:
+          label: Paragraph with story nodes
+        slots:
+          content:
+            - type: element
+              tag: h3
+              value: '<span>type: element</span>'
+              attributes:
+                class: custom-class
+            - type: image
+              uri: 'https://placehold.co/600x200?text=type:+image'
+            - type: icon
+              pack_id: heroicons_cdn
+              icon_id: star
+      dark:
+        name: Dark theme global
+        globals:
+          theme: dark
+        props:
+          label: Paragraph on the dark theme

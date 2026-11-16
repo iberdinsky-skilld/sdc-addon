@@ -1,0 +1,82 @@
+import { Meta, Canvas } from '@storybook/addon-docs/blocks'
+import * as DesignTokens from '../../components/design-tokens/design-tokens.component.yml'
+
+<Meta title="Features/Design tokens" />
+
+# Design tokens
+
+Drupal 12 adds an experimental Design Tokens API. A theme describes its colors, sizes and fonts once, in `{theme}.tokens.yml`, and Drupal prints them on every page as CSS variables. Component CSS uses `var(--…)` instead of repeating hex codes, so a change in one file updates every component.
+
+Storybook needs the same variables, or a component that uses them renders without colors and spacing. The addon reads the same file and adds the same variables to every story. There is nothing to configure.
+
+## From YAML to CSS variables
+
+The tokens file sits in the theme root, next to `components/` and the theme's `.info.yml`. In this demo it is `umami.tokens.yml`, in the [DTCG](https://www.designtokens.org/) format:
+
+```yaml
+# umami.tokens.yml
+color:
+  $type: color
+  palette:
+    blue-50:
+      $value: '#eff6ff'
+    blue-700:
+      $value: '#1d4ed8'
+  info:
+    border:
+      $value: '{color.palette.blue-700}'
+    background:
+      $value: '{color.palette.blue-50}'
+spacing:
+  $type: dimension
+  md:
+    $value: { value: 1, unit: rem }
+```
+
+Every story gets this CSS:
+
+```css
+:root {
+  --color-palette-blue-50: #eff6ff;
+  --color-palette-blue-700: #1d4ed8;
+  --color-info-border: var(--color-palette-blue-700);
+  --color-info-background: var(--color-palette-blue-50);
+  --spacing-md: 1rem;
+}
+```
+
+What happened:
+
+- **Names.** A token's path becomes the variable name: `color.palette.blue-700` is `--color-palette-blue-700`. Dots, underscores and spaces turn into dashes, the same rule Drupal uses.
+- **References.** `'{color.palette.blue-700}'` points to another token and becomes `var(--color-palette-blue-700)`. `info.border` follows the palette: change `blue-700` and every info border changes with it.
+- **Types.** `$type` on a group applies to every token inside it. A `dimension` of `{ value: 1, unit: rem }` becomes `1rem`.
+
+## Using the variables
+
+Component CSS refers to the variables by name. With semantic names such as `--color-info-border`, the component CSS stays the same when the palette changes:
+
+```css
+/* alert.css */
+.alert--info {
+  border-color: var(--color-info-border);
+  background: var(--color-info-background);
+  padding: var(--spacing-md);
+}
+```
+
+## Example
+
+The demo component below has no colors of its own. Its template only names the variables, `style="background: var(--color-{{ name }})"`, so every swatch and bar takes its value from `umami.tokens.yml`. Edit the file while Storybook runs and the preview reloads with the new values.
+
+<Canvas of={DesignTokens.Basic} />
+
+## Value types
+
+- `color`: a hex string, or `{ hex: … }`.
+- `dimension`: `{ value, unit }` becomes `1rem` or `16px`.
+- `fontFamily`: a list becomes a comma-separated font stack.
+- `fontWeight`: a number, or a name such as `bold` (700) or `semi-bold` (600).
+- `number`: printed as is.
+- `typography`: `{ fontWeight, fontSize, lineHeight, fontFamily }` becomes the `font` shorthand, for example `700 1rem/1.5 Inter`.
+
+The Drupal API is experimental, so the file format may still change. Every namespace can have its own tokens file, and all variables are available to every component, so a subtheme's components can use the base theme's tokens.

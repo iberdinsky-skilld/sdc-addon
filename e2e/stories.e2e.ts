@@ -1,12 +1,15 @@
-// Renders every story of the demo dev server on both engines; fails on console
-// or page errors, failed requests, a visible error box or an empty render.
+// Renders every story and docs page of the demo dev server on both engines;
+// fails on console or page errors, failed requests, a visible error box or an
+// empty render.
 import assert from 'node:assert/strict'
 import type { ChildProcess } from 'node:child_process'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { chromium, type Browser } from 'playwright'
 import {
   ENGINES,
+  docsOf,
   formatProblems,
+  renderDocs,
   renderStory,
   startStorybook,
   stop,
@@ -50,6 +53,27 @@ describe.each(ENGINES)('every story renders on %s', (engine) => {
     expect(
       problems,
       `[${engine}] ${problems.length} of ${stories.length} stories failed:\n${formatProblems(problems)}`
+    ).toEqual([])
+  })
+
+  test('docs pages render without errors', async () => {
+    const docs = await docsOf(base)
+    expect(docs.length).toBeGreaterThan(0)
+
+    assert(browser, 'browser was not launched')
+    const page = await browser.newPage({
+      viewport: { width: 1200, height: 800 },
+    })
+    const problems: Array<{ id: string; errors: string[] }> = []
+    for (const entry of docs) {
+      const errors = await renderDocs(page, base, entry.id)
+      if (errors.length) problems.push({ id: entry.id, errors })
+    }
+    await page.close()
+
+    expect(
+      problems,
+      `[${engine}] ${problems.length} of ${docs.length} docs pages failed:\n${formatProblems(problems)}`
     ).toEqual([])
   })
 })

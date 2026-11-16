@@ -40,3 +40,13 @@ thirdPartySettings:
               url: /about
             - title: Contact
               url: /contact
+      wrapped:
+        name: In a library wrapper
+        library_wrapper: '<fieldset><legend>{{ "library_wrapper"|upper }}</legend>{{ _story }}</fieldset>'
+        props:
+          variant: info
+          items:
+            - title: Home
+              url: /
+            - title: Recipes
+              url: /recipes

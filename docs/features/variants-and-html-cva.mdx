@@ -1,0 +1,57 @@
+import { Meta, Canvas, Controls, Source } from '@storybook/addon-docs/blocks'
+import * as Callout from '../../components/callout/callout.component.yml'
+import template from '../../components/callout/callout.twig?raw'
+
+<Meta title="Features/Variants and html_cva()" />
+
+# Variants and html_cva()
+
+Many components come in versions: a button can be primary or secondary, a message can be info or warning. The template has to turn the chosen version into CSS classes. Drupal adds two tools for this, and both work in the addon.
+
+## Variants
+
+Since Drupal 11.2, a component YAML can list its versions under `variants`. The template gets the chosen one in the `variant` variable.
+
+```yaml
+# callout.component.yml
+variants:
+  info:
+    title: Info
+  warning:
+    title: Warning
+```
+
+In Storybook, `variant` becomes a control with these choices, and stories can set it like any prop:
+
+```yaml
+stories:
+  large_warning:
+    props:
+      variant: warning
+```
+
+## html_cva()
+
+Picking classes in Twig with `if` blocks gets long when a component has several options that combine: a variant, a size, a state. Drupal 11.4 adds `html_cva()` for this. You describe once which class belongs to which value, and it returns the class list. The idea comes from the JavaScript library [class-variance-authority](https://cva.style/) (CVA). The callout's template, `callout.twig`:
+
+<Source code={template} language="twig" />
+
+- `base`: classes every callout gets.
+- `variants`: for each option, the class for each value. `variant` is the component's variant, `size` is an ordinary prop.
+- `compound_variants`: extra classes for a combination, here a warning that is also large.
+- `default_variant`: values to use when an option is empty.
+- `apply()` returns the classes as one string, `callout callout--info callout--sm`. `split(' ')` turns it into a list, because `addClass()` expects one.
+
+## Examples
+
+Basic uses the defaults, info and `sm`, so it gets `callout callout--info callout--sm`:
+
+<Canvas of={Callout.Basic} />
+
+Large warning sets `variant: warning` and `size: lg`. That combination matches `compound_variants`, so it also gets `callout--strong`:
+
+<Canvas of={Callout.Large_warning} />
+
+Try other combinations with the controls. Show code under each example has the classes it produced.
+
+<Controls of={Callout.Large_warning} />

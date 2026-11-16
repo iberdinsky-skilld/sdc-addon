@@ -11,10 +11,14 @@
   flex-direction: column;
   gap: 0.25rem;
 }
+.design-tokens__item code {
+  font-size: 0.75rem;
+}
 .design-tokens__swatch {
   inline-size: 6rem;
   block-size: 3rem;
   border: 1px solid #ccc;
+  border-radius: 4px;
 }
 .design-tokens__space {
   block-size: 1rem;

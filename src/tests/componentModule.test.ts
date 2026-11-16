@@ -34,7 +34,9 @@ describe('componentModule', () => {
       'component: (args) => COMPONENT(_sdcTwigArgs(args, ["content"], ["title"])),'
     )
     expect(code).toContain("from 'virtual:sdc-twig-runtime:twig';")
-    expect(code).toContain('docs: {description: {component: "A card"}}')
+    expect(code).toContain(
+      'docs: {description: {component: "A card"}, story: {autoplay: true}}'
+    )
     expect(code).toContain('export const Basic = {')
     expect(code).toContain('export const Extra = {}')
     expect(code).not.toContain('globals:')

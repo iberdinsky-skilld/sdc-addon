@@ -1,0 +1,89 @@
+import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks'
+import * as Namespaces from '../../components/namespaces/namespaces.component.yml'
+import template from '../../components/namespaces/namespaces.twig?raw'
+
+<Meta title="Features/Namespaces" />
+
+# Namespaces
+
+A Drupal site has many themes and modules, and each can have components with the same names. So Drupal calls a component by two parts, `umami:card`: the machine name of the theme or module, then the component. The first part is the **namespace**.
+
+A subtheme often uses components of its base theme, and a theme may use components of a module. To render them, the addon has to know where each namespace's files are.
+
+## Your own namespace
+
+By default, the namespace is the name of the folder that holds your `components/` folder, the same way Drupal uses the theme's folder name. If the folder is named differently, set the name yourself. This demo lives in a folder called `sdc`, but its theme is `umami`:
+
+```js
+// .storybook/main.js, in sdcStorybookOptions
+namespace: 'umami',
+```
+
+## Adding other namespaces
+
+Two settings are needed. `namespaces` tells the addon where each namespace's folder is. `stories` tells Storybook to show stories for its components too.
+
+```js
+// .storybook/main.js
+import { join, resolve } from 'node:path'
+import { cwd } from 'node:process'
+
+export default {
+  stories: [
+    '../components/**/*.component.yml',
+    '../parent-namespace/components/**/*.component.yml',
+  ],
+  addons: [
+    {
+      name: 'storybook-addon-sdc',
+      options: {
+        sdcStorybookOptions: {
+          namespace: 'umami',
+          namespaces: {
+            'parent-namespace': resolve('./parent-namespace'),
+            assets: join(cwd(), './assets'),
+          },
+        },
+      },
+    },
+  ],
+}
+```
+
+## Using a component from another namespace
+
+In Twig, include it by its full name:
+
+```twig
+{% include 'parent-namespace:banner' with {
+  attributes: create_attribute(),
+  content: 'Hello',
+} only %}
+```
+
+With `only`, pass `attributes: create_attribute()`. Drupal creates `attributes` for every component on its own; the addon does not do it for includes yet.
+
+In story YAML, use a [component node](?path=/docs/features-story-nodes--docs):
+
+```yaml
+- type: component
+  component: 'parent-namespace:banner'
+```
+
+## Folders that are not themes
+
+A namespace can also point at any folder, such as shared images. Its files are then available in Twig as `@name/path`. The `assets` namespace above holds SVG files:
+
+```twig
+{% include '@assets/difficulty.svg' %}
+```
+
+This prints the SVG file's content into the page.
+
+## Example
+
+This demo component belongs to `umami`. Its template includes the banner from `parent-namespace` (the dark bar) and an SVG from `assets` (the icon):
+
+<Source code={template} language="twig" />
+
+<Canvas of={Namespaces.Basic} />

@@ -1,0 +1,39 @@
+import { Meta, Canvas, Source } from '@storybook/addon-docs/blocks'
+import * as FormInput from '../../components/form-input/form-input.component.yml'
+import template from '../../components/form-input/form-input.twig?raw'
+
+<Meta title="Features/Form elements" />
+
+# Form elements
+
+Since Drupal 11.4, a component can be a form field. A form puts it in place of a normal element with `'#type' => 'component'`, and Drupal passes the component the field's state: its name, current value and whether it is required. The template finds them in the `form_state` variable.
+
+In Storybook there is no form, so a story passes `form_state` itself, as a prop.
+
+## The template
+
+The template of the `form-input` component, `form-input.twig`, builds its `<input>` from `form_state`:
+
+<Source code={template} language="twig" />
+
+## The story
+
+The story gives `form_state` the values a form would:
+
+```yaml
+# form-input.component.yml
+stories:
+  required:
+    name: Required, with a value
+    props:
+      id: email-required
+      form_state:
+        value:
+          name: email
+          value: me@example.com
+          required: true
+```
+
+<Canvas of={FormInput.Required} />
+
+The field shows the value and is required. Show code has the `name`, `value` and `required` attributes it got from `form_state`.

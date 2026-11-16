@@ -1,4 +1,4 @@
-import { existsSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, relative } from 'node:path'
 import YamlStoriesPlugin from './vite/storybookYamlStories.ts'
 import { yamlStoriesIndexer } from './vite/storyIndexer.ts'
@@ -55,6 +55,18 @@ export const prebundledDeps = (twigLib?: 'twig' | 'twing'): string[] => [
     ? ['twing', '@christianwiedemann/drupal-twig-extensions/twing']
     : ['twig', 'drupal-twig-extensions/twig']),
 ]
+
+// `card.twig?raw` is the file's text, as for any other file; the Twing plugin
+// would load it as a template.
+export const twigRawPlugin = (): Plugin => ({
+  name: 'vite-plugin-sdc-twig-raw',
+  enforce: 'pre',
+  load(id) {
+    const [file, query] = id.split('?')
+    if (!file?.endsWith('.twig') || !/^raw\b/.test(query ?? '')) return null
+    return `export default ${JSON.stringify(readFileSync(file, 'utf8'))}`
+  },
+})
 
 // Drupal libraries and design tokens; token files are re-read on each page load.
 const sdcHeadPlugin = (
@@ -118,6 +130,7 @@ export async function viteFinal(
       nodePolyfills({
         include: ['buffer', 'stream', 'path'],
       }),
+      twigRawPlugin(),
       ...(twigPlugin ? [twigPlugin] : []),
       YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
       sdcTwigRuntimePlugin(namespaces, sdcStorybookOptions.resolveIconSource),

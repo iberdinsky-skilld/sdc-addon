@@ -1,0 +1,79 @@
+import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks'
+import * as Callout from '../../components/callout/callout.component.yml'
+import * as Breadcrumbs from '../../components/breadcrumbs/breadcrumbs.component.yml'
+
+<Meta title="Features/Schemas and mock data" />
+
+# Schemas and mock data
+
+Every component YAML has a schema: the list of its props and slots, with their types. Drupal uses it to check the values a component gets. The addon uses it to fill stories with values and to build Controls, the panel where you change those values in the browser.
+
+## Where the values come from
+
+For each prop and slot, the Basic story takes:
+
+1. `default` from the schema, if there is one;
+2. otherwise one of its `examples`;
+3. otherwise a made-up value of the right type, from [json-schema-faker](https://github.com/json-schema-faker/json-schema-faker).
+
+Made-up values are random words and numbers. They show that the component works, but they rarely look good, so give important props a `default` or `examples`. The `callout` component:
+
+```yaml
+# callout.component.yml
+props:
+  type: object
+  properties:
+    size:
+      type: string
+      title: Size
+      enum: [sm, lg]
+      default: sm
+slots:
+  content:
+    title: Content
+    examples:
+      - Check the delivery date before ordering.
+```
+
+<Canvas of={Callout.Basic} />
+
+## Controls
+
+Every prop and slot becomes a control. An `enum` becomes radio buttons, a `boolean` a switch, a `string` a text field. `title` and `description` from the schema label the control. Change a value below and the example above updates:
+
+<Controls of={Callout.Basic} />
+
+## Shared definitions
+
+A schema can point to a definition elsewhere instead of repeating it, with `$ref`. Modules such as UI Patterns and Experience Builder ship such definitions, for example a list of links:
+
+```yaml
+# breadcrumbs.component.yml
+props:
+  type: object
+  properties:
+    items:
+      title: Items
+      $ref: 'ui-patterns://links'
+```
+
+The addon needs to know what `ui-patterns://links` means. Load definition files with `externalDefs`, or write single definitions in `customDefs`:
+
+```js
+// .storybook/main.js, in sdcStorybookOptions
+externalDefs: [
+  'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.4.3/drupal-defs/uiPatternsSchema.yml',
+],
+customDefs: {
+  'json-schema-definitions://experience_builder.module/column-width': {
+    type: 'integer',
+    enum: [25, 33, 50],
+  },
+},
+```
+
+<Canvas of={Breadcrumbs.PreviewVariant} />
+
+## Checking component files
+
+With `validate: true`, the addon checks every component YAML against Drupal's schema for component files and prints a warning in the terminal for mistakes, such as a misspelled key. The component still shows up in Storybook.

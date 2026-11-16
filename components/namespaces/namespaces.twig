@@ -1,0 +1,7 @@
+<div{{ attributes.addClass('namespaces') }}>
+  {% include 'parent-namespace:banner' with {
+    attributes: create_attribute(),
+    content: 'parent-namespace:banner',
+  } only %}
+  <div class="namespaces__icon">{% include '@assets/difficulty.svg' %}</div>
+</div>
