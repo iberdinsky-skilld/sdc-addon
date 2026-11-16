@@ -1,3 +1,28 @@
+# v0.28.0 (Mon Nov 16 2026)
+
+#### 🚀 Enhancement
+
+- feature/design tokens [#149](https://github.com/iberdinsky-skilld/sdc-addon/pull/149) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Tag stories of noUi components (Drupal 11.3) [#146](https://github.com/iberdinsky-skilld/sdc-addon/pull/146) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Support html_cva() from Drupal 11.4 on both engines [#145](https://github.com/iberdinsky-skilld/sdc-addon/pull/145) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### 🐛 Bug Fix
+
+- Feature pages in the demo, fixes for ?raw, Controls defaults, library_wrapper and docs behaviors [#150](https://github.com/iberdinsky-skilld/sdc-addon/pull/150) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Leave function slot values to the engine [#148](https://github.com/iberdinsky-skilld/sdc-addon/pull/148) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- fix/plain story args [#144](https://github.com/iberdinsky-skilld/sdc-addon/pull/144) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+- Document source() in static builds, test a base theme outside the project [#143](https://github.com/iberdinsky-skilld/sdc-addon/pull/143) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### 📝 Documentation
+
+- Demo and docs for components as form elements (Drupal 11.4) [#147](https://github.com/iberdinsky-skilld/sdc-addon/pull/147) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.27.2 (Wed Nov 11 2026)
 
 #### 🐛 Bug Fix
