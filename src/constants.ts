@@ -32,8 +32,9 @@ export const DEFAULT_DEPENDENCY_MAP: Record<string, ExternalAsset[]> = {
   ],
 }
 
-// A .twig module id, with or without a Vite query suffix.
-export const TWIG_FILE_RE = /\.twig(\?.*)?$/
+// A .twig module id, with or without a Vite query suffix; `?raw` imports stay
+// plain text.
+export const TWIG_FILE_RE = /\.twig(\?(?!raw\b).*)?$/
 
 // Drupal core's component metadata schema; used when `validate: true`.
 export const DEFAULT_SCHEMA_URL =
@@ -48,7 +49,9 @@ export const DEFAULT_ADDON_OPTIONS: SDCAddonOptions = {
   vitePluginTwingDrupalOptions: {
     include: TWIG_FILE_RE,
   },
-  vitePluginTwigDrupalOptions: {},
+  vitePluginTwigDrupalOptions: {
+    pattern: TWIG_FILE_RE,
+  },
   jsonSchemaFakerOptions: {
     failOnInvalidTypes: false,
     useExamplesValue: true,

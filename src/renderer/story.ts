@@ -1,5 +1,6 @@
 // UI Patterns render arrays for library_wrapper stories: `_story` is
 // { '#component', '#props', '#slots' } and prints itself through `renderStory`.
+import { toAttribute } from './attributes.ts'
 import { entries, toText } from './collections.ts'
 import { PrintableArray } from './nodes.ts'
 
@@ -27,7 +28,8 @@ export function isStory(value: unknown): boolean {
   return false
 }
 
-// Base context plus #props and #slots, each run through `resolveValue`.
+// Base context plus #props and #slots, each run through `resolveValue`, and
+// `attributes` as a DrupalAttribute.
 export function storyContext(
   story: Record<string, unknown>,
   base: StoryBase | undefined,
@@ -41,6 +43,7 @@ export function storyContext(
     ctx[toText(k)] =
       r != null && !(r instanceof PrintableArray) ? new PrintableArray(r) : r
   }
+  ctx['attributes'] = toAttribute(ctx['attributes'])
   return ctx
 }
 

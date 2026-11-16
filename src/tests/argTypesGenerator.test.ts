@@ -24,6 +24,30 @@ describe('generateArgTypes', () => {
     expect(argTypes.category).toHaveProperty('options', ['A', 'B', 'C'])
   })
 
+  it.each([
+    ['sm', 'sm'],
+    [false, 'false'],
+    [[], '[]'],
+  ])('shows default %j as %s in the Default column', (value, summary) => {
+    const content: SDCSchema = {
+      props: { properties: { size: { type: 'string', default: value } } },
+      $defs: {},
+      name: '',
+    }
+    expect(generateArgTypes(content).size?.table?.defaultValue).toEqual({
+      summary,
+    })
+  })
+
+  it('leaves the Default column empty without a default', () => {
+    const content: SDCSchema = {
+      props: { properties: { size: { type: 'string' } } },
+      $defs: {},
+      name: '',
+    }
+    expect(generateArgTypes(content).size?.table).toBeUndefined()
+  })
+
   it('should return an empty object if no properties are provided', () => {
     const content: SDCSchema = {
       props: {

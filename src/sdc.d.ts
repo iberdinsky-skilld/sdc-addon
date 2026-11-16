@@ -171,6 +171,7 @@ export interface VitePluginTwingDrupalOptions {
 
 export interface VitePluginTwigDrupalOptions {
   namespaces?: Record<string, string>
+  pattern?: RegExp
   // Serialized into each compiled template and called with twig.js.
   functions?: Record<string, (twig: typeof Twig) => void>
   globalContext?: Record<string, unknown>

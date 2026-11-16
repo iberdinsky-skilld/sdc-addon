@@ -36,6 +36,16 @@ for (const lib of ['twing', 'twig'] as const) {
         )
       ).toBe('<span>a</span><span>b</span>')
     })
+
+    test('the wrapped component gets attributes', () => {
+      const env = createWrapperEnv(lib, {
+        templates: { '@t/badge/badge.twig': BADGE },
+        namespaces: { t: ['/x'] },
+      })
+      expect(env.render('t:badge', { label: 'Hi' }, {}, '{{ _story }}')).toBe(
+        '<span class="badge">Hi</span>'
+      )
+    })
   })
 }
 
