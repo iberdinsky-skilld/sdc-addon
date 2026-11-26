@@ -15,18 +15,20 @@ export async function injectAssets(assets) {
   await Promise.all(assets.map((asset) => {
     const sel = asset.type === 'js' ? \`script[src="\${asset.url}"]\` : \`link[href="\${asset.url}"]\`
     if (document.querySelector(sel)) return Promise.resolve()
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
+      // Like Drupal, a missing asset never stops the page from rendering.
+      const failed = () => { console.warn(\`[SDC] Could not load \${asset.url}\`); res() }
       if (asset.type === 'js') {
         const s = document.createElement('script')
         applyAttrs(s, asset.attributes)
         // async off: scripts run in list order (jquery before jquery-ui).
         s.async = false
-        s.src = asset.url; s.onload = res; s.onerror = rej; document.head.appendChild(s)
+        s.src = asset.url; s.onload = res; s.onerror = failed; document.head.appendChild(s)
       } else {
         const l = document.createElement('link'); l.rel = 'stylesheet'
         applyAttrs(l, asset.attributes)
         l.href = asset.url
-        if (asset.media) l.media = asset.media; l.onload = res; document.head.appendChild(l)
+        if (asset.media) l.media = asset.media; l.onload = res; l.onerror = failed; document.head.appendChild(l)
       }
     })
   }))
