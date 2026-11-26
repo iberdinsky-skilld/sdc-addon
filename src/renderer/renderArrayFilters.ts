@@ -2,7 +2,7 @@
 import { PrintableArray } from './nodes.ts'
 import { entries, toText } from './collections.ts'
 
-const ROOT_TAG = /^(\s*(?:<!--[\s\S]*?-->\s*)*)<([a-zA-Z][\w:-]*)([^>]*?)(\/?)>/
+const OPEN_TAG = /^<([a-zA-Z][\w:-]*)([^>]*)>/
 
 const escapeAttribute = (text: string): string =>
   text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
@@ -10,13 +10,31 @@ const escapeAttribute = (text: string): string =>
 const attributePattern = (name: string): RegExp =>
   new RegExp(`\\s${name.replace(/[^\w:-]/g, '')}\\s*=\\s*("([^"]*)"|'([^']*)')`)
 
+// Skips leading whitespace and comments with indexOf, not a regex (ReDoS).
+const rootTagStart = (html: string): number => {
+  let i = 0
+  for (;;) {
+    while (i < html.length && /\s/.test(html.charAt(i))) i++
+    if (!html.startsWith('<!--', i)) return i
+    const end = html.indexOf('-->', i + 4)
+    if (end < 0) return -1
+    i = end + 3
+  }
+}
+
 // Text without a root tag stays as it is, like #markup in Drupal.
-const onRootTag = (html: string, change: (attrs: string) => string): string =>
-  html.replace(
-    ROOT_TAG,
-    (_m, before: string, tag: string, attrs: string, close: string) =>
-      `${before}<${tag}${change(attrs)}${close}>`
+const onRootTag = (html: string, change: (attrs: string) => string): string => {
+  const start = rootTagStart(html)
+  if (start < 0) return html
+  return (
+    html.slice(0, start) +
+    html.slice(start).replace(OPEN_TAG, (_m, tag: string, attrs: string) => {
+      const selfClosing = attrs.endsWith('/')
+      const own = selfClosing ? attrs.slice(0, -1) : attrs
+      return `<${tag}${change(own)}${selfClosing ? '/' : ''}>`
+    })
   )
+}
 
 const eachItem = (
   value: unknown,

@@ -26,6 +26,13 @@ describe('add_class', () => {
     expect(addClass(html, ...classes)).toBe(expected)
   })
 
+  test('skips many leading comments in linear time', () => {
+    const html = '<!--' + '--><!--'.repeat(20000) + '--><a>x</a>'
+    const start = performance.now()
+    expect(addClass(html, 'y')).toMatch(/<a class="y">x<\/a>$/)
+    expect(performance.now() - start).toBeLessThan(500)
+  })
+
   test('adds the class to each item of a slot list', () => {
     const out = addClass(new PrintableArray('<a>1</a>', '<a>2</a>'), 'l')
     expect(out).toBeInstanceOf(PrintableArray)
