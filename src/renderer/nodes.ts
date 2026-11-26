@@ -38,18 +38,17 @@ const toPrintable = (items: unknown[]): PrintableArray =>
     ...items.map((item) => (Array.isArray(item) ? toPrintable(item) : item))
   )
 
-// Lists and slot values print their items; only the component's keys, '' stays falsy.
+// Slot values print their items; props stay plain data, as in Drupal, so
+// `attributes.addClass(list)` and `merge` get real arrays. '' stays falsy.
 export function twigArgs(
   args: Record<string, unknown>,
-  slots: readonly string[],
-  props: readonly string[]
+  slots: readonly string[]
 ): Record<string, unknown> {
   const out = { ...args }
-  for (const key of [...slots, ...props]) {
+  for (const key of slots) {
     const value = args[key]
     if (Array.isArray(value)) out[key] = toPrintable(value)
     else if (
-      slots.includes(key) &&
       value != null &&
       value !== '' &&
       typeof value !== 'function' &&

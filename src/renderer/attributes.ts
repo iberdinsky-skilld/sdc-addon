@@ -38,6 +38,15 @@ export function castVarsAttributes(vars: unknown): unknown {
 // Map, a scalar); cast it to an array first, like Drupal.
 const PATCHED = '__sdcClassPatched'
 
+// twig.js turns `[...]|merge(x ?: [])` into a hash; Drupal takes any list.
+const classList = (value: unknown): unknown =>
+  value == null ||
+  typeof value !== 'object' ||
+  Array.isArray(value) ||
+  value instanceof Map
+    ? value
+    : entries(value).map(([, item]) => item)
+
 export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
   const proto = AttrClass.prototype
   // On the prototype: the twig.js and Twing bundles share drupal-attribute.
@@ -62,7 +71,11 @@ export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
       name,
       function (this: DrupalAttribute, ...args: unknown[]): unknown {
         normalize(this)
-        const result: unknown = Reflect.apply(original, this, args)
+        const result: unknown = Reflect.apply(
+          original,
+          this,
+          name === 'hasClass' ? args : args.map(classList)
+        )
         return result
       }
     )
