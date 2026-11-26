@@ -13,6 +13,7 @@ Drupal [Single Directory Components](https://www.drupal.org/docs/develop/theming
 - [Features](#features)
 - [Addon options](#addon-options)
 - [Story options](#story-options)
+- [Twig engines](#twig-engines)
 - [Production static build](#production-static-build)
 - [Dependencies](#dependencies)
 - [Known issues](#known-issues)
@@ -81,6 +82,21 @@ const config: StorybookConfig = {
   framework: { name: '@storybook/html-vite', options: {} },
 }
 export default config
+```
+
+If the theme already has a `vite.config.js` (for its asset build or its own Storybook), Storybook loads it too, and its plugins can break the stories. Give Storybook an empty config instead:
+
+```js
+// .storybook/main.js
+framework: {
+  name: '@storybook/html-vite',
+  options: { builder: { viteConfigPath: '.storybook/vite.config.js' } },
+},
+```
+
+```js
+// .storybook/vite.config.js
+export default {}
 ```
 
 ## Features
@@ -252,6 +268,18 @@ export default {
   ],
 }
 ```
+
+## Twig engines
+
+Twig.js and Twing lack some of what Drupal templates use. The addon adds it, so the same templates work on both engines:
+
+- `icon()` from the Icon API, both engines.
+- `html_cva()`, both engines, with named arguments on Twig.js too.
+- `|add_class` and `|set_attribute` from Drupal core: the class or attribute goes on the element itself. Twig.js had no such filters; Twing's wrapped the value in a `<div>`.
+- `include()` as a function on Twig.js, which only had the `{% include %}` tag.
+- `is sequence` and `is mapping` tests from Twig 3.11, both engines.
+- `addClass()` and `removeClass()` take arrays, Twing Maps and the hashes Twig.js makes from `merge`, also on `create_attribute()` objects.
+- Lists in slots print item by item, without commas, on Twig.js.
 
 ## Production static build
 

@@ -1,11 +1,15 @@
-// Twing browser runtime: env capture, icon() and the include() attributes cast.
+// Twing browser runtime: what the engine lacks for Drupal templates.
 import {
+  createSynchronousFilter,
   createSynchronousFunction,
+  createSynchronousTest,
   type TwingSynchronousEnvironment,
 } from 'twing'
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
 import { buildIconContext } from './icons.ts'
+import { isMapping, isSequence } from './collections.ts'
+import { addClass, setAttribute } from './renderArrayFilters.ts'
 import { patchDrupalAttribute, castVarsAttributes } from './attributes.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS } from './cva.ts'
 
@@ -89,6 +93,40 @@ export function createTwingCore(iconPacks: IconPacks) {
           { name: 'icon_id' },
           { name: 'settings', defaultValue: {} },
         ]
+      )
+    )
+
+    // Drupal sets these on the element; drupal-twig-extensions wraps it in a <div>.
+    e.addFilter(
+      createSynchronousFilter(
+        'add_class',
+        (_twingCtx, value: unknown, ...classes: unknown[]) =>
+          addClass(value, ...classes),
+        [],
+        { is_variadic: true }
+      )
+    )
+    e.addFilter(
+      createSynchronousFilter(
+        'set_attribute',
+        (_twingCtx, value: unknown, name: unknown, attributeValue: unknown) =>
+          setAttribute(value, name, attributeValue),
+        [{ name: 'name' }, { name: 'value', defaultValue: null }]
+      )
+    )
+
+    e.addTest(
+      createSynchronousTest(
+        'sequence',
+        (_twingCtx, value: unknown) => isSequence(value),
+        []
+      )
+    )
+    e.addTest(
+      createSynchronousTest(
+        'mapping',
+        (_twingCtx, value: unknown) => isMapping(value),
+        []
       )
     )
 

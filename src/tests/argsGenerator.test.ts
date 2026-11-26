@@ -5,6 +5,22 @@ import generateStorybookArgs, { toFakerSchema } from '../generate/args'
 import type { SDCSchema } from '../sdc.d.ts'
 
 describe('generateStorybookArgs', () => {
+  it('leaves out a prop whose $ref is unknown and fills the others', async () => {
+    const content: SDCSchema = {
+      props: {
+        properties: {
+          icon: { $ref: 'ui-patterns://unknown' },
+          title: { type: 'string', examples: ['Hello'] },
+        },
+      },
+      name: '',
+    }
+    const args = await generateStorybookArgs(content, {
+      useExamplesValue: true,
+    })
+    expect(args).toEqual({ title: 'Hello' })
+  })
+
   it('should generate arguments from properties', async () => {
     const content: SDCSchema = {
       props: {

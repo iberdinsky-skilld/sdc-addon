@@ -151,4 +151,13 @@ describe('patchDrupalAttribute', () => {
       '<a href="/" class="menu__link">Home</a>'
     )
   })
+
+  test('twig.js addClass() takes the hash from [...]|merge(list ?: [])', () => {
+    addTwigExtensions(Twig)
+    const data =
+      "{% set c = ['accordion']|merge(extra ?: []) %}<div{{ create_attribute().addClass(c) }}></div>"
+    expect(Twig.twig({ data }).render({ extra: [] })).toBe(
+      '<div class="accordion"></div>'
+    )
+  })
 })

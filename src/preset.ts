@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import YamlStoriesPlugin from './vite/storybookYamlStories.ts'
 import { yamlStoriesIndexer } from './vite/storyIndexer.ts'
 import { mergeConfig } from 'vite'
@@ -142,7 +143,14 @@ export async function viteFinal(
     },
     build: { target: 'esnext' },
     resolve: {
-      alias: [...namespaces.toViteAlias()],
+      alias: [
+        ...namespaces.toViteAlias(),
+        // One build, so the runtime's patches reach drupal-twig-extensions too.
+        {
+          find: /^drupal-attribute$/,
+          replacement: fileURLToPath(import.meta.resolve('drupal-attribute')),
+        },
+      ],
     },
   })
 }

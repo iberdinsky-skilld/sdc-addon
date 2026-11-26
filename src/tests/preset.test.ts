@@ -68,6 +68,17 @@ const dirEntries = (list: (string | StaticDir)[]): StaticDir[] =>
   list.filter((d): d is StaticDir => typeof d !== 'string')
 
 describe('preset.viteFinal and helpers', () => {
+  test('viteFinal pins drupal-attribute to one build for every importer', async () => {
+    const result = await viteFinal(
+      {},
+      { sdcStorybookOptions: { twigLib: 'twig' } }
+    )
+    const pin = aliasesOf(result).find(
+      (a) => String(a.find) === String(/^drupal-attribute$/)
+    )
+    expect(pin?.replacement).toMatch(/drupal-attribute\/index\.mjs$/)
+  })
+
   test('viteFinal includes nodePolyfills and twing plugin when twigLib=twing', async () => {
     const config: UserConfig = { plugins: [] }
     const options: SDCAddonOptions = {
@@ -76,10 +87,9 @@ describe('preset.viteFinal and helpers', () => {
 
     const result = await viteFinal(config, options)
 
-    const aliases = aliasesOf(result)
+    const aliases = aliasesOf(result).filter((a) => typeof a.find === 'string')
     expect(aliases.length).toBeGreaterThan(0)
     for (const a of aliases) {
-      expect(typeof a.find).toBe('string')
       expect(String(a.find).startsWith('@')).toBe(true)
       expect(typeof a.replacement).toBe('string')
       expect(a.replacement.length).toBeGreaterThan(0)

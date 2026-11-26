@@ -14,6 +14,7 @@ interface FakeElement {
   attrs: Record<string, string>
   setAttribute(k: string, v: string): void
   onload?: () => void
+  onerror?: () => void
   [prop: string]: unknown
 }
 
@@ -35,6 +36,11 @@ const fakeDocument = () => {
     },
     head: {
       appendChild: (el: FakeElement) => {
+        const url = String(el['src'] ?? el['href'])
+        if (url.includes('missing')) {
+          setTimeout(() => el.onerror?.(), 1)
+          return
+        }
         // Simulate the network finishing in reverse order.
         setTimeout(() => el.onload?.(), created.length === 1 ? 20 : 1)
       },
@@ -69,6 +75,26 @@ describe('injectAssets', () => {
     const link = created.find((e) => e.tag === 'link')
     expect(link?.['href']).toBe('https://cdn/ui.css')
     expect(link?.['media']).toBe('print')
+  })
+
+  test('a CSS or JS that fails to load warns and does not stop the story', async () => {
+    const { doc, created } = fakeDocument()
+    vi.stubGlobal('document', doc)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const { injectAssets } = await loadInjector()
+    await expect(
+      injectAssets([
+        { type: 'js', url: 'https://cdn/missing.js' },
+        { type: 'css', url: 'https://cdn/missing.css' },
+        { type: 'js', url: 'https://cdn/ok.js' },
+      ])
+    ).resolves.toBeUndefined()
+    expect(warn.mock.calls.map((c) => String(c[0]))).toEqual([
+      '[SDC] Could not load https://cdn/missing.js',
+      '[SDC] Could not load https://cdn/missing.css',
+    ])
+    expect(created).toHaveLength(3)
+    warn.mockRestore()
   })
 
   test('is a no-op without a document', async () => {

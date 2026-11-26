@@ -280,8 +280,8 @@ thirdPartySettings:
 
       const result = await plugin.load.call(ctx, id)
       expect(typeof result).toBe('string')
-      expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
-      expect(result).toContain("import.meta.glob('./*.css'")
+      expect(result).toMatch(/import\.meta\.glob\('\.\/[\w-]+\.\{js,mjs\}'\)/)
+      expect(result).toMatch(/import\.meta\.glob\('\.\/[\w-]+\.css'/)
       // Namespace path may vary.
       expect(result).toMatch(/import COMPONENT from '.*card.twig'/)
     } finally {
@@ -402,7 +402,7 @@ thirdPartySettings:
         join(compDir, 'slider.component.yml')
       )
 
-      expect(result).toContain("import.meta.glob('./*.css'")
+      expect(result).toMatch(/import\.meta\.glob\('\.\/[\w-]+\.css'/)
       expect(result).not.toContain("import './slider.component.yml';")
       expect(result).not.toContain("import './data.yml';")
       expect(result).not.toContain('.story.yml')
@@ -755,8 +755,8 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
         join(compDir, 'slider.component.yml')
       )
 
-      expect(result).toContain("import.meta.glob('./*.css'")
-      expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
+      expect(result).toMatch(/import\.meta\.glob\('\.\/[\w-]+\.css'/)
+      expect(result).toMatch(/import\.meta\.glob\('\.\/[\w-]+\.\{js,mjs\}'\)/)
       expect(result).toContain('swiper.min.css')
       expect(result).toContain('injectAssets(')
       expect(result).not.toContain('sdcExternalAssets')
@@ -791,7 +791,7 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
         join(compDir, 'widget.component.yml')
       )
 
-      expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
+      expect(result).toMatch(/import\.meta\.glob\('\.\/[\w-]+\.\{js,mjs\}'\)/)
       expect(result).toContain('vendor.js')
       expect(result).toContain('injectAssets(')
       expect(result).not.toContain('sdcExternalAssets')
@@ -895,9 +895,9 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
       expect(result).toContain("await import('./js/carousel.js');")
 
       // Local CSS import sits after the eager css glob.
-      expect(result.indexOf("import.meta.glob('./*.css'")).toBeLessThan(
-        result.indexOf("import './styles/carousel.css';")
-      )
+      expect(
+        result.search(/import\.meta\.glob\('\.\/[\w-]+\.css'/)
+      ).toBeLessThan(result.indexOf("import './styles/carousel.css';"))
       // Local JS dynamic import sits after asset injection and before the
       // flat js glob runs.
       const jsImportIdx = result.indexOf("await import('./js/carousel.js');")
@@ -905,7 +905,7 @@ describe('vite-plugin-storybook-yaml-stories — libraryOverrides integration', 
         result.indexOf("import './styles/carousel.css';")
       )
       expect(jsImportIdx).toBeLessThan(
-        result.indexOf("import.meta.glob('./*.{js,mjs}')")
+        result.search(/import\.meta\.glob\('\.\/[\w-]+\.\{js,mjs\}'\)/)
       )
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
@@ -1046,8 +1046,10 @@ describe('component asset imports via import.meta.glob', () => {
         join(compDir, 'widget.component.yml')
       )
 
-      expect(result).toContain("import.meta.glob('./*.css', { eager: true })")
-      expect(result).toContain("import.meta.glob('./*.{js,mjs}')")
+      expect(result).toMatch(
+        /import\.meta\.glob\('\.\/[\w-]+\.css', \{ eager: true \}\)/
+      )
+      expect(result).toMatch(/import\.meta\.glob\('\.\/[\w-]+\.\{js,mjs\}'\)/)
       expect(result).not.toContain("import './widget.css';")
       expect(result).not.toContain("import './widget.js';")
       expect(result).not.toContain("await import('./widget.js');")
