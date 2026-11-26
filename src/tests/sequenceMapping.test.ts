@@ -4,7 +4,6 @@ import twing from 'twing'
 import { createTwigCore } from '../renderer/twig.ts'
 import { createTwingCore } from '../renderer/twing.ts'
 
-// Twig 3.11 tests; UI Suite Bootstrap uses `is not sequence`.
 const CASES: Array<[string, Record<string, unknown>, string]> = [
   ["{{ ['a', 'b'] is sequence ? 'y' : 'n' }}", {}, 'y'],
   ["{{ {a: 1} is sequence ? 'y' : 'n' }}", {}, 'n'],

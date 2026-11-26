@@ -145,8 +145,7 @@ export async function viteFinal(
     resolve: {
       alias: [
         ...namespaces.toViteAlias(),
-        // drupal-attribute ships separate ESM and CJS builds; drupal-twig-extensions
-        // requires the CJS one, so pin both to the copy the runtime patches.
+        // One build, so the runtime's patches reach drupal-twig-extensions too.
         {
           find: /^drupal-attribute$/,
           replacement: fileURLToPath(import.meta.resolve('drupal-attribute')),

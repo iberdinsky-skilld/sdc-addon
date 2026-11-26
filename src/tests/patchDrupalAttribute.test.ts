@@ -152,7 +152,6 @@ describe('patchDrupalAttribute', () => {
     )
   })
 
-  // Radix builds class lists this way; twig.js returns a hash, not a list.
   test('twig.js addClass() takes the hash from [...]|merge(list ?: [])', () => {
     addTwigExtensions(Twig)
     const data =

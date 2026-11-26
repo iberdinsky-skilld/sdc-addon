@@ -74,8 +74,7 @@ export const componentModule = ({
     .map((p) => `await import('${p}');`)
     .join('\n')
 
-  // Drupal attaches only <name>.css and <name>.js; other files in the folder can
-  // be anything, such as a theme's own *.stories.js.
+  // Drupal attaches only <name>.css and <name>.js.
   const name = basename(twigTemplate, '.twig')
 
   return `

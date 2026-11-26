@@ -1,6 +1,4 @@
-// Drupal core's |add_class and |set_attribute filters. In Drupal they set
-// #attributes on a render array, which lands on its root tag; here a slot is
-// already HTML, so the root tag of each item gets the class or attribute.
+// Drupal core's |add_class and |set_attribute, on the root tag of rendered HTML.
 import { PrintableArray } from './nodes.ts'
 import { entries, toText } from './collections.ts'
 

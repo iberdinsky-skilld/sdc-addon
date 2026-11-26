@@ -56,8 +56,7 @@ export function toAttributeEntry(value: unknown): DrupalAttributeEntry {
   return toText(value)
 }
 
-// Twig 3.11 tests: a sequence is a list keyed 0, 1, 2…; a mapping is any other
-// array or hash.
+// Twig 3.11: a sequence is a list keyed 0, 1, 2…; a mapping is any other hash.
 export function isSequence(value: unknown): boolean {
   if (Array.isArray(value)) return true
   if (value === null || typeof value !== 'object') return false

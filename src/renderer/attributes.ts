@@ -3,7 +3,7 @@ import DrupalAttribute, { type DrupalAttributeEntry } from 'drupal-attribute'
 import { isRecord } from '../guards.ts'
 import { entries, TWIG_JS_KEYS } from './collections.ts'
 
-// Duck-typed: twig.js and Twing bundle separate DrupalAttribute classes.
+// Duck-typed: Node loads drupal-attribute twice, as ESM and as CJS.
 export const isDrupalAttribute = (value: unknown): value is DrupalAttribute =>
   typeof value === 'object' &&
   value !== null &&
@@ -49,7 +49,7 @@ const classList = (value: unknown): unknown =>
 
 export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
   const proto = AttrClass.prototype
-  // On the prototype: the twig.js and Twing bundles share drupal-attribute.
+  // On the prototype, so every instance gets the fixes.
   if (Object.prototype.hasOwnProperty.call(proto, PATCHED)) return
   const normalize = (self: DrupalAttribute): void => {
     if (typeof self.get !== 'function') return

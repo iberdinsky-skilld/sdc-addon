@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest'
 import Twig from 'twig'
 import { createTwigCore } from '../renderer/twig.ts'
 
-// DSFR calls include() as a function; twig.js only has the tag.
 describe('include() on twig.js', () => {
   createTwigCore({}).registerCore(Twig)
   Twig.twig({

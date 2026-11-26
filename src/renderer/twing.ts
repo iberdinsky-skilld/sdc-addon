@@ -1,4 +1,4 @@
-// Twing browser runtime: env capture, icon() and the include() attributes cast.
+// Twing browser runtime: what the engine lacks for Drupal templates.
 import {
   createSynchronousFilter,
   createSynchronousFunction,
@@ -96,8 +96,7 @@ export function createTwingCore(iconPacks: IconPacks) {
       )
     )
 
-    // drupal-twig-extensions wraps the value in a <div>; Drupal puts the class
-    // or attribute on the element itself.
+    // Drupal sets these on the element; drupal-twig-extensions wraps it in a <div>.
     e.addFilter(
       createSynchronousFilter(
         'add_class',

@@ -120,8 +120,7 @@ const generateArgs = (
       try {
         value = await generate(schemaWithDefs, jsonSchemaFakerOptions)
       } catch (error) {
-        // One prop the faker cannot fill (an unknown $ref) must not cost the
-        // whole component its stories.
+        // An unknown $ref must not cost the whole component its stories.
         logger.warn(`No mock value for "${key}": ${String(error)}`)
         return acc
       }

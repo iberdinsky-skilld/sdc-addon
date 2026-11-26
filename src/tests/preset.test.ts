@@ -68,7 +68,6 @@ const dirEntries = (list: (string | StaticDir)[]): StaticDir[] =>
   list.filter((d): d is StaticDir => typeof d !== 'string')
 
 describe('preset.viteFinal and helpers', () => {
-  // drupal-twig-extensions requires the CJS build, the runtime imports the ESM one.
   test('viteFinal pins drupal-attribute to one build for every importer', async () => {
     const result = await viteFinal(
       {},

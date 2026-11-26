@@ -1,4 +1,4 @@
-// Twig.js browser runtime: env capture and icon().
+// Twig.js browser runtime: what the engine lacks for Drupal templates.
 import type Twig from 'twig'
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
@@ -26,7 +26,7 @@ export type TwigJs = Omit<typeof Twig, 'extendFilter' | 'extendFunction'> & {
   ): void
   filters?: Record<string, (value: unknown, params: unknown) => unknown>
   __sdcMergeOverridden?: boolean
-  __sdcIconRegistered?: boolean
+  __sdcRegistered?: boolean
 }
 
 const INCLUDE_ARGUMENTS = [
@@ -61,8 +61,8 @@ export function createTwigCore(iconPacks: IconPacks) {
 
   function registerCore(Twig: TwigJs): void {
     twig = Twig
-    if (Twig.__sdcIconRegistered) return
-    Twig.__sdcIconRegistered = true
+    if (Twig.__sdcRegistered) return
+    Twig.__sdcRegistered = true
     Twig.extendTest('sequence', (value: unknown) => isSequence(value))
     Twig.extendTest('mapping', (value: unknown) => isMapping(value))
     Twig.extendFilter('add_class', (value, params) =>
