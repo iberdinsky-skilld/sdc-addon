@@ -1,3 +1,23 @@
+# v0.29.0 (Thu Nov 26 2026)
+
+#### 🚀 Enhancement
+
+- Works on more real Drupal themes: Drupal's add_class and set_attribute, include() on Twig.js, Twig 3.11 tests, Storybook 11 RC [#157](https://github.com/iberdinsky-skilld/sdc-addon/pull/157) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### 🐛 Bug Fix
+
+- html_cva() follows Twig's Cva exactly, without class-variance-authority [#156](https://github.com/iberdinsky-skilld/sdc-addon/pull/156) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### ⚠️ Pushed to `main`
+
+- Design tokens come from Drupal 11.5, not Drupal 12 ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.28.0 (Mon Nov 16 2026)
 
 #### 🚀 Enhancement
