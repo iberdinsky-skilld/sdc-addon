@@ -67,6 +67,39 @@ describe('html_cva matches Twig', () => {
     )
   })
 
+  // Output of Twig 3.x Cva::apply() for the same recipe.
+  test.each([
+    [
+      { color: 'red', size: 'lg', disabled: true },
+      [],
+      'btn c-red s-lg off bold',
+    ],
+    [{ color: 'red' }, [], 'btn c-red s-lg on'],
+    [{ size: 'sm', color: 'blue' }, [], 'btn s-sm c-blue on'],
+    [{ color: 'red', size: null }, [], 'btn c-red s-lg on'],
+    [{ color: 'blue' }, [], 'btn c-blue s-lg on'],
+    [
+      { color: 'red', size: 'lg' },
+      ['extra', 'btn'],
+      'btn c-red s-lg bold on extra',
+    ],
+  ])(
+    'apply(%o) keeps recipe order and ignores defaults in compounds',
+    (recipes, extra, expected) => {
+      const cva = htmlCva(
+        'btn',
+        {
+          color: { red: 'c-red', blue: 'c-blue' },
+          size: { sm: 's-sm', lg: 's-lg' },
+          disabled: { true: 'off', false: 'on' },
+        },
+        [{ color: ['red'], size: ['lg'], class: 'bold' }],
+        { size: 'lg', disabled: false }
+      )
+      expect(cva.apply(recipes, ...extra)).toBe(expected)
+    }
+  )
+
   test('whitespace in classes is normalized and deduplicated', () => {
     const cva = htmlCva('font-semibold  border\nrounded border', variants)
     expect(cva.apply({ colors: 'primary' })).toBe(

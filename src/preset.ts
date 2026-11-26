@@ -47,7 +47,6 @@ export const dependencyHeadTags = (
 // Found only when the first story loads, they make Vite reload the page mid-load.
 export const prebundledDeps = (twigLib?: 'twig' | 'twing'): string[] => [
   'drupal-attribute',
-  'class-variance-authority',
   'vite-plugin-node-polyfills/shims/buffer',
   'vite-plugin-node-polyfills/shims/global',
   'vite-plugin-node-polyfills/shims/process',
