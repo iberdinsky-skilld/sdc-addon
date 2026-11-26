@@ -4,6 +4,7 @@ import type { Args } from '@storybook/html-vite'
 import type { JSONSchema4 } from 'json-schema'
 import type { SDCSchema, SlotDefinition } from '../sdc.d.ts'
 import { isRecord } from '../guards.ts'
+import { logger } from '../logger.ts'
 
 // A schema object in the faker's dialect (`JsonSchema` also allows booleans).
 type FakerSchema = Exclude<JsonSchema, boolean>
@@ -115,7 +116,15 @@ const generateArgs = (
         ...(defs ? { $defs: toFakerSchemaMap(defs) } : {}),
       }
 
-      const value = await generate(schemaWithDefs, jsonSchemaFakerOptions)
+      let value: unknown
+      try {
+        value = await generate(schemaWithDefs, jsonSchemaFakerOptions)
+      } catch (error) {
+        // One prop the faker cannot fill (an unknown $ref) must not cost the
+        // whole component its stories.
+        logger.warn(`No mock value for "${key}": ${String(error)}`)
+        return acc
+      }
       // An object for a non-object schema (an enum of objects) becomes its values.
       acc[key] =
         isRecord(value) && property.type !== 'object'
