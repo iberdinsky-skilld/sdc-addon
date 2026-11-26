@@ -65,7 +65,7 @@ const sdcStorybookOptions: SDCStorybookOptions = {
   },
 
   externalDefs: [
-    'https://cdn.jsdelivr.net/gh/iberdinsky-skilld/sdc-addon@v0.4.3/drupal-defs/uiPatternsSchema.yml',
+    join(cwd(), './drupal-defs/uiPatternsSchema.yml'),
     join(cwd(), './drupal-defs/exBuilderSchema.yml'),
   ],
 }
