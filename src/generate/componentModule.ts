@@ -1,6 +1,7 @@
 // The CSF module generated for a *.component.yml.
 import type { Args, ArgTypes, Globals } from 'storybook/internal/types'
 import type { Parameters } from '@storybook/html-vite'
+import { basename } from 'node:path'
 import { jsLiteral } from '../utils.ts'
 import type { LocalCssImport } from './libraryAssets.ts'
 import type { ExternalAsset } from '../sdc.d.ts'
@@ -21,7 +22,6 @@ export interface ComponentModuleInput {
   basicArgs: Args
   stories: string
   slotNames: string[]
-  propNames: string[]
 }
 
 export const componentModule = ({
@@ -40,7 +40,6 @@ export const componentModule = ({
   basicArgs,
   stories,
   slotNames,
-  propNames,
 }: ComponentModuleInput): string => {
   // Plain local CSS is bundled like the glob CSS.
   const eagerCss = localAssets.css.filter((c) => !c.media)
@@ -75,9 +74,13 @@ export const componentModule = ({
     .map((p) => `await import('${p}');`)
     .join('\n')
 
+  // Drupal attaches only <name>.css and <name>.js; other files in the folder can
+  // be anything, such as a theme's own *.stories.js.
+  const name = basename(twigTemplate, '.twig')
+
   return `
 import COMPONENT from '${twigTemplate}';
-void import.meta.glob('./*.css', { eager: true });
+void import.meta.glob('./${name}.css', { eager: true });
 ${localCssImports}
 ${localCssUrlImports}
 import { injectAssets } from '${assetInjector}';
@@ -86,10 +89,10 @@ ${componentImports}
 ${templateImports}
 ${assetInjection}
 ${localJsImports}
-await Promise.all(Object.values(import.meta.glob('./*.{js,mjs}')).map(fn => fn()));
+await Promise.all(Object.values(import.meta.glob('./${name}.{js,mjs}')).map(fn => fn()));
 
 export default {
-  component: (args) => COMPONENT(_sdcTwigArgs(args, ${jsLiteral(slotNames)}, ${jsLiteral(propNames)})),
+  component: (args) => COMPONENT(_sdcTwigArgs(args, ${jsLiteral(slotNames)})),
   parameters: {
     ...${jsLiteral(parameters, 2)},
     docs: {description: {component: ${jsLiteral(description, 2)}}, story: {autoplay: true}},

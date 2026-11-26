@@ -22,7 +22,6 @@ const input = (
   basicArgs: {},
   stories: 'export const Extra = {}',
   slotNames: ['content'],
-  propNames: ['title'],
   ...overrides,
 })
 
@@ -31,7 +30,7 @@ describe('componentModule', () => {
     const code = componentModule(input())
     expect(code).toContain("import COMPONENT from '@umami/card/card.twig';")
     expect(code).toContain(
-      'component: (args) => COMPONENT(_sdcTwigArgs(args, ["content"], ["title"])),'
+      'component: (args) => COMPONENT(_sdcTwigArgs(args, ["content"])),'
     )
     expect(code).toContain("from 'virtual:sdc-twig-runtime:twig';")
     expect(code).toContain(
@@ -41,6 +40,13 @@ describe('componentModule', () => {
     expect(code).toContain('export const Extra = {}')
     expect(code).not.toContain('globals:')
     expect(code).not.toContain('await injectAssets(')
+  })
+
+  test("loads only the component's own CSS and JS, like Drupal", () => {
+    const code = componentModule(input())
+    expect(code).toContain("import.meta.glob('./card.css', { eager: true })")
+    expect(code).toContain("import.meta.glob('./card.{js,mjs}')")
+    expect(code).not.toContain("'./*.")
   })
 
   test('emits component globals only when there are some', () => {
