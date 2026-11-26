@@ -1,6 +1,5 @@
-// Twig's html_cva() on top of class-variance-authority; hashes may arrive as
+// Twig's html_cva(), ported from Twig\Extra\Html\Cva; hashes may arrive as
 // Twing Maps or twig.js objects.
-import { cva } from 'class-variance-authority'
 import { isString } from '../guards.ts'
 import { entries, toText } from './collections.ts'
 
@@ -11,11 +10,16 @@ const list = (value: unknown): unknown[] => {
   return [value]
 }
 
-const hash = <T>(value: unknown, item: (v: unknown) => T): Record<string, T> =>
-  Object.fromEntries(entries(value).map(([k, v]) => [toText(k), item(v)]))
+const map = (value: unknown): Map<string, unknown> =>
+  new Map(entries(value).map(([k, v]) => [toText(k), v]))
 
-// Twig keeps string classes only; variant names compare as strings.
-const classes = (value: unknown): string[] => list(value).filter(isString)
+// Booleans pick the 'true' / 'false' variant, as in Twig.
+const variantName = (value: unknown): string =>
+  typeof value === 'boolean'
+    ? String(value)
+    : value == null
+      ? ''
+      : toText(value)
 
 export function htmlCva(
   base: unknown = [],
@@ -23,24 +27,35 @@ export function htmlCva(
   compoundVariants: unknown = [],
   defaultVariant: unknown = {}
 ) {
-  const resolve = cva(classes(base), {
-    variants: hash(variants, (names) => hash(names, classes)),
-    defaultVariants: hash(defaultVariant, toText),
-    compoundVariants: list(compoundVariants).map((compound) =>
-      Object.fromEntries(
-        entries(compound).map(([key, value]) => [
-          toText(key),
-          key === 'class' ? classes(value) : list(value).map(toText),
-        ])
-      )
-    ),
-  })
+  const groups = map(variants)
+  const classesOf = (group: string, value: unknown): unknown[] =>
+    list(map(groups.get(group)).get(variantName(value)))
+
   return {
     apply(recipes: unknown, ...additionalClasses: unknown[]): string {
-      // null keeps the default, and repeated classes print once, as in Twig.
-      const props = hash(recipes, (v) => (v == null ? undefined : toText(v)))
-      const output = [resolve(props), ...classes(additionalClasses)].join(' ')
-      return [...new Set(output.split(/\s+/).filter(Boolean))].join(' ')
+      const given = map(recipes)
+      const isSet = (name: string) => given.get(name) != null
+      // Compounds see only the given recipes; defaults come after them.
+      const classes = [
+        ...list(base),
+        ...[...given].flatMap(([name, value]) => classesOf(name, value)),
+        ...list(compoundVariants).flatMap((compound) => {
+          const conditions = map(compound)
+          const matches = [...conditions].every(
+            ([name, values]) =>
+              name === 'class' ||
+              (isSet(name) && list(values).includes(given.get(name)))
+          )
+          return matches ? list(conditions.get('class')) : []
+        }),
+        ...[...map(defaultVariant)].flatMap(([name, value]) =>
+          isSet(name) ? [] : classesOf(name, value)
+        ),
+        ...additionalClasses,
+      ].filter(isString)
+      return [...new Set(classes.join(' ').split(/\s+/).filter(Boolean))].join(
+        ' '
+      )
     },
   }
 }
