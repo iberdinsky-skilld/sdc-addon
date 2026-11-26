@@ -55,3 +55,15 @@ export function toAttributeEntry(value: unknown): DrupalAttributeEntry {
     return Object.fromEntries(entries(value).map(([k, v]) => [toText(k), v]))
   return toText(value)
 }
+
+// Twig 3.11 tests: a sequence is a list keyed 0, 1, 2…; a mapping is any other
+// array or hash.
+export function isSequence(value: unknown): boolean {
+  if (Array.isArray(value)) return true
+  if (value === null || typeof value !== 'object') return false
+  return entries(value).every(([key], i) => String(key) === String(i))
+}
+
+export function isMapping(value: unknown): boolean {
+  return value !== null && typeof value === 'object' && !isSequence(value)
+}
