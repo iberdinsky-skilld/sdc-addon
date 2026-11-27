@@ -3,7 +3,7 @@ import twing from 'twing'
 import { addDrupalExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
 import DrupalAttribute from 'drupal-attribute'
 import { toAttribute, castVarsAttributes } from '../renderer/attributes.ts'
-import { createTwingWrapperRuntime } from '../renderer/twingWrapper.ts'
+import { createTwingCore } from '../renderer/twing.ts'
 
 const { createSynchronousEnvironment, createSynchronousArrayLoader } = twing
 
@@ -85,9 +85,9 @@ describe('nested include attributes cast (twing)', () => {
     expect(env.render('plain', {})).toBe('<button>Go</button>')
   })
 
-  test('createTwingWrapperRuntime().registerSdcRuntime wires the include cast', () => {
+  test('createTwingCore().registerCore wires the include cast', () => {
     const env = makeEnv()
-    createTwingWrapperRuntime({}).registerSdcRuntime(env)
+    createTwingCore({}).registerCore(env)
     const out = env.render('plain', {})
     expect(out).toContain('data-bs-toggle="modal"')
     expect(out).toContain('class="btn"')
@@ -96,7 +96,7 @@ describe('nested include attributes cast (twing)', () => {
 
   test('an already-built DrupalAttribute is passed through (merged, not wiped)', () => {
     const env = makeEnv()
-    createTwingWrapperRuntime({}).registerSdcRuntime(env)
+    createTwingCore({}).registerCore(env)
     const out = env.render('already', {})
     expect(out).toContain('id="bar"')
     expect(out).toContain('class="pre btn"')

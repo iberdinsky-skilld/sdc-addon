@@ -11,7 +11,6 @@ import { join } from 'node:path'
 import { listDir, posixDirname } from '../utils.ts'
 import { collectStoryFilesSync } from '../generate/componentFiles.ts'
 import { readNamespaceYamlData } from '../generate/remoteIcons.ts'
-import { collectTemplates } from '../generate/wrapperBuild.ts'
 import type { NamespaceRoots } from '../generate/namespaces.ts'
 
 // Only `entries()` is needed; a real Namespaces also adds the cwd.
@@ -126,37 +125,6 @@ describe('readNamespaceYamlData', () => {
     try {
       const ns = namespacesOf({ t: root })
       expect(readNamespaceYamlData(ns)).toEqual([])
-    } finally {
-      rmSync(root, { recursive: true, force: true })
-    }
-  })
-})
-
-describe('collectTemplates', () => {
-  test('keys twig and svg files as @ns/relative under components/', () => {
-    const root = tmp()
-    try {
-      touch(join(root, 'components', 'card', 'card.twig'), 'card')
-      touch(join(root, 'components', 'card', 'icons', 'star.svg'), '<svg/>')
-      touch(join(root, 'components', 'card', 'card.css'), '.card{}')
-      const ns = namespacesOf({ t: root })
-      expect(collectTemplates(ns)).toEqual({
-        '@t/card/card.twig': 'card',
-        '@t/card/icons/star.svg': '<svg/>',
-      })
-    } finally {
-      rmSync(root, { recursive: true, force: true })
-    }
-  })
-
-  test('falls back to the namespace root when there is no components/ dir', () => {
-    const root = tmp()
-    try {
-      touch(join(root, 'brand', 'logo.svg'), '<svg>logo</svg>')
-      const ns = namespacesOf({ assets: root })
-      expect(collectTemplates(ns)).toEqual({
-        '@assets/brand/logo.svg': '<svg>logo</svg>',
-      })
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

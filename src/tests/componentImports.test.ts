@@ -4,7 +4,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { toNamespaces } from '../generate/namespaces.ts'
 import { logger } from '../logger.ts'
-import { twigDependencyImports } from '../generate/componentImports.ts'
+import {
+  templateDependencyImports,
+  twigDependencyImports,
+} from '../generate/componentImports.ts'
 
 describe('twigDependencyImports', () => {
   test('returns empty string when twig file does not exist', () => {
@@ -349,4 +352,22 @@ describe('twigDependencyImports', () => {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
   })
+})
+
+test('templateDependencyImports reads Twig source, such as a library_wrapper', () => {
+  const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
+  try {
+    const titleDir = join(tmpRoot, 'components', 'title')
+    mkdirSync(titleDir, { recursive: true })
+    writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
+    const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+    expect(
+      templateDependencyImports(
+        "<div>{{ include('umami:title') }}{{ _story }}</div>",
+        ns
+      )
+    ).toMatch(/^import '.*title\.component\.yml';$/)
+  } finally {
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }
 })

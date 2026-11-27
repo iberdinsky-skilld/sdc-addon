@@ -18,19 +18,14 @@ import {
 } from '../generate/componentFiles.ts'
 import {
   storyComponentImports,
+  templateDependencyImports,
   twigDependencyImports,
 } from '../generate/componentImports.ts'
 import {
   libraryOverridesImports,
   libraryOverridesLocalImports,
 } from '../generate/libraryAssets.ts'
-import {
-  createBuildWrapperEnv,
-  renderWrapperStories,
-  type WrapperInitOptions,
-} from '../generate/wrapperBuild.ts'
 import { registerCustomNodes } from '../renderer/nodes.ts'
-import type { WrapperEnv } from '../renderer/wrapper.ts'
 import type { SDCStorybookOptions, StoryDefinition } from '../sdc.d.ts'
 import {
   assetInjectorModule,
@@ -39,10 +34,7 @@ import {
 } from './assetInjector.ts'
 import { VIRTUAL_TWIG, VIRTUAL_TWING } from './sdcTwigRuntime.ts'
 
-// Created on the first library_wrapper story, then shared.
-let _wrapperEnv: Promise<WrapperEnv> | undefined
-
-export interface YamlStoriesPluginOptions extends WrapperInitOptions {
+export interface YamlStoriesPluginOptions {
   jsonSchemaFakerOptions?: GenerateOptions
   sdcStorybookOptions?: SDCStorybookOptions
   globalDefs?: Record<string, JSONSchema4>
@@ -57,8 +49,6 @@ export const createYamlStoriesHooks = ({
   sdcStorybookOptions = {},
   globalDefs = {},
   namespaces,
-  vitePluginTwingDrupalOptions,
-  vitePluginTwigDrupalOptions,
 }: YamlStoriesPluginOptions) => ({
   resolveId(id: string): string | undefined {
     if (id === VIRTUAL_ASSET_INJECTOR) return VIRTUAL_ASSET_INJECTOR_ID
@@ -100,7 +90,12 @@ export const createYamlStoriesHooks = ({
       const componentBaseName = basename(id, '.component.yml')
       const namespace = namespaces.pathToNamespace(dirname(id))
       const twigFile = join(dirname(id), `${componentBaseName}.twig`)
-      const twigImports = twigDependencyImports(twigFile, namespaces)
+      const twigImports = [
+        twigDependencyImports(twigFile, namespaces),
+        ...Object.values(previewsStories).map((story) =>
+          templateDependencyImports(story.library_wrapper ?? '', namespaces)
+        ),
+      ].join('\n')
       const metadata = componentMetadata(id, content)
       const componentGlobals =
         content.thirdPartySettings?.sdcStorybook?.globals ?? {}
@@ -139,33 +134,7 @@ export const createYamlStoriesHooks = ({
 
       const componentId = namespaces.pathToNamespace(dirname(id), true)
 
-      let wrapperHtml: Record<string, string> = {}
-      const hasWrapper = Object.values(previewsStories).some(
-        (story) => story.library_wrapper
-      )
-      if (hasWrapper) {
-        _wrapperEnv ??= createBuildWrapperEnv(
-          namespaces,
-          {
-            ...sdcStorybookOptions,
-            vitePluginTwingDrupalOptions,
-            vitePluginTwigDrupalOptions,
-          },
-          sdcStorybookOptions.resolveIconSource
-        )
-        wrapperHtml = renderWrapperStories(
-          await _wrapperEnv,
-          componentId,
-          previewsStories,
-          generatedArgs
-        )
-      }
-
-      const stories = storiesGenerator(
-        previewsStories,
-        componentGlobals,
-        wrapperHtml
-      )
+      const stories = storiesGenerator(previewsStories, componentGlobals)
 
       return componentModule({
         componentId,

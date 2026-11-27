@@ -12,6 +12,7 @@ import { isMapping, isSequence } from './collections.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
 import { patchDrupalAttribute, castVarsAttributes } from './attributes.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS } from './cva.ts'
+import { createWrapperRenderer, isStory } from './story.ts'
 
 export { twigArgs } from './nodes.ts'
 
@@ -26,6 +27,22 @@ export type SdcEnv = TwingSynchronousEnvironment & {
 export function createTwingCore(iconPacks: IconPacks) {
   let env: SdcEnv | null = null
   patchDrupalAttribute(DrupalAttribute)
+
+  // The env renders `ns:component` itself; one template name per wrapper source.
+  const inlineNames = new Map<string, string>()
+  const { renderWrapper, mergeStory } = createWrapperRenderer({
+    renderComponent: (id, context) => env?.render(id, context),
+    renderTemplate: (template, context) => {
+      if (!env?.loader.setTemplate) return ''
+      let name = inlineNames.get(template)
+      if (!name) {
+        name = '_sdc_wrapper_' + inlineNames.size
+        inlineNames.set(template, name)
+      }
+      env.loader.setTemplate(name, template)
+      return env.render(name, context)
+    },
+  })
 
   function renderIcon(
     packId: string,
@@ -71,6 +88,25 @@ export function createTwingCore(iconPacks: IconPacks) {
               return output
             },
             [...origInclude.acceptedArguments]
+          )
+        )
+      }
+    }
+
+    if (!e.__sdcMergeOverridden) {
+      const merge = e.filters.get('merge')
+      if (merge) {
+        e.__sdcMergeOverridden = true
+        // `_story|merge(...)` in a library_wrapper gives a new render array.
+        e.addFilter(
+          createSynchronousFilter(
+            'merge',
+            (execCtx, a, b) => {
+              if (isStory(a) || isStory(b)) return mergeStory(a, b)
+              const merged: unknown = merge.callable(execCtx, a, b)
+              return merged
+            },
+            [{ name: 'source' }]
           )
         )
       }
@@ -140,7 +176,7 @@ export function createTwingCore(iconPacks: IconPacks) {
     )
   }
 
-  return { renderIcon, registerCore, getEnv: (): SdcEnv | null => env }
+  return { renderIcon, registerCore, renderWrapper }
 }
 
 export function createTwingRuntime(iconPacks: IconPacks) {
@@ -150,5 +186,6 @@ export function createTwingRuntime(iconPacks: IconPacks) {
     registerSdcRuntime: core.registerCore,
     // Twing resolves `ns:component` in include() itself.
     registerComponent: (): void => undefined,
+    renderWrapper: core.renderWrapper,
   }
 }

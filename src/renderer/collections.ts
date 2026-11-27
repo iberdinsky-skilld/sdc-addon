@@ -1,5 +1,4 @@
 // Map/iterable helpers: Twing represents arrays and hashes as Maps.
-import type { DrupalAttributeEntry } from 'drupal-attribute'
 import { isRecord } from '../guards.ts'
 
 // Key order of a twig.js hash literal; its own key order is reversed.
@@ -44,16 +43,6 @@ export function toPlainObject(
   if (value instanceof Map)
     return Object.fromEntries(entries(value).map(([k, v]) => [toText(k), v]))
   return isRecord(value) ? value : undefined
-}
-
-// A value as something DrupalAttribute.setAttribute accepts.
-export function toAttributeEntry(value: unknown): DrupalAttributeEntry {
-  if (value == null || typeof value === 'string' || typeof value === 'boolean')
-    return value
-  if (Array.isArray(value)) return value.map(toText)
-  if (typeof value === 'object')
-    return Object.fromEntries(entries(value).map(([k, v]) => [toText(k), v]))
-  return toText(value)
 }
 
 // Twig 3.11: a sequence is a list keyed 0, 1, 2…; a mapping is any other hash.

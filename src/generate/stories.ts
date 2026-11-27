@@ -6,8 +6,7 @@ import { generateArgs } from './nodeCodegen.ts'
 
 export default (
   stories: Record<string, StoryDefinition>,
-  componentGlobals: Globals = {},
-  wrapperHtml: Record<string, string> = {}
+  componentGlobals: Globals = {}
 ): string =>
   Object.entries(stories)
     .map(
@@ -50,11 +49,7 @@ ${globalsBlock}
     ${generateArgs(slots)}
     ${generateVariants(variants)}
   },
-  ${
-    library_wrapper
-      ? `render: () => ${jsLiteral(wrapperHtml[storyKey] ?? '')},`
-      : ''
-  }
+  ${library_wrapper ? `render: _sdcWrap(${jsLiteral(library_wrapper)}),` : ''}
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },

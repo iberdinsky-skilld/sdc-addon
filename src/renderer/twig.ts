@@ -7,6 +7,7 @@ import { buildIconContext } from './icons.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS, twigJsArguments } from './cva.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
 import { castVarsAttributes, patchDrupalAttribute } from './attributes.ts'
+import { createWrapperRenderer, isStory } from './story.ts'
 
 export { twigArgs } from './nodes.ts'
 
@@ -25,7 +26,6 @@ export type TwigJs = Omit<typeof Twig, 'extendFilter' | 'extendFunction'> & {
     ) => unknown
   ): void
   filters?: Record<string, (value: unknown, params: unknown) => unknown>
-  __sdcMergeOverridden?: boolean
   __sdcRegistered?: boolean
 }
 
@@ -62,10 +62,27 @@ export function createTwigCore(iconPacks: IconPacks) {
   // Component modules by SDC id, for include() calls the plugin does not see.
   const components = new Map<string, (context: object) => unknown>()
 
+  const { renderWrapper, mergeStory } = createWrapperRenderer({
+    renderComponent: (id, context) => components.get(id)?.(context),
+    renderTemplate: (template, context) =>
+      twig
+        ? twig
+            .twig({ data: template, allowInlineIncludes: true })
+            .render(context)
+        : '',
+  })
+
   function registerCore(Twig: TwigJs): void {
     twig = Twig
     if (Twig.__sdcRegistered) return
     Twig.__sdcRegistered = true
+    // `_story|merge(...)` in a library_wrapper gives a new render array.
+    const merge = Twig.filters?.['merge']
+    Twig.extendFilter('merge', function (this: unknown, value, params) {
+      const other = Array.isArray(params) ? params[0] : undefined
+      if (isStory(value) || isStory(other)) return mergeStory(value, other)
+      return merge ? merge.call(this, value, params) : value
+    })
     Twig.extendTest('sequence', (value: unknown) => isSequence(value))
     Twig.extendTest('mapping', (value: unknown) => isMapping(value))
     Twig.extendFilter('add_class', (value, params) =>
@@ -114,7 +131,7 @@ export function createTwigCore(iconPacks: IconPacks) {
     registerComponent: (id: string, render: (context: object) => unknown) => {
       components.set(id, render)
     },
-    getTwig: (): TwigJs | null => twig,
+    renderWrapper,
   }
 }
 
@@ -124,5 +141,6 @@ export function createTwigRuntime(iconPacks: IconPacks) {
     renderIcon: core.renderIcon,
     registerSdcRuntime: core.registerCore,
     registerComponent: core.registerComponent,
+    renderWrapper: core.renderWrapper,
   }
 }

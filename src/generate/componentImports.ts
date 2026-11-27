@@ -66,10 +66,16 @@ export const storyComponentImports = (
 export const twigDependencyImports = (
   twigFilePath: string,
   namespaces: Namespaces
-): string => {
-  if (!existsSync(twigFilePath)) return ''
+): string =>
+  existsSync(twigFilePath)
+    ? templateDependencyImports(readFileSync(twigFilePath, 'utf8'), namespaces)
+    : ''
 
-  const twigContent = readFileSync(twigFilePath, 'utf8')
+// The same for Twig source, such as a story's library_wrapper.
+export const templateDependencyImports = (
+  twigContent: string,
+  namespaces: Namespaces
+): string => {
   const imports = new Set<string>()
 
   // `ns:component` references only, not `@ns/path` assets; tags and include().

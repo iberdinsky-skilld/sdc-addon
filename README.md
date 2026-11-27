@@ -281,7 +281,7 @@ Twig.js and Twing lack some of what Drupal templates use. The addon adds it, so 
 - `addClass()` and `removeClass()` take arrays, Twing Maps and the hashes Twig.js makes from `merge`, also on `create_attribute()` objects.
 - Lists in slots print item by item, without commas, on Twig.js.
 
-Twig.js cannot parse arrow functions (`|map(v => …)`, `|filter(…)`) or named arguments written with `=` (`with_context = false`), and `list ?: []` gives the length of the list instead of the list. Themes that rely on them, such as the UI Suite themes and Radix, work on Twing.
+Twig.js cannot parse arrow functions (`|map(v => …)`, `|filter(…)`) or named arguments written with `=` (`with_context = false`), and `list ?: []` gives the length of the list instead of the list. Themes that rely on them, such as the UI Suite themes and Radix, work on Twing. On Twig.js, a `library_wrapper` can print a component with `include()`, but the `{% include %}` tag finds it only if a template already includes it with the tag.
 
 ## Production static build
 

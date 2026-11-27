@@ -85,8 +85,9 @@ void import.meta.glob('./${name}.css', { eager: true });
 ${localCssImports}
 ${localCssUrlImports}
 import { injectAssets } from '${assetInjector}';
-import { renderIcon as _sdcRenderIcon, twigArgs as _sdcTwigArgs, registerComponent as _sdcRegisterComponent } from '${iconModule}';
+import { renderIcon as _sdcRenderIcon, twigArgs as _sdcTwigArgs, registerComponent as _sdcRegisterComponent, renderWrapper as _sdcRenderWrapper } from '${iconModule}';
 _sdcRegisterComponent(${jsLiteral(componentId)}, COMPONENT);
+const _sdcWrap = (wrapper) => (args) => _sdcRenderWrapper(wrapper, ${jsLiteral(componentId)}, args, ${jsLiteral(slotNames)});
 ${componentImports}
 ${templateImports}
 ${assetInjection}

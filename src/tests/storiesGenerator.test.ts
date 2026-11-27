@@ -58,33 +58,14 @@ describe('storiesGenerator', () => {
     expect(out).toContain('[\'id\', "x"]')
   })
 
-  test('library_wrapper stories emit a static render, no browser decorator', () => {
+  test('a library_wrapper story renders through the wrapper in the browser', () => {
     const stories: Record<string, StoryDefinition> = {
       wrapped: {
         library_wrapper: '<div class="wrap">{{ _story }}</div>',
       },
     }
-    const out = generate(stories)
-    expect(out).toContain('render: () =>')
-    expect(out).not.toContain('decorators')
-    expect(out).not.toContain('_sdcMakeStory')
-  })
-
-  test('uses the pre-rendered wrapper HTML when provided', () => {
-    const stories: Record<string, StoryDefinition> = {
-      wrapped: {
-        library_wrapper: '<div>{{ _story }}</div>',
-      },
-    }
-    const out = generate(
-      stories,
-      {},
-      {
-        wrapped: '<div class="wrap">RENDERED</div>',
-      }
-    )
-    expect(out).toContain(
-      'render: () => "<div class=\\"wrap\\">RENDERED</div>"'
+    expect(generate(stories)).toContain(
+      'render: _sdcWrap("<div class=\\"wrap\\">{{ _story }}</div>"),'
     )
   })
 

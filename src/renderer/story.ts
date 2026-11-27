@@ -1,17 +1,10 @@
-// UI Patterns render arrays for library_wrapper stories: `_story` is
-// { '#component', '#props', '#slots' } and prints itself through `renderStory`.
+// library_wrapper stories: the wrapper template gets `_story`, a UI Patterns
+// render array { '#component', '#props', '#slots' } that prints the component.
 import { toAttribute } from './attributes.ts'
 import { entries, toText } from './collections.ts'
-import { PrintableArray } from './nodes.ts'
+import { PrintableArray, twigArgs } from './nodes.ts'
 
-// Per-story data that can't live in the Twig context: internal context and the
-// component's own render().
-export interface StoryBase {
-  context?: Record<string, unknown>
-  render?: (ctx: Record<string, unknown>) => string
-}
-
-// A render array that prints itself through the host's renderStory.
+// A render array that prints itself.
 export interface Story extends Record<string, unknown> {
   toString(): string
 }
@@ -28,72 +21,82 @@ export function isStory(value: unknown): boolean {
   return false
 }
 
-// Base context plus #props and #slots, each run through `resolveValue`, and
-// `attributes` as a DrupalAttribute.
+// #props and #slots as one context, `attributes` as a DrupalAttribute.
 export function storyContext(
-  story: Record<string, unknown>,
-  base: StoryBase | undefined,
-  resolveValue: (value: unknown) => unknown = (v) => v
+  story: Record<string, unknown>
 ): Record<string, unknown> {
-  const ctx: Record<string, unknown> = { ...base?.context }
-  for (const [k, v] of entries(story['#props']))
-    ctx[toText(k)] = resolveValue(v)
-  for (const [k, v] of entries(story['#slots'])) {
-    const r = resolveValue(v)
+  const ctx: Record<string, unknown> = {}
+  for (const [k, v] of entries(story['#props'])) ctx[toText(k)] = v
+  for (const [k, v] of entries(story['#slots']))
     ctx[toText(k)] =
-      r != null && !(r instanceof PrintableArray) ? new PrintableArray(r) : r
-  }
+      v != null && !(v instanceof PrintableArray) ? new PrintableArray(v) : v
   ctx['attributes'] = toAttribute(ctx['attributes'])
   return ctx
 }
 
-// Story factory bound to a host `renderStory`.
-export function createStoryFactory(
-  renderStory: (
-    story: Record<string, unknown>,
-    base: StoryBase | undefined
-  ) => string
-) {
-  const storyBase = new WeakMap<object, StoryBase>()
-  const baseOf = (value: unknown): StoryBase | undefined =>
-    typeof value === 'object' && value !== null
-      ? storyBase.get(value)
-      : undefined
+// What the engine does for the wrapper: render a component by id, render a
+// template string.
+export interface WrapperEngine {
+  renderComponent(id: string, context: Record<string, unknown>): unknown
+  renderTemplate(template: string, context: Record<string, unknown>): string
+}
 
-  function makeStoryObject(
-    data: Record<string, unknown>,
-    base: StoryBase | undefined
-  ): Story {
-    const obj: Story = {
+export function createWrapperRenderer(engine: WrapperEngine) {
+  function makeStory(data: Record<string, unknown>): Story {
+    const story: Story = {
       ...data,
-      toString: () => renderStory(obj, storyBase.get(obj)),
+      toString: () => {
+        const id = toText(story['#component'])
+        try {
+          return toText(engine.renderComponent(id, storyContext(story)))
+        } catch (e) {
+          console.error('[SDC] render story "' + id + '" error:', e)
+          return ''
+        }
+      },
     }
     // Non-enumerable, so Twig loops and merges skip it.
-    Object.defineProperty(obj, 'toString', { enumerable: false })
-    Object.defineProperty(obj, '__sdcStory', { value: true, enumerable: false })
-    if (base) storyBase.set(obj, base)
-    return obj
-  }
-
-  function makeStory(
-    component: string,
-    props: unknown,
-    slots: unknown,
-    base: StoryBase | undefined
-  ): Story {
-    return makeStoryObject(
-      { '#component': component, '#props': props ?? {}, '#slots': slots ?? {} },
-      base
-    )
+    Object.defineProperty(story, 'toString', { enumerable: false })
+    Object.defineProperty(story, '__sdcStory', {
+      value: true,
+      enumerable: false,
+    })
+    return story
   }
 
   // New printable render array (b wins); the native merge returns a plain Map.
   function mergeStory(a: unknown, b: unknown): Story {
-    const data = Object.fromEntries(
-      [...entries(a), ...entries(b)].map(([k, v]) => [toText(k), v])
+    return makeStory(
+      Object.fromEntries(
+        [...entries(a), ...entries(b)].map(([k, v]) => [toText(k), v])
+      )
     )
-    return makeStoryObject(data, baseOf(a) ?? baseOf(b))
   }
 
-  return { makeStory, mergeStory }
+  function renderWrapper(
+    wrapper: string,
+    componentId: string,
+    args: Record<string, unknown>,
+    slotNames: readonly string[]
+  ): string {
+    const props: Record<string, unknown> = {}
+    const slots: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(twigArgs(args, slotNames))) {
+      if (key === 'componentMetadata' || key === 'defaultAttributes') continue
+      ;(slotNames.includes(key) ? slots : props)[key] = value
+    }
+    const _story = makeStory({
+      '#component': componentId,
+      '#props': props,
+      '#slots': slots,
+    })
+    try {
+      return engine.renderTemplate(wrapper, { _story })
+    } catch (e) {
+      console.error('[SDC] library_wrapper error:', e)
+      return ''
+    }
+  }
+
+  return { renderWrapper, mergeStory }
 }

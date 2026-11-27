@@ -1,68 +1,78 @@
 import { describe, expect, test, vi } from 'vitest'
-import { isStory, storyContext, createStoryFactory } from '../renderer/story.ts'
+import {
+  createWrapperRenderer,
+  isStory,
+  storyContext,
+} from '../renderer/story.ts'
 
-describe('createStoryFactory', () => {
-  test('makeStory builds a render array with #component/#props/#slots', () => {
-    const { makeStory } = createStoryFactory(() => '')
-    const s = makeStory(
-      'ns:badge',
-      { color: 'primary' },
-      { label: 'Hi' },
-      undefined
-    )
-    expect(s['#component']).toBe('ns:badge')
-    expect(s['#props']).toEqual({ color: 'primary' })
-    expect(s['#slots']).toEqual({ label: 'Hi' })
+const engine = () => ({
+  renderComponent: vi.fn(
+    (_id: string, _context: Record<string, unknown>) => '<rendered>'
+  ),
+  renderTemplate: vi.fn((_template: string, context: Record<string, unknown>) =>
+    String(context['_story'])
+  ),
+})
+
+describe('createWrapperRenderer', () => {
+  test('_story is a render array that prints the component', () => {
+    const e = engine()
+    const { renderWrapper } = createWrapperRenderer(e)
+    expect(
+      renderWrapper('{{ _story }}', 'ns:badge', { label: 'Hi' }, ['label'])
+    ).toBe('<rendered>')
+    const story: unknown = e.renderTemplate.mock.calls[0]?.[1]['_story']
+    expect(isStory(story)).toBe(true)
     // markers are non-enumerable (don't leak into Twig map ops)
-    expect(Object.keys(s)).toEqual(['#component', '#props', '#slots'])
-    expect(isStory(s)).toBe(true)
+    expect(Object.keys(story ?? {})).toEqual(['#component', '#props', '#slots'])
+    const [id, context] = e.renderComponent.mock.calls[0] ?? []
+    expect(id).toBe('ns:badge')
+    expect(String(context?.['label'])).toBe('Hi')
   })
 
-  test('toString renders #component through the host renderStory with its base', () => {
-    const renderStory = vi.fn(() => '<rendered>')
-    const { makeStory } = createStoryFactory(renderStory)
-    const base = { context: { componentMetadata: { path: '/x' } } }
-    const s = makeStory('ns:badge', {}, { label: 'Hi' }, base)
-    expect(String(s)).toBe('<rendered>')
-    expect(renderStory).toHaveBeenCalledWith(s, base)
-  })
-
-  test('mergeStory shallow-merges with b winning, stays printable, carries base', () => {
-    const renderStory = vi.fn(() => 'R')
-    const { makeStory, mergeStory } = createStoryFactory(renderStory)
-    const base = { context: { defaultAttributes: [] as unknown[] } }
-    const story = makeStory('ns:badge', { a: 1, c: 1 }, { label: 'L' }, base)
-
-    const merged = mergeStory(story, { '#props': { c: 9 } })
-    // b overrides a on shared keys; #component/#slots carried from a
+  test('mergeStory shallow-merges with b winning and stays printable', () => {
+    const e = engine()
+    const { mergeStory } = createWrapperRenderer(e)
+    const merged = mergeStory(
+      {
+        '#component': 'ns:badge',
+        '#props': { a: 1 },
+        '#slots': { label: 'L' },
+      },
+      { '#props': { c: 9 } }
+    )
     expect(merged['#component']).toBe('ns:badge')
     expect(merged['#props']).toEqual({ c: 9 })
     expect(merged['#slots']).toEqual({ label: 'L' })
     expect(isStory(merged)).toBe(true)
-    expect(Object.keys(merged)).toEqual(['#component', '#props', '#slots'])
-
-    // still printable, and base propagates from the story operand
-    expect(String(merged)).toBe('R')
-    expect(renderStory).toHaveBeenLastCalledWith(merged, base)
+    expect(String(merged)).toBe('<rendered>')
   })
 
-  test('isStory detects plain objects, Maps and render arrays; rejects others', () => {
-    expect(isStory({ '#component': 'x' })).toBe(true)
-    expect(isStory(new Map([['#component', 'x']]))).toBe(true)
-    expect(isStory({ foo: 1 })).toBe(false)
-    expect(isStory(new Map([['foo', 1]]))).toBe(false)
-    expect(isStory(null)).toBe(false)
-    expect(isStory('x')).toBe(false)
+  test('a component that throws prints empty', () => {
+    const { mergeStory } = createWrapperRenderer({
+      renderComponent: () => {
+        throw new Error('boom')
+      },
+      renderTemplate: () => '',
+    })
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    expect(String(mergeStory({ '#component': 'x' }, {}))).toBe('')
+    error.mockRestore()
   })
+})
 
-  test('storyContext spreads base context + #props + #slots (slots win, slot wrapped)', () => {
-    const ctx = storyContext(
-      { '#props': { a: 1, x: 'p' }, '#slots': { x: 's' } },
-      { context: { componentMetadata: { path: '/p' } } }
-    )
-    expect(ctx.componentMetadata).toEqual({ path: '/p' })
-    expect(ctx.a).toBe(1)
-    // slot wins over prop; a single slot value is wrapped into a printable list
-    expect(String(ctx.x)).toBe('s')
-  })
+test('isStory detects plain objects, Maps and render arrays; rejects others', () => {
+  expect(isStory({ '#component': 'x' })).toBe(true)
+  expect(isStory(new Map([['#component', 'x']]))).toBe(true)
+  expect(isStory({ foo: 1 })).toBe(false)
+  expect(isStory(new Map([['foo', 1]]))).toBe(false)
+  expect(isStory(null)).toBe(false)
+  expect(isStory('x')).toBe(false)
+})
+
+test('storyContext spreads #props and #slots (slots win, slot printable)', () => {
+  const ctx = storyContext({ '#props': { a: 1, x: 'p' }, '#slots': { x: 's' } })
+  expect(ctx['a']).toBe(1)
+  expect(String(ctx['x'])).toBe('s')
+  expect(String(ctx['attributes'])).toBe('')
 })
