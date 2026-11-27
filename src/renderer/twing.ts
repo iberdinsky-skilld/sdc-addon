@@ -24,7 +24,7 @@ export type SdcEnv = TwingSynchronousEnvironment & {
   }
 }
 
-export function createTwingCore(iconPacks: IconPacks) {
+export function createTwingRuntime(iconPacks: IconPacks) {
   let env: SdcEnv | null = null
   patchDrupalAttribute(DrupalAttribute)
 
@@ -176,16 +176,11 @@ export function createTwingCore(iconPacks: IconPacks) {
     )
   }
 
-  return { renderIcon, registerCore, renderWrapper }
-}
-
-export function createTwingRuntime(iconPacks: IconPacks) {
-  const core = createTwingCore(iconPacks)
   return {
-    renderIcon: core.renderIcon,
-    registerSdcRuntime: core.registerCore,
+    renderIcon,
+    registerSdcRuntime: registerCore,
     // Twing resolves `ns:component` in include() itself.
     registerComponent: (): void => undefined,
-    renderWrapper: core.renderWrapper,
+    renderWrapper,
   }
 }

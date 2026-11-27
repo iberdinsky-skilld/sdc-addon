@@ -3,8 +3,8 @@ import twing from 'twing'
 import Twig from 'twig'
 import { addDrupalExtensions as addTwing } from '@christianwiedemann/drupal-twig-extensions/twing'
 import { addDrupalExtensions as addTwig } from 'drupal-twig-extensions/twig'
-import { createTwingCore } from '../renderer/twing.ts'
-import { createTwigCore, type TwigJs } from '../renderer/twig.ts'
+import { createTwingRuntime } from '../renderer/twing.ts'
+import { createTwigRuntime, type TwigJs } from '../renderer/twig.ts'
 import { makeIconPack } from './helpers.ts'
 
 const { createSynchronousEnvironment, createSynchronousArrayLoader } = twing
@@ -28,19 +28,19 @@ function twingRuntime() {
     createSynchronousArrayLoader({ 't:badge': BADGE })
   )
   addTwing(env)
-  const core = createTwingCore({
+  const core = createTwingRuntime({
     heart: makeIconPack({ template: '<i>{{ icon_id }}</i>' }),
   })
-  core.registerCore(env)
+  core.registerSdcRuntime(env)
   return core
 }
 
 const twigJs = Twig as unknown as TwigJs
 addTwig(twigJs)
-const twigCore = createTwigCore({
+const twigCore = createTwigRuntime({
   heart: makeIconPack({ template: '<i>{{ icon_id }}</i>' }),
 })
-twigCore.registerCore(twigJs)
+twigCore.registerSdcRuntime(twigJs)
 twigCore.registerComponent('t:badge', (context) =>
   twigJs.twig({ data: BADGE }).render(context)
 )

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import Twig from 'twig'
 import twing from 'twing'
-import { createTwigCore } from '../renderer/twig.ts'
-import { createTwingCore } from '../renderer/twing.ts'
+import { createTwigRuntime } from '../renderer/twig.ts'
+import { createTwingRuntime } from '../renderer/twing.ts'
 
 const CASES: Array<[string, Record<string, unknown>, string]> = [
   ["{{ ['a', 'b'] is sequence ? 'y' : 'n' }}", {}, 'y'],
@@ -17,7 +17,7 @@ const CASES: Array<[string, Record<string, unknown>, string]> = [
 
 describe('is sequence / is mapping', () => {
   test.each(CASES)('twig.js %s', (data, context, expected) => {
-    createTwigCore({}).registerCore(Twig)
+    createTwigRuntime({}).registerSdcRuntime(Twig)
     expect(Twig.twig({ data }).render(context)).toBe(expected)
   })
 
@@ -25,7 +25,7 @@ describe('is sequence / is mapping', () => {
     const env = twing.createSynchronousEnvironment(
       twing.createSynchronousArrayLoader({ t: data })
     )
-    createTwingCore({}).registerCore(env)
+    createTwingRuntime({}).registerSdcRuntime(env)
     expect(env.render('t', context)).toBe(expected)
   })
 })

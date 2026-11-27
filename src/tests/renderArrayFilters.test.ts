@@ -4,8 +4,8 @@ import twing from 'twing'
 import { addDrupalExtensions } from '@christianwiedemann/drupal-twig-extensions/twing'
 import { addClass, setAttribute } from '../renderer/renderArrayFilters.ts'
 import { PrintableArray, twigArgs } from '../renderer/nodes.ts'
-import { createTwigCore } from '../renderer/twig.ts'
-import { createTwingCore } from '../renderer/twing.ts'
+import { createTwigRuntime } from '../renderer/twig.ts'
+import { createTwingRuntime } from '../renderer/twing.ts'
 
 describe('add_class', () => {
   test.each([
@@ -56,7 +56,7 @@ describe('set_attribute', () => {
 })
 
 describe('the filters in twig.js templates', () => {
-  createTwigCore({}).registerCore(Twig)
+  createTwigRuntime({}).registerSdcRuntime(Twig)
   const render = (data: string, context: Record<string, unknown>) =>
     Twig.twig({ data }).render(twigArgs(context, ['links']))
 
@@ -89,7 +89,7 @@ describe('the filters on Twing replace the wrapping <div> ones', () => {
       twing.createSynchronousArrayLoader({ t: data })
     )
     addDrupalExtensions(env)
-    createTwingCore({}).registerCore(env)
+    createTwingRuntime({}).registerSdcRuntime(env)
     const links = ['<a href="/a">A</a>', '<a href="/b">B</a>']
     expect(env.render('t', twigArgs({ links }, ['links']))).toBe(expected)
   })

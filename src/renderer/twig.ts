@@ -36,7 +36,7 @@ const INCLUDE_ARGUMENTS = [
   'ignore_missing',
 ] as const
 
-export function createTwigCore(iconPacks: IconPacks) {
+export function createTwigRuntime(iconPacks: IconPacks) {
   let twig: TwigJs | null = null
   patchDrupalAttribute(DrupalAttribute)
 
@@ -127,20 +127,10 @@ export function createTwigCore(iconPacks: IconPacks) {
 
   return {
     renderIcon,
-    registerCore,
+    registerSdcRuntime: registerCore,
     registerComponent: (id: string, render: (context: object) => unknown) => {
       components.set(id, render)
     },
     renderWrapper,
-  }
-}
-
-export function createTwigRuntime(iconPacks: IconPacks) {
-  const core = createTwigCore(iconPacks)
-  return {
-    renderIcon: core.renderIcon,
-    registerSdcRuntime: core.registerCore,
-    registerComponent: core.registerComponent,
-    renderWrapper: core.renderWrapper,
   }
 }

@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import Twig from 'twig'
-import { createTwigCore } from '../renderer/twig.ts'
+import { createTwigRuntime } from '../renderer/twig.ts'
 
 describe('include() on twig.js', () => {
-  const core = createTwigCore({})
-  core.registerCore(Twig)
+  const core = createTwigRuntime({})
+  core.registerSdcRuntime(Twig)
   core.registerComponent(
     'umami:card',
     (context) => `<article>${String(Reflect.get(context, 'label'))}</article>`
