@@ -66,3 +66,11 @@ export function isSequence(value: unknown): boolean {
 export function isMapping(value: unknown): boolean {
   return value !== null && typeof value === 'object' && !isSequence(value)
 }
+
+// Items of a list in any shape: array, Twing Map, twig.js hash or one value.
+export function toList(value: unknown): unknown[] {
+  if (value == null) return []
+  if (Array.isArray(value)) return value
+  if (typeof value !== 'object') return [value]
+  return entries(value).map(([, item]) => item)
+}

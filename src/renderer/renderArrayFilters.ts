@@ -1,6 +1,6 @@
 // Drupal core's |add_class and |set_attribute, on the root tag of rendered HTML.
 import { PrintableArray } from './nodes.ts'
-import { entries, toText } from './collections.ts'
+import { toList, toText } from './collections.ts'
 
 const OPEN_TAG = /^<([a-zA-Z][\w:-]*)([^>]*)>/
 
@@ -51,7 +51,7 @@ const classNames = (values: unknown[]): string[] =>
     typeof value === 'string'
       ? value.split(/\s+/)
       : value !== null && typeof value === 'object'
-        ? classNames(entries(value).map(([, item]) => item))
+        ? classNames(toList(value))
         : value == null
           ? []
           : [toText(value)]
