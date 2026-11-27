@@ -1,3 +1,15 @@
+# v0.30.0 (Fri Nov 27 2026)
+
+#### 🚀 Enhancement
+
+- Story names, library_wrapper in the browser, Twig 3.11 shuffle [#158](https://github.com/iberdinsky-skilld/sdc-addon/pull/158) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.29.0 (Thu Nov 26 2026)
 
 #### 🚀 Enhancement
