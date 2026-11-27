@@ -58,7 +58,7 @@ thirdPartySettings:
     }
   })
 
-  test('load() with validate warns about schema errors and still returns the module', async () => {
+  test('the indexer validates, names the file in the warning and still indexes', async () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
@@ -83,24 +83,20 @@ thirdPartySettings:
       }
       fetchMock.mockResolvedValue({ ok: true, json: () => schema })
 
-      const namespaces = toNamespaces({
-        namespace: '',
-        namespaces: { umami: tmpRoot },
-      })
-      const plugin = createYamlStoriesHooks({
-        namespaces,
-        sdcStorybookOptions: { validate: 'https://example.com/schema.json' },
+      const index = await yamlStoriesIndexer(
+        'https://example.com/schema.json'
+      ).createIndex(join(compDir, 'badge.component.yml'), {
+        makeTitle: (s?: string) => s ?? '',
       })
 
-      const result = await plugin.load.call(
-        ctx,
-        join(compDir, 'badge.component.yml')
-      )
-
-      expect(result).toContain('export const Basic')
+      expect(index.length).toBeGreaterThan(0)
       expect(fetchMock).toHaveBeenCalledWith('https://example.com/schema.json')
       expect(warnSpy).toHaveBeenCalledTimes(1)
-      expect(String(warnSpy.mock.calls[0]?.[0])).toMatch(/instance\.status/)
+      const warning = String(warnSpy.mock.calls[0]?.[0])
+      expect(warning).toMatch(
+        /badge\/badge\.component\.yml has validation errors/
+      )
+      expect(warning).toMatch(/instance\.status/)
     } finally {
       vi.unstubAllGlobals()
       warnSpy.mockRestore()
@@ -108,7 +104,7 @@ thirdPartySettings:
     }
   })
 
-  test('load() with an unreachable schema warns and still returns the module', async () => {
+  test('the indexer warns on an unreachable schema and still indexes', async () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-vite-'))
     const fetchMock = vi.fn().mockRejectedValue(new Error('offline'))
     vi.stubGlobal('fetch', fetchMock)
@@ -119,21 +115,12 @@ thirdPartySettings:
       writeFileSync(join(compDir, 'card.component.yml'), 'name: Card\n')
       writeFileSync(join(compDir, 'card.twig'), '<div>card</div>')
 
-      const namespaces = toNamespaces({
-        namespace: '',
-        namespaces: { umami: tmpRoot },
-      })
-      const plugin = createYamlStoriesHooks({
-        namespaces,
-        sdcStorybookOptions: { validate: true },
-      })
-
-      const result = await plugin.load.call(
-        ctx,
-        join(compDir, 'card.component.yml')
+      const index = await yamlStoriesIndexer(true).createIndex(
+        join(compDir, 'card.component.yml'),
+        { makeTitle: (s?: string) => s ?? '' }
       )
 
-      expect(result).toContain('export const Basic')
+      expect(index.length).toBeGreaterThan(0)
       expect(warnSpy).toHaveBeenCalledTimes(1)
       expect(String(warnSpy.mock.calls[0]?.[0])).toMatch(/Could not validate/)
     } finally {
@@ -301,7 +288,7 @@ thirdPartySettings:
         'utf8'
       )
 
-      const index = await yamlStoriesIndexer.createIndex(file, {
+      const index = await yamlStoriesIndexer().createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
       })
       expect(Array.isArray(index)).toBe(true)
@@ -331,7 +318,7 @@ thirdPartySettings:
         ].join('\n'),
         'utf8'
       )
-      const index = await yamlStoriesIndexer.createIndex(file, {
+      const index = await yamlStoriesIndexer().createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
       })
       expect(index.map((entry) => entry.tags)).toEqual([
@@ -340,7 +327,7 @@ thirdPartySettings:
       ])
 
       writeFileSync(file, 'name: Item\nnoUi: false', 'utf8')
-      const visible = await yamlStoriesIndexer.createIndex(file, {
+      const visible = await yamlStoriesIndexer().createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
       })
       expect(visible[0]?.tags).toEqual([])
@@ -468,7 +455,7 @@ thirdPartySettings:
         'utf8'
       )
 
-      const index = await yamlStoriesIndexer.createIndex(file, {
+      const index = await yamlStoriesIndexer().createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
       })
       const exportNames = index.map((i: { exportName: string }) => i.exportName)
@@ -497,7 +484,7 @@ thirdPartySettings:
         'utf8'
       )
 
-      const index = await yamlStoriesIndexer.createIndex(file, {
+      const index = await yamlStoriesIndexer().createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
       })
       const exportNames = index.map((i: { exportName: string }) => i.exportName)
@@ -519,7 +506,7 @@ thirdPartySettings:
         'utf8'
       )
 
-      const index = await yamlStoriesIndexer.createIndex(file, {
+      const index = await yamlStoriesIndexer().createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
       })
       expect(Array.isArray(index)).toBe(true)
@@ -540,7 +527,7 @@ thirdPartySettings:
       const spy = vi.spyOn(logger, 'error')
       const missing = join(compDir, 'does-not-exist.component.yml')
       await expect(
-        yamlStoriesIndexer.createIndex(missing, {
+        yamlStoriesIndexer().createIndex(missing, {
           makeTitle: (s?: string) => s ?? '',
         })
       ).rejects.toThrow()
@@ -563,7 +550,7 @@ thirdPartySettings:
         'utf8'
       )
 
-      const index = await yamlStoriesIndexer.createIndex(file, {
+      const index = await yamlStoriesIndexer().createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
       })
 

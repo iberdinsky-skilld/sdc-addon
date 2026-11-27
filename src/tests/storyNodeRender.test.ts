@@ -166,7 +166,7 @@ describe('renderStoryNode (build codegen)', () => {
 
     [
       { type: 'image', uri: 'https://placehold.co/600x400' },
-      '"<img src=\\"https://placehold.co/600x400\\" />"',
+      '"<img src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
     ],
     [
       {
@@ -174,7 +174,7 @@ describe('renderStoryNode (build codegen)', () => {
         uri: 'https://placehold.co/600x400',
         attributes: { class: ['class-1', 'class-2'] },
       },
-      '"<img class=\\"class-1 class-2\\" src=\\"https://placehold.co/600x400\\" />"',
+      '"<img class=\\"class-1 class-2\\" src=\\"https://placehold.co/600x400\\" alt=\\"\\" />"',
     ],
     [{ type: 'element', value: 'sample' }, '("<div>" + "sample" + "</div>")'],
     [
@@ -229,7 +229,7 @@ describe('renderStoryNode (build codegen)', () => {
       ],
     })
     expect(out).toBe(
-      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" />"'
+      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" alt=\\"\\" />"'
     )
   })
 
@@ -292,7 +292,7 @@ describe('renderStoryNode (build codegen)', () => {
       srcset: ['a.webp 600w', 'b.webp 1200w'],
     })
     expect(out).toBe(
-      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" />"'
+      '"<img src=\\"x\\" srcset=\\"a.webp 600w, b.webp 1200w\\" alt=\\"\\" />"'
     )
   })
 

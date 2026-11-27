@@ -65,11 +65,7 @@ export const createYamlStoriesHooks = ({
     if (!id.endsWith('component.yml')) return undefined
 
     try {
-      const content = await readSDC(
-        id,
-        globalDefs,
-        sdcStorybookOptions.validate
-      )
+      const content = await readSDC(id, globalDefs)
       const externalAssets = libraryOverridesImports(
         content,
         sdcStorybookOptions.dependencyMap ?? {}

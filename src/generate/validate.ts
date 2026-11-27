@@ -51,7 +51,8 @@ export const schemaUrlFor = (
 // Validate against a schema URL, resolving the external $refs it pulls in.
 export const validateJson = async (
   data: SDCSchema,
-  schemaUrl: string
+  schemaUrl: string,
+  file = `${data.name}.component.yml`
 ): Promise<void> => {
   const validator = new Validator()
   validator.addSchema(draft04, DRAFT04_ID)
@@ -74,7 +75,7 @@ export const validateJson = async (
   const result = validator.validate(data, rootSchema)
   if (result.errors.length > 0) {
     logger.warn(
-      `${data.name}.component.yml has validation errors:\n${result.errors
+      `${file} has validation errors:\n${result.errors
         .map((error) => error.stack)
         .join('\n')}`
     )

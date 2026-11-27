@@ -1,6 +1,5 @@
 // Twig.js browser runtime: what the engine lacks for Drupal templates.
 import type Twig from 'twig'
-import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
 import {
   isMapping,
@@ -12,7 +11,7 @@ import {
 import { buildIconContext } from './icons.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS, twigJsArguments } from './cva.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
-import { castVarsAttributes, patchDrupalAttribute } from './attributes.ts'
+import { castVarsAttributes } from './attributes.ts'
 import { createWrapperRenderer, isStory } from './story.ts'
 
 export { twigArgs } from './nodes.ts'
@@ -44,7 +43,6 @@ const INCLUDE_ARGUMENTS = [
 
 export function createTwigRuntime(iconPacks: IconPacks) {
   let twig: TwigJs | null = null
-  patchDrupalAttribute(DrupalAttribute)
 
   function renderIcon(
     packId: string,

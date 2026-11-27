@@ -1,7 +1,7 @@
 // SDC guarantees `attributes` is always an Attribute object inside a component.
 import DrupalAttribute, { type DrupalAttributeEntry } from 'drupal-attribute'
 import { isRecord } from '../guards.ts'
-import { entries, toList, TWIG_JS_KEYS } from './collections.ts'
+import { entries, toList, toText, TWIG_JS_KEYS } from './collections.ts'
 
 // Duck-typed: Node loads drupal-attribute twice, as ESM and as CJS.
 export const isDrupalAttribute = (value: unknown): value is DrupalAttribute =>
@@ -78,8 +78,40 @@ export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
       }
     )
   }
+  Reflect.set(proto, 'toString', attributeString)
   Object.defineProperty(proto, PATCHED, {
     value: true,
     enumerable: false,
   })
 }
+
+const ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;',
+}
+const escape = (text: string): string =>
+  text.replace(/[&<>"']/g, (char) => ESCAPES[char] ?? char)
+
+// As Drupal prints them: values escaped, '' as `name=""`, true as a bare name;
+// null, false and empty lists are left out.
+function attributeString(this: DrupalAttribute): string {
+  const parts: string[] = []
+  for (const [key, value] of this) {
+    if (value == null || value === false) continue
+    if (value === true) {
+      parts.push(key)
+      continue
+    }
+    const text = Array.isArray(value)
+      ? value.filter((item) => item != null && item !== '').join(' ')
+      : toText(value)
+    if (Array.isArray(value) && text === '') continue
+    parts.push(`${key}="${escape(text)}"`)
+  }
+  return parts.length > 0 ? ` ${parts.join(' ')}` : ''
+}
+
+patchDrupalAttribute(DrupalAttribute)
