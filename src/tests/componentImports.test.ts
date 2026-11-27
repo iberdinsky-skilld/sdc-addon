@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { toNamespaces } from '../generate/namespaces.ts'
 import { logger } from '../logger.ts'
 import {
-  templateDependencyImports,
+  templateDependencies,
   twigDependencyImports,
 } from '../generate/componentImports.ts'
 
@@ -354,7 +354,7 @@ describe('twigDependencyImports', () => {
   })
 })
 
-test('templateDependencyImports reads Twig source, such as a library_wrapper', () => {
+test('templateDependencies reads Twig source, such as a library_wrapper', () => {
   const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
   try {
     const titleDir = join(tmpRoot, 'components', 'title')
@@ -362,11 +362,11 @@ test('templateDependencyImports reads Twig source, such as a library_wrapper', (
     writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
     const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
     expect(
-      templateDependencyImports(
+      templateDependencies(
         "<div>{{ include('umami:title') }}{{ _story }}</div>",
         ns
       )
-    ).toMatch(/^import '.*title\.component\.yml';$/)
+    ).toEqual([join(tmpRoot, 'components', 'title', 'title.component.yml')])
   } finally {
     rmSync(tmpRoot, { recursive: true, force: true })
   }

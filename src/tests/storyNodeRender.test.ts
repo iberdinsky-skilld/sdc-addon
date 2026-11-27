@@ -20,7 +20,7 @@ describe('generateArgs emits plain values', () => {
   })
 })
 
-describe('html_tag node (build-time, aligned with runtime)', () => {
+describe('html_tag node', () => {
   test('renders as <tag attrs>value</tag>', () => {
     expect(
       renderStoryNode({

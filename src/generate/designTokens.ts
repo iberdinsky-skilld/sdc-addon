@@ -111,7 +111,7 @@ export const cssValue = (type: string | undefined, value: unknown): string => {
   }
 }
 
-export const readTokens = (file: string): Token[] => {
+const readTokens = (file: string): Token[] => {
   try {
     const data: unknown = parseYaml(readFileSync(file, 'utf8'))
     return isRecord(data) ? flatten(data, [], undefined) : []
@@ -121,7 +121,7 @@ export const readTokens = (file: string): Token[] => {
   }
 }
 
-export const tokenFiles = (namespaces: NamespaceRoots): string[] =>
+const tokenFiles = (namespaces: NamespaceRoots): string[] =>
   namespaceFiles(namespaces, 'tokens').map(([, file]) => file)
 
 // Scoped like core's output; token files only define the default scope.

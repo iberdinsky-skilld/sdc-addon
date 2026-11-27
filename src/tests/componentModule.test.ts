@@ -9,7 +9,7 @@ const input = (
 ): ComponentModuleInput => ({
   componentId: 'umami:card',
   twigTemplate: '@umami/card/card.twig',
-  iconModule: 'virtual:sdc-twig-runtime:twig',
+  runtimeModule: 'virtual:sdc-twig-runtime:twig',
   assetInjector: 'virtual:sdc-asset-injector',
   localAssets: { css: [], js: [] },
   externalAssets: [],

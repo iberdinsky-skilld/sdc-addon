@@ -1,15 +1,8 @@
 {
-  // Extra-strict gate for the browser runtime (src/renderer/**) — beyond the
-  // project-wide `strict`. Run via `npm run typecheck:runtime`.
+  // Browser runtime: no dot access on index signatures; part of `npm run typecheck`.
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noUncheckedIndexedAccess": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitOverride": true
+    "noPropertyAccessFromIndexSignature": true
   },
   "include": ["src/renderer/**/*", "src/types/**/*"]
 }

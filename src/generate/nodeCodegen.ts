@@ -24,7 +24,7 @@ const formatValue = (value: unknown, inHtml: boolean): string => {
   return inHtml ? `[${items}].join('')` : `[${items}]`
 }
 
-// Build-time twin of the runtime resolver: each node becomes a JS expression.
+// Each render node becomes a JS expression.
 export const renderStoryNode = (item: unknown, inHtml = true): string => {
   if (!isRecord(item)) return jsLiteral(item)
   switch (nodeKind(item)) {

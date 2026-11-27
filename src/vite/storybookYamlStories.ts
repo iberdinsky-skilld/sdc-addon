@@ -18,7 +18,7 @@ import {
 } from '../generate/componentFiles.ts'
 import {
   storyComponentImports,
-  templateDependencyImports,
+  templateDependencies,
   twigDependencyImports,
 } from '../generate/componentImports.ts'
 import {
@@ -74,7 +74,10 @@ export const createYamlStoriesHooks = ({
         content,
         sdcStorybookOptions.dependencyMap ?? {}
       )
-      const localAssets = libraryOverridesLocalImports(content)
+      const localAssets = libraryOverridesLocalImports(
+        content,
+        basename(id, '.component.yml')
+      )
       // Story file edits must regenerate this module.
       collectStoryFilesSync(dirname(id)).forEach((file) =>
         this.addWatchFile(file)
@@ -89,13 +92,9 @@ export const createYamlStoriesHooks = ({
       const storiesImports = storyComponentImports(previewsStories, namespaces)
       const componentBaseName = basename(id, '.component.yml')
       const namespace = namespaces.pathToNamespace(dirname(id))
+      const componentId = namespaces.pathToNamespace(dirname(id), true)
       const twigFile = join(dirname(id), `${componentBaseName}.twig`)
-      const twigImports = [
-        twigDependencyImports(twigFile, namespaces),
-        ...Object.values(previewsStories).map((story) =>
-          templateDependencyImports(story.library_wrapper ?? '', namespaces)
-        ),
-      ].join('\n')
+      const twigImports = twigDependencyImports(twigFile, namespaces)
       const metadata = componentMetadata(id, content)
       const componentGlobals =
         content.thirdPartySettings?.sdcStorybook?.globals ?? {}
@@ -113,9 +112,7 @@ export const createYamlStoriesHooks = ({
       }
 
       const baseArgs: Args = {
-        defaultAttributes: [
-          ['data-component-id', namespaces.pathToNamespace(dirname(id), true)],
-        ],
+        defaultAttributes: [['data-component-id', componentId]],
         componentMetadata: metadata,
         ...(content.variants && {
           variant: Object.keys(content.variants)[0],
@@ -132,14 +129,16 @@ export const createYamlStoriesHooks = ({
         ? baseArgs
         : { ...baseArgs, ...generatedArgs }
 
-      const componentId = namespaces.pathToNamespace(dirname(id), true)
-
-      const stories = storiesGenerator(previewsStories, componentGlobals)
+      const stories = storiesGenerator(
+        previewsStories,
+        componentGlobals,
+        (wrapper) => templateDependencies(wrapper, namespaces)
+      )
 
       return componentModule({
         componentId,
         twigTemplate: `${namespace}/${componentBaseName}.twig`,
-        iconModule:
+        runtimeModule:
           sdcStorybookOptions.twigLib === 'twing'
             ? VIRTUAL_TWING
             : VIRTUAL_TWIG,

@@ -68,29 +68,28 @@ export const twigDependencyImports = (
   namespaces: Namespaces
 ): string =>
   existsSync(twigFilePath)
-    ? templateDependencyImports(readFileSync(twigFilePath, 'utf8'), namespaces)
+    ? templateDependencies(readFileSync(twigFilePath, 'utf8'), namespaces)
+        .map((path) => `import '${path}';`)
+        .join('\n')
     : ''
 
-// The same for Twig source, such as a story's library_wrapper.
-export const templateDependencyImports = (
+// *.component.yml of every `ns:component` that Twig source includes, embeds
+// or extends, with the tags or include().
+export const templateDependencies = (
   twigContent: string,
   namespaces: Namespaces
-): string => {
-  const imports = new Set<string>()
-
-  // `ns:component` references only, not `@ns/path` assets; tags and include().
+): string[] => {
+  const paths = new Set<string>()
   const patterns = [
     /{%-?\s*(?:include|embed|extends)\s+['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g,
     /\binclude\(\s*['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g,
   ]
-  const matches = patterns.flatMap((pattern) => [
+  for (const [, componentId] of patterns.flatMap((pattern) => [
     ...twigContent.matchAll(pattern),
-  ])
-  for (const [, componentId] of matches) {
+  ])) {
     const resolvedPath =
       componentId && resolveComponentId(componentId, namespaces)
-    if (resolvedPath) imports.add(`import '${resolvedPath}';`)
+    if (resolvedPath) paths.add(resolvedPath)
   }
-
-  return Array.from(imports).join('\n')
+  return [...paths]
 }

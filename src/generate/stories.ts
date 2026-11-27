@@ -6,7 +6,8 @@ import { generateArgs } from './nodeCodegen.ts'
 
 export default (
   stories: Record<string, StoryDefinition>,
-  componentGlobals: Globals = {}
+  componentGlobals: Globals = {},
+  wrapperDependencies: (wrapper: string) => string[] = () => []
 ): string =>
   Object.entries(stories)
     .map(
@@ -50,6 +51,7 @@ ${globalsBlock}
     ${generateVariants(variants)}
   },
   ${library_wrapper ? `render: _sdcWrap(${jsLiteral(library_wrapper)}),` : ''}
+  ${library_wrapper ? wrapperLoaders(wrapperDependencies(library_wrapper)) : ''}
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
@@ -58,6 +60,13 @@ ${globalsBlock}
       }
     )
     .join('\n')
+
+// Components the wrapper includes load before it renders; static imports could
+// form a cycle with their stories.
+const wrapperLoaders = (paths: string[]): string =>
+  paths.length > 0
+    ? `loaders: [() => Promise.all([${paths.map((p) => `import(${jsLiteral(p)})`).join(', ')}])],`
+    : ''
 
 const generateVariants = (
   variants: Record<string, VariantDefinition>

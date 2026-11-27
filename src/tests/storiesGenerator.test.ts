@@ -69,6 +69,17 @@ describe('storiesGenerator', () => {
     )
   })
 
+  test('components the wrapper includes load in the story loaders', () => {
+    const out = generate(
+      { wrapped: { library_wrapper: "{{ include('ns:grid') }}" } },
+      {},
+      () => ['/c/grid/grid.component.yml']
+    )
+    expect(out).toContain(
+      'loaders: [() => Promise.all([import("/c/grid/grid.component.yml")])],'
+    )
+  })
+
   test('renders complex variants with multiple keys and special titles', () => {
     const stories: Record<string, StoryDefinition> = {
       complex: {

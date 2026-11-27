@@ -28,26 +28,26 @@ function twingRuntime() {
     createSynchronousArrayLoader({ 't:badge': BADGE })
   )
   addTwing(env)
-  const core = createTwingRuntime({
+  const runtime = createTwingRuntime({
     heart: makeIconPack({ template: '<i>{{ icon_id }}</i>' }),
   })
-  core.registerSdcRuntime(env)
-  return core
+  runtime.registerSdcRuntime(env)
+  return runtime
 }
 
 const twigJs = Twig as unknown as TwigJs
 addTwig(twigJs)
-const twigCore = createTwigRuntime({
+const twigRuntime = createTwigRuntime({
   heart: makeIconPack({ template: '<i>{{ icon_id }}</i>' }),
 })
-twigCore.registerSdcRuntime(twigJs)
-twigCore.registerComponent('t:badge', (context) =>
+twigRuntime.registerSdcRuntime(twigJs)
+twigRuntime.registerComponent('t:badge', (context) =>
   twigJs.twig({ data: BADGE }).render(context)
 )
 
 const engines = [
   ['twing', twingRuntime()],
-  ['twig', twigCore],
+  ['twig', twigRuntime],
 ] as const
 
 describe.each(engines)('library_wrapper on %s', (_engine, rt) => {
@@ -105,4 +105,12 @@ test('twing: the wrapper can include a component by id', () => {
     )
     // A bare include gets no attributes here; the SDC loader adds them in Storybook.
   ).toBe('<span>a</span><span>b</span>')
+})
+
+test("twig.js: without the engine the wrapper prints the component's own output", () => {
+  const runtime = createTwigRuntime({})
+  runtime.registerComponent('t:broken', () => 'An error occurred')
+  expect(runtime.renderWrapper('<b>{{ _story }}</b>', 't:broken', {}, [])).toBe(
+    'An error occurred'
+  )
 })

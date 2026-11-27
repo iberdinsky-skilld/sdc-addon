@@ -1,8 +1,8 @@
 // library_wrapper stories: the wrapper template gets `_story`, a UI Patterns
 // render array { '#component', '#props', '#slots' } that prints the component.
 import { toAttribute } from './attributes.ts'
-import { entries, toText } from './collections.ts'
-import { PrintableArray, twigArgs } from './nodes.ts'
+import { entries, toPlainObject, toText } from './collections.ts'
+import { twigArgs } from './nodes.ts'
 
 // A render array that prints itself.
 export interface Story extends Record<string, unknown> {
@@ -25,11 +25,11 @@ export function isStory(value: unknown): boolean {
 export function storyContext(
   story: Record<string, unknown>
 ): Record<string, unknown> {
-  const ctx: Record<string, unknown> = {}
-  for (const [k, v] of entries(story['#props'])) ctx[toText(k)] = v
-  for (const [k, v] of entries(story['#slots']))
-    ctx[toText(k)] =
-      v != null && !(v instanceof PrintableArray) ? new PrintableArray(v) : v
+  const slots = toPlainObject(story['#slots']) ?? {}
+  const ctx = twigArgs(
+    { ...toPlainObject(story['#props']), ...slots },
+    Object.keys(slots)
+  )
   ctx['attributes'] = toAttribute(ctx['attributes'])
   return ctx
 }

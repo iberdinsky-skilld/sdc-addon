@@ -46,13 +46,7 @@ export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
     if (typeof self.get !== 'function') return
     const existing = self.get('class')
     if (existing == null || Array.isArray(existing)) return
-    if (existing instanceof Map) {
-      self.set('class', Array.from(existing.values()))
-    } else if (typeof existing === 'string') {
-      self.set('class', existing === '' ? [] : [existing])
-    } else {
-      self.set('class', [existing])
-    }
+    self.set('class', existing === '' ? [] : toList(existing))
   }
   for (const name of ['addClass', 'removeClass', 'hasClass'] as const) {
     const original: unknown = Reflect.get(proto, name)

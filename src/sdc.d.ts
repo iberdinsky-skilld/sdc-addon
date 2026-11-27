@@ -5,7 +5,7 @@ import type { Globals } from 'storybook/internal/types'
 import type Twig from 'twig'
 
 // A user-defined render node: `match` selects it, `render` returns HTML or
-// another node. Works in plain and wrapper slots; Twing Maps arrive as objects.
+// another node.
 export interface CustomNode {
   match: (item: Record<string, unknown>) => boolean
   render: (item: Record<string, unknown>) => string | object
@@ -125,7 +125,6 @@ export type ResolveIconSource = (
 ) => string
 
 export interface SDCStorybookOptions extends NamespaceDefinition {
-  experimentalVariants?: boolean
   useBasicArgsForStories?: boolean
   customNodes?: CustomNode[]
   dependencyMap?: Record<string, ExternalAsset[]>

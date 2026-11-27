@@ -8,7 +8,7 @@ import {
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
 import { buildIconContext } from './icons.ts'
-import { isMapping, isSequence } from './collections.ts'
+import { isMapping, isSequence, shuffle } from './collections.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
 import { patchDrupalAttribute, castVarsAttributes } from './attributes.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS } from './cva.ts'
@@ -16,7 +16,7 @@ import { createWrapperRenderer, isStory } from './story.ts'
 
 export { twigArgs } from './nodes.ts'
 
-export type SdcEnv = TwingSynchronousEnvironment & {
+type SdcEnv = TwingSynchronousEnvironment & {
   __sdcMergeOverridden?: boolean
   __sdcIncludeOverridden?: boolean
   loader: TwingSynchronousEnvironment['loader'] & {
@@ -59,7 +59,7 @@ export function createTwingRuntime(iconPacks: IconPacks) {
     }
   }
 
-  function registerCore(e: SdcEnv): void {
+  function registerSdcRuntime(e: SdcEnv): void {
     env = e
 
     if (!e.__sdcIncludeOverridden) {
@@ -151,6 +151,28 @@ export function createTwingRuntime(iconPacks: IconPacks) {
       )
     )
 
+    // Drupal joins nothing for null; the package's version throws on it.
+    const safeJoin = e.filters.get('safe_join')
+    if (safeJoin) {
+      e.addFilter(
+        createSynchronousFilter(
+          'safe_join',
+          (execCtx, value: unknown, glue: unknown) => {
+            if (value == null) return ''
+            const joined: unknown = safeJoin.callable(execCtx, value, glue)
+            return joined
+          },
+          [...safeJoin.acceptedArguments]
+        )
+      )
+    }
+    e.addFilter(
+      createSynchronousFilter(
+        'shuffle',
+        (_twingCtx, value: unknown) => shuffle(value),
+        []
+      )
+    )
     e.addTest(
       createSynchronousTest(
         'sequence',
@@ -178,7 +200,7 @@ export function createTwingRuntime(iconPacks: IconPacks) {
 
   return {
     renderIcon,
-    registerSdcRuntime: registerCore,
+    registerSdcRuntime,
     // Twing resolves `ns:component` in include() itself.
     registerComponent: (): void => undefined,
     renderWrapper,

@@ -27,10 +27,10 @@ Drupal [Single Directory Components](https://www.drupal.org/docs/develop/theming
    echo "node_modules/" >> .gitignore
    ```
 
-2. Install the addon, Vite and a Twig engine (`twig` for Twig.js, or `twing`):
+2. Install the addon and Vite:
 
    ```bash
-   npm i vite twig storybook-addon-sdc --save-dev
+   npm i vite storybook-addon-sdc --save-dev
    ```
 
 3. Initialize Storybook and remove its example stories:
@@ -137,7 +137,7 @@ Storybook:
 - `dependencyMap`: Drupal library names to CDN assets, `{ 'core/jquery': [{ type: 'js', url }] }`. See below.
 - `externalDefs`: URLs or paths of schema definition files for `$ref`.
 - `customDefs`: schema definitions keyed by their `$ref`.
-- `validate`: `true` checks component YAML against Drupal's metadata schema, or pass the URL of another schema. Problems are logged as warnings.
+- `validate`: `true` checks component YAML against its `$schema` or Drupal's metadata schema; a URL is used for components without `$schema`. Problems are logged as warnings.
 - `useBasicArgsForStories`: `true` (default) starts every story from the Basic story's values.
 
 #### `dependencyMap`
@@ -277,11 +277,12 @@ Twig.js and Twing lack some of what Drupal templates use. The addon adds it, so 
 - `html_cva()`, both engines, with named arguments on Twig.js too.
 - `|add_class` and `|set_attribute` from Drupal core: the class or attribute goes on the element itself. Twig.js had no such filters; Twing's wrapped the value in a `<div>`.
 - `include()` as a function on Twig.js, which only had the `{% include %}` tag.
-- `is sequence` and `is mapping` tests from Twig 3.11, both engines.
+- `|safe_join` of an empty value gives an empty string on Twing, as in Drupal, instead of an error.
+- `is sequence` and `is mapping` tests and the `|shuffle` filter from Twig 3.11, both engines.
 - `addClass()` and `removeClass()` take arrays, Twing Maps and the hashes Twig.js makes from `merge`, also on `create_attribute()` objects.
 - Lists in slots print item by item, without commas, on Twig.js.
 
-Twig.js cannot parse arrow functions (`|map(v => …)`, `|filter(…)`) or named arguments written with `=` (`with_context = false`), and `list ?: []` gives the length of the list instead of the list. Themes that rely on them, such as the UI Suite themes and Radix, work on Twing. On Twig.js, a `library_wrapper` can print a component with `include()`, but the `{% include %}` tag finds it only if a template already includes it with the tag.
+Twig.js cannot parse arrow functions (`|map(v => …)`, `|filter(…)`), named arguments written with `=` (`with_context = false`) or `a ? b` without `: c` inside a list (`[a ? b, c]`), and `list ?: []` gives the length of the list instead of the list. Templates that use them work on Twing. On Twig.js, a `library_wrapper` can print a component with `include()`, but the `{% include %}` tag finds it only if a template already includes it with the tag.
 
 ## Production static build
 

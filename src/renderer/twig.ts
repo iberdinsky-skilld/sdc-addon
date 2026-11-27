@@ -2,7 +2,13 @@
 import type Twig from 'twig'
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
-import { isMapping, isSequence, toPlainObject, toText } from './collections.ts'
+import {
+  isMapping,
+  isSequence,
+  shuffle,
+  toPlainObject,
+  toText,
+} from './collections.ts'
 import { buildIconContext } from './icons.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS, twigJsArguments } from './cva.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
@@ -64,15 +70,17 @@ export function createTwigRuntime(iconPacks: IconPacks) {
 
   const { renderWrapper, mergeStory } = createWrapperRenderer({
     renderComponent: (id, context) => components.get(id)?.(context),
+    // No engine yet means the component's template did not compile; printing
+    // the story shows the plugin's error.
     renderTemplate: (template, context) =>
       twig
         ? twig
             .twig({ data: template, allowInlineIncludes: true })
             .render(context)
-        : '',
+        : toText(context['_story']),
   })
 
-  function registerCore(Twig: TwigJs): void {
+  function registerSdcRuntime(Twig: TwigJs): void {
     twig = Twig
     if (Twig.__sdcRegistered) return
     Twig.__sdcRegistered = true
@@ -83,6 +91,7 @@ export function createTwigRuntime(iconPacks: IconPacks) {
       if (isStory(value) || isStory(other)) return mergeStory(value, other)
       return merge ? merge.call(this, value, params) : value
     })
+    Twig.extendFilter('shuffle', (value) => shuffle(value))
     Twig.extendTest('sequence', (value: unknown) => isSequence(value))
     Twig.extendTest('mapping', (value: unknown) => isMapping(value))
     Twig.extendFilter('add_class', (value, params) =>
@@ -127,7 +136,7 @@ export function createTwigRuntime(iconPacks: IconPacks) {
 
   return {
     renderIcon,
-    registerSdcRuntime: registerCore,
+    registerSdcRuntime,
     registerComponent: (id: string, render: (context: object) => unknown) => {
       components.set(id, render)
     },

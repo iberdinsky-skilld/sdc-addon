@@ -63,3 +63,14 @@ export function toList(value: unknown): unknown[] {
   if (typeof value !== 'object') return [value]
   return entries(value).map(([, item]) => item)
 }
+
+// Twig 3.11 |shuffle: the values in random order, keys dropped; a string's
+// characters.
+export function shuffle(value: unknown): unknown {
+  const items = typeof value === 'string' ? [...value] : [...toList(value)]
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[items[i], items[j]] = [items[j], items[i]]
+  }
+  return typeof value === 'string' ? items.join('') : items
+}

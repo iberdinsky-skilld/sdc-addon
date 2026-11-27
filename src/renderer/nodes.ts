@@ -1,6 +1,3 @@
-import { isRecord } from '../guards.ts'
-import { isDrupalAttribute } from './attributes.ts'
-import { toPlainObject } from './collections.ts'
 import type { CustomNode } from '../sdc.d.ts'
 export class PrintableArray {
   declare readonly length: number;
@@ -53,24 +50,16 @@ export function twigArgs(
   return out
 }
 
-export function nodeGet(node: unknown, key: string): unknown {
-  if (node instanceof Map) {
-    const value: unknown = node.get(key)
-    return value
-  }
-  return isRecord(node) ? node[key] : undefined
-}
-
-// Custom node registry, shared by the build codegen and the runtime.
+// Custom node registry for the story codegen.
 let customNodes: CustomNode[] = []
 
 export function registerCustomNodes(list: CustomNode[] | undefined): void {
   customNodes = list ?? []
 }
 
-function matchCustomNode(node: unknown): CustomNode | undefined {
-  const item = toPlainObject(node)
-  if (!item) return undefined
+function matchCustomNode(
+  item: Record<string, unknown>
+): CustomNode | undefined {
   return customNodes.find((c) => {
     try {
       return c.match(item)
@@ -81,9 +70,9 @@ function matchCustomNode(node: unknown): CustomNode | undefined {
 }
 
 // Output of the first matching custom renderer, undefined when none matches.
-export function renderCustomNode(node: unknown): string | object | undefined {
-  const item = toPlainObject(node)
-  if (!item) return undefined
+export function renderCustomNode(
+  item: Record<string, unknown>
+): string | object | undefined {
   return matchCustomNode(item)?.render(item)
 }
 
@@ -98,22 +87,19 @@ export const TAG_RESERVED = new Set([
   'attached',
 ])
 
-export type NodeKind =
+type NodeKind =
   'custom' | 'component' | 'icon' | 'image' | 'markup' | 'tag' | null
 
-export function nodeKind(node: unknown): NodeKind {
-  if (!node || typeof node !== 'object' || Array.isArray(node)) return null
-  if (isDrupalAttribute(node)) return null
+export function nodeKind(node: Record<string, unknown>): NodeKind {
   if (matchCustomNode(node)) return 'custom'
-  const type = nodeGet(node, 'type')
-  const theme = nodeGet(node, 'theme')
+  const { type, theme } = node
   if (type === 'component') return 'component'
   if (type === 'icon') return 'icon'
   if (type === 'image' || theme === 'image') return 'image'
   if (
     type === 'markup' ||
     theme === 'markup' ||
-    typeof nodeGet(node, 'markup') === 'string'
+    typeof node['markup'] === 'string'
   )
     return 'markup'
   if (type === 'element' || theme === 'element' || type === 'html_tag')

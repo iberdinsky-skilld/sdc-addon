@@ -25,7 +25,6 @@ export const deriveGroupFromPath = (fileName: string) => {
   return 'SDC'
 }
 
-// Story keys starting with a digit get a `_` prefix.
 // A story key as its module export: a valid identifier; Basic is reserved for
 // the generated Basic story.
 export const storyExportName = (key: string): string => {

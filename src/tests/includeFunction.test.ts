@@ -3,9 +3,9 @@ import Twig from 'twig'
 import { createTwigRuntime } from '../renderer/twig.ts'
 
 describe('include() on twig.js', () => {
-  const core = createTwigRuntime({})
-  core.registerSdcRuntime(Twig)
-  core.registerComponent(
+  const runtime = createTwigRuntime({})
+  runtime.registerSdcRuntime(Twig)
+  runtime.registerComponent(
     'umami:card',
     (context) => `<article>${String(Reflect.get(context, 'label'))}</article>`
   )
