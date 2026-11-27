@@ -9,8 +9,9 @@ export type Engine = (typeof ENGINES)[number]
 
 const START_TIMEOUT_MS = 4 * 60 * 1000
 
-// Noise that is not the addon's: placeholder images and missing favicons.
-const IGNORED = /favicon|placehold\.co|net::ERR_/
+// Noise that is not the addon's: placeholder images, missing favicons and
+// embedded players' permissions policy messages.
+const IGNORED = /favicon|placehold\.co|net::ERR_|Permissions policy violation/
 
 export const waitForServer = async (port: number): Promise<void> => {
   const deadline = Date.now() + START_TIMEOUT_MS
