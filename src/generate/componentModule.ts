@@ -7,6 +7,7 @@ import type { LocalCssImport } from './libraryAssets.ts'
 import type { ExternalAsset } from '../sdc.d.ts'
 
 export interface ComponentModuleInput {
+  componentId: string
   twigTemplate: string
   iconModule: string
   assetInjector: string
@@ -25,6 +26,7 @@ export interface ComponentModuleInput {
 }
 
 export const componentModule = ({
+  componentId,
   twigTemplate,
   iconModule,
   assetInjector,
@@ -83,7 +85,8 @@ void import.meta.glob('./${name}.css', { eager: true });
 ${localCssImports}
 ${localCssUrlImports}
 import { injectAssets } from '${assetInjector}';
-import { renderIcon as _sdcRenderIcon, twigArgs as _sdcTwigArgs } from '${iconModule}';
+import { renderIcon as _sdcRenderIcon, twigArgs as _sdcTwigArgs, registerComponent as _sdcRegisterComponent } from '${iconModule}';
+_sdcRegisterComponent(${jsLiteral(componentId)}, COMPONENT);
 ${componentImports}
 ${templateImports}
 ${assetInjection}

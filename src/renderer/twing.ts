@@ -145,5 +145,10 @@ export function createTwingCore(iconPacks: IconPacks) {
 
 export function createTwingRuntime(iconPacks: IconPacks) {
   const core = createTwingCore(iconPacks)
-  return { renderIcon: core.renderIcon, registerSdcRuntime: core.registerCore }
+  return {
+    renderIcon: core.renderIcon,
+    registerSdcRuntime: core.registerCore,
+    // Twing resolves `ns:component` in include() itself.
+    registerComponent: (): void => undefined,
+  }
 }

@@ -59,6 +59,9 @@ export function createTwigCore(iconPacks: IconPacks) {
     }
   }
 
+  // Component modules by SDC id, for include() calls the plugin does not see.
+  const components = new Map<string, (context: object) => unknown>()
+
   function registerCore(Twig: TwigJs): void {
     twig = Twig
     if (Twig.__sdcRegistered) return
@@ -84,6 +87,9 @@ export function createTwigCore(iconPacks: IconPacks) {
           ...toPlainObject(context),
           ...toPlainObject(variables),
         })
+        const component = components.get(toText(template))
+        if (component && vars !== null && typeof vars === 'object')
+          return component(vars)
         return Twig.twig({
           data: `{% include _sdc_template ${ignoreMissing === true ? 'ignore missing ' : ''}with _sdc_vars only %}`,
           allowInlineIncludes: true,
@@ -102,10 +108,21 @@ export function createTwigCore(iconPacks: IconPacks) {
     )
   }
 
-  return { renderIcon, registerCore, getTwig: (): TwigJs | null => twig }
+  return {
+    renderIcon,
+    registerCore,
+    registerComponent: (id: string, render: (context: object) => unknown) => {
+      components.set(id, render)
+    },
+    getTwig: (): TwigJs | null => twig,
+  }
 }
 
 export function createTwigRuntime(iconPacks: IconPacks) {
   const core = createTwigCore(iconPacks)
-  return { renderIcon: core.renderIcon, registerSdcRuntime: core.registerCore }
+  return {
+    renderIcon: core.renderIcon,
+    registerSdcRuntime: core.registerCore,
+    registerComponent: core.registerComponent,
+  }
 }

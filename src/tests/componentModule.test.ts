@@ -7,6 +7,7 @@ import {
 const input = (
   overrides: Partial<ComponentModuleInput> = {}
 ): ComponentModuleInput => ({
+  componentId: 'umami:card',
   twigTemplate: '@umami/card/card.twig',
   iconModule: 'virtual:sdc-twig-runtime:twig',
   assetInjector: 'virtual:sdc-asset-injector',
@@ -40,6 +41,12 @@ describe('componentModule', () => {
     expect(code).toContain('export const Extra = {}')
     expect(code).not.toContain('globals:')
     expect(code).not.toContain('await injectAssets(')
+  })
+
+  test('registers the component under its SDC id', () => {
+    expect(componentModule(input())).toContain(
+      '_sdcRegisterComponent("umami:card", COMPONENT);'
+    )
   })
 
   test("loads only the component's own CSS and JS, like Drupal", () => {

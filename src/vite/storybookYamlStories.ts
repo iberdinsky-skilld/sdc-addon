@@ -168,6 +168,7 @@ export const createYamlStoriesHooks = ({
       )
 
       return componentModule({
+        componentId,
         twigTemplate: `${namespace}/${componentBaseName}.twig`,
         iconModule:
           sdcStorybookOptions.twigLib === 'twing'

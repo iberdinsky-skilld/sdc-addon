@@ -91,6 +91,25 @@ describe('twigDependencyImports', () => {
     }
   })
 
+  test("generates import for {{ include('ns:component') }}", () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
+    try {
+      const titleDir = join(tmpRoot, 'components', 'title')
+      mkdirSync(titleDir, { recursive: true })
+      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
+
+      const twigFile = join(tmpRoot, 'comp.twig')
+      writeFileSync(twigFile, "{{ include('umami:title', { label: 'x' }) }}")
+
+      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+      expect(twigDependencyImports(twigFile, ns)).toMatch(
+        /^import '.*title\.component\.yml';$/m
+      )
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
   test('generates import for {% include %} with single quotes', () => {
     const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
     try {

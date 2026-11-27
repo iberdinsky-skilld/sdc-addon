@@ -72,10 +72,15 @@ export const twigDependencyImports = (
   const twigContent = readFileSync(twigFilePath, 'utf8')
   const imports = new Set<string>()
 
-  // `ns:component` references only, not `@ns/path` assets.
-  const pattern =
-    /{%-?\s*(?:include|embed|extends)\s+['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g
-  for (const [, componentId] of twigContent.matchAll(pattern)) {
+  // `ns:component` references only, not `@ns/path` assets; tags and include().
+  const patterns = [
+    /{%-?\s*(?:include|embed|extends)\s+['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g,
+    /\binclude\(\s*['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g,
+  ]
+  const matches = patterns.flatMap((pattern) => [
+    ...twigContent.matchAll(pattern),
+  ])
+  for (const [, componentId] of matches) {
     const resolvedPath =
       componentId && resolveComponentId(componentId, namespaces)
     if (resolvedPath) imports.add(`import '${resolvedPath}';`)

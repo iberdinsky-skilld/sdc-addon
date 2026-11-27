@@ -3,7 +3,12 @@ import Twig from 'twig'
 import { createTwigCore } from '../renderer/twig.ts'
 
 describe('include() on twig.js', () => {
-  createTwigCore({}).registerCore(Twig)
+  const core = createTwigCore({})
+  core.registerCore(Twig)
+  core.registerComponent(
+    'umami:card',
+    (context) => `<article>${String(Reflect.get(context, 'label'))}</article>`
+  )
   Twig.twig({
     id: 'umami:badge',
     data: '<span{{ attributes }}>{{ label }}{{ page }}</span>',
@@ -20,6 +25,7 @@ describe('include() on twig.js', () => {
       '<span>A</span>',
     ],
     ["{{ include('missing', {}, true, true) }}", ''],
+    ["{{ include('umami:card', { label: 'C' }) }}", '<article>C</article>'],
     [
       "{{ include('umami:badge', { attributes: { class: ['x'] }, label: 'B' }, false) }}",
       '<span class="x">B</span>',
