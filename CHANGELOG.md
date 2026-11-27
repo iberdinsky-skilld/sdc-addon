@@ -1,3 +1,15 @@
+# v0.30.1 (Fri Nov 27 2026)
+
+#### 🐛 Bug Fix
+
+- Attributes print as in Drupal; validation runs at start [#159](https://github.com/iberdinsky-skilld/sdc-addon/pull/159) ([@iberdinsky-skilld](https://github.com/iberdinsky-skilld))
+
+#### Authors: 1
+
+- [@iberdinsky-skilld](https://github.com/iberdinsky-skilld)
+
+---
+
 # v0.30.0 (Fri Nov 27 2026)
 
 #### 🚀 Enhancement
