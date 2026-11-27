@@ -22,6 +22,11 @@ describe('storiesGenerator', () => {
     expect(out).toContain('<span>slot</span>')
   })
 
+  test('a story key with dashes becomes a valid export', () => {
+    const out = generate({ 'download-foreign-file': { name: 'Download' } })
+    expect(out).toContain('export const Download_foreign_file = {')
+  })
+
   test('adds Variant_ prefix when story key capitalizes to "Basic"', () => {
     const stories: Record<string, StoryDefinition> = {
       basic: {

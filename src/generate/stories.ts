@@ -1,6 +1,6 @@
 import type { Globals } from 'storybook/internal/types'
 import type { StoryDefinition, VariantDefinition } from '../sdc.d.ts'
-import { capitalize, jsLiteral } from '../utils.ts'
+import { capitalize, jsLiteral, storyExportName } from '../utils.ts'
 import { isRecord } from '../guards.ts'
 import { generateArgs } from './nodeCodegen.ts'
 
@@ -37,18 +37,13 @@ export default (
           Object.keys(mergedGlobals).length > 0
             ? `  globals: ${jsLiteral(mergedGlobals, 2)},`
             : ''
-        const capitalizedKey = capitalize(storyKey)
-        // 'Basic' is reserved (it carries baseArgs), so prefix a clashing story.
-        const exportName =
-          capitalizedKey === 'Basic'
-            ? `Variant_${capitalizedKey}`
-            : capitalizedKey
+        const exportName = storyExportName(storyKey)
 
         return `
 export const ${exportName} = {
   parameters:  {...${jsLiteral(storyParameters, 2)}, ...{docs: {description: {story: ${jsLiteral(description, 2)}}}}},
 ${globalsBlock}
-  name: ${jsLiteral(name ?? capitalizedKey, 2)},
+  name: ${jsLiteral(name ?? capitalize(storyKey), 2)},
   args: {
     ...Basic.baseArgs,
     ${processPropsAttributes(props)}

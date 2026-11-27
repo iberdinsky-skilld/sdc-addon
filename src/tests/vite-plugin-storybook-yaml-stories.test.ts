@@ -462,6 +462,11 @@ thirdPartySettings:
         'name: Always open',
         'utf8'
       )
+      writeFileSync(
+        join(storiesDir, 'accordion.two-columns.story.yml'),
+        'name: Two columns',
+        'utf8'
+      )
 
       const index = await yamlStoriesIndexer.createIndex(file, {
         makeTitle: (s?: string) => s ?? '',
@@ -469,6 +474,7 @@ thirdPartySettings:
       const exportNames = index.map((i: { exportName: string }) => i.exportName)
       expect(exportNames).toContain('Basic')
       expect(exportNames).toContain('Always_open')
+      expect(exportNames).toContain('Two_columns')
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }

@@ -142,6 +142,14 @@ describe('renderStoryNode (build codegen)', () => {
     [
       {
         type: 'component',
+        component: 'umami:link',
+        story: 'download-foreign-file',
+      },
+      'umamilink.default.component({...umamilink.Basic.baseArgs, ...umamilink.Download_foreign_file.args, ...{ }, ...{}})',
+    ],
+    [
+      {
+        type: 'component',
         component: 'umami:card',
         story: 'preview',
         slots: {

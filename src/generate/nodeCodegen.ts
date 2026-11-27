@@ -1,4 +1,4 @@
-import { capitalize, jsLiteral, toIdentifier } from '../utils.ts'
+import { jsLiteral, storyExportName, toIdentifier } from '../utils.ts'
 import { isRecord } from '../guards.ts'
 import { toAttribute } from '../renderer/attributes.ts'
 import { toText } from '../renderer/collections.ts'
@@ -59,7 +59,7 @@ const renderComponent = (item: Node): string => {
   const componentProps = `...{ ${generateArgs(props)}}, ...{${generateArgs(slots)}}`
   const storyArgs =
     typeof item.story === 'string'
-      ? `...${identifier}.${capitalize(item.story)}.args`
+      ? `...${identifier}.${storyExportName(item.story)}.args`
       : '...{}'
   return `${identifier}.default.component({...${identifier}.Basic.baseArgs, ${storyArgs}, ${componentProps}})`
 }
