@@ -2,9 +2,33 @@ import assert from 'node:assert/strict'
 import { describe, it, expect } from 'vitest'
 import { isRecord } from '../guards.ts'
 import generateStorybookArgs, { toFakerSchema } from '../generate/args'
+import { DEFAULT_ADDON_OPTIONS, PLACEHOLDER_URL } from '../constants'
 import type { SDCSchema } from '../sdc.d.ts'
 
 describe('generateStorybookArgs', () => {
+  it('gives a URL prop a working placeholder and a multi-type prop a list, else its first type', async () => {
+    const content: SDCSchema = {
+      props: {
+        properties: {
+          url: { type: 'string', format: 'iri-reference' },
+          classes: {
+            type: ['string', 'array', 'null'],
+            items: { type: 'string' },
+          },
+          title: { type: ['null', 'string'] },
+        },
+      },
+      name: '',
+    }
+    const args = await generateStorybookArgs(
+      content,
+      DEFAULT_ADDON_OPTIONS.jsonSchemaFakerOptions ?? {}
+    )
+    expect(args['url']).toBe(PLACEHOLDER_URL)
+    expect(Array.isArray(args['classes'])).toBe(true)
+    expect(typeof args['title']).toBe('string')
+  })
+
   it('leaves out a prop whose $ref is unknown and fills the others', async () => {
     const content: SDCSchema = {
       props: {
