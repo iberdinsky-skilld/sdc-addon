@@ -7,7 +7,6 @@ import { nodeKind, renderCustomNode, TAG_RESERVED } from '../renderer/nodes.ts'
 // A YAML render node; fields are user input and read defensively.
 type Node = Record<string, unknown>
 
-// drupal-attribute intentionally drops empty values (canonical Drupal).
 const attrStr = (value: unknown): string => toAttribute(value).toString()
 
 // Args stay plain; a list concatenated into HTML has to print its items.

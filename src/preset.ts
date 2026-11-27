@@ -6,7 +6,6 @@ import { yamlStoriesIndexer } from './vite/storyIndexer.ts'
 import { mergeConfig } from 'vite'
 import type { HtmlTagDescriptor, Plugin, UserConfig } from 'vite'
 import type { Indexer } from 'storybook/internal/types'
-import type { StorybookConfig } from '@storybook/html-vite'
 import type { ExternalAsset, SDCAddonOptions } from './sdc.d.ts'
 import { isRemoteUrl, mergeOptions } from './utils.ts'
 import { toNamespaces, type NamespaceRoots } from './generate/namespaces.ts'
@@ -158,14 +157,19 @@ export async function viteFinal(
   })
 }
 
-export const indexersWithYaml = (existing?: Indexer[]): Indexer[] => [
-  ...(existing ?? []),
-  yamlStoriesIndexer,
-]
+export const indexersWithYaml = (
+  existing?: Indexer[],
+  validate?: string | boolean
+): Indexer[] => [...(existing ?? []), yamlStoriesIndexer(validate)]
 
-export const experimental_indexers: StorybookConfig['experimental_indexers'] = (
-  existingIndexers
-) => indexersWithYaml(existingIndexers)
+export const experimental_indexers = (
+  existingIndexers: Indexer[] | undefined,
+  options: SDCAddonOptions
+): Indexer[] =>
+  indexersWithYaml(
+    existingIndexers,
+    mergeOptions(DEFAULT_ADDON_OPTIONS, options).sdcStorybookOptions.validate
+  )
 
 type StaticDir = string | { from: string; to: string }
 

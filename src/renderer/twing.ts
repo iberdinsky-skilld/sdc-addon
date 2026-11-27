@@ -5,12 +5,11 @@ import {
   createSynchronousTest,
   type TwingSynchronousEnvironment,
 } from 'twing'
-import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
 import { buildIconContext } from './icons.ts'
 import { isMapping, isSequence, shuffle } from './collections.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
-import { patchDrupalAttribute, castVarsAttributes } from './attributes.ts'
+import { castVarsAttributes } from './attributes.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS } from './cva.ts'
 import { createWrapperRenderer, isStory } from './story.ts'
 
@@ -26,7 +25,6 @@ type SdcEnv = TwingSynchronousEnvironment & {
 
 export function createTwingRuntime(iconPacks: IconPacks) {
   let env: SdcEnv | null = null
-  patchDrupalAttribute(DrupalAttribute)
 
   // The env renders `ns:component` itself; one template name per wrapper source.
   const inlineNames = new Map<string, string>()

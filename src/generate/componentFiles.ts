@@ -1,6 +1,7 @@
 // Reading a component's *.component.yml and its *.story.yml files.
 import { readFileSync } from 'node:fs'
-import { basename, dirname } from 'node:path'
+import { basename, dirname, relative } from 'node:path'
+import { cwd } from 'node:process'
 import { parse as parseYaml } from 'yaml'
 import type { JSONSchema4 } from 'json-schema'
 import { logger } from '../logger.ts'
@@ -22,7 +23,7 @@ export const readSDC = async (
   const schemaUrl = schemaUrlFor(sdcSchema, validate)
   if (schemaUrl) {
     try {
-      await validateJson(sdcSchema, schemaUrl)
+      await validateJson(sdcSchema, schemaUrl, relative(cwd(), filePath))
     } catch (error) {
       logger.warn(`Could not validate ${filePath}: ${String(error)}`)
     }

@@ -45,11 +45,12 @@ const createStoryIndex = (
   return storiesIndex
 }
 
-export const yamlStoriesIndexer: Indexer = {
+// Validates here: the indexer reads every component at start and on change.
+export const yamlStoriesIndexer = (validate?: string | boolean): Indexer => ({
   test: /component\.yml$/,
   createIndex: async (fileName, { makeTitle }) => {
     try {
-      const content = await readSDC(fileName)
+      const content = await readSDC(fileName, undefined, validate)
 
       const group = content.group || deriveGroupFromPath(fileName)
 
@@ -83,4 +84,4 @@ export const yamlStoriesIndexer: Indexer = {
       throw error
     }
   },
-}
+})

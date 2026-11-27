@@ -161,3 +161,22 @@ describe('patchDrupalAttribute', () => {
     )
   })
 })
+
+test('attributes print as in Drupal: empty value kept, true as a bare name', () => {
+  const attributes = new DrupalAttribute([
+    ['alt', ''],
+    ['data-open', true],
+    ['hidden', false],
+    ['title', null],
+    ['class', []],
+    ['id', 'a'],
+  ])
+  expect(attributes.toString()).toBe(' alt="" data-open id="a"')
+})
+
+test('attribute values are escaped as in Drupal', () => {
+  const attributes = new DrupalAttribute([['title', `Tom & "Jerry's" <b>`]])
+  expect(attributes.toString()).toBe(
+    ' title="Tom &amp; &quot;Jerry&#039;s&quot; &lt;b&gt;"'
+  )
+})
