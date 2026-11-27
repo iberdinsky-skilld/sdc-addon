@@ -5,14 +5,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { toNamespaces, type NamespaceRoots } from '../generate/namespaces.ts'
 import {
-  discoverIconPacks,
   loadIconPackFile,
   collectIconIdsFromData,
   iconPackFiles,
   fetchRemoteSvgIcons,
   fetchRemoteSprite,
 } from '../generate/iconPacks.ts'
-import type { IconPack } from '../generate/iconPacks.ts'
+import type { IconPack, IconPacks, ResolveIconSource } from '../sdc.d.ts'
 import { createSdcTwigRuntimeHooks } from '../vite/sdcTwigRuntime.ts'
 import { makeIconPack } from './helpers.ts'
 import { buildIconContext } from '../renderer/icons.ts'
@@ -36,7 +35,16 @@ function makeTmpNs(ns: string) {
   }
 }
 
-// ── discoverIconPacks ──────────────────────────────────────────────────────
+// Every namespace's packs, as the runtime plugin loads them.
+function discoverIconPacks(
+  namespaces: NamespaceRoots,
+  resolveIconSource?: ResolveIconSource
+): IconPacks {
+  const packs: IconPacks = {}
+  for (const [, file] of iconPackFiles(namespaces))
+    Object.assign(packs, loadIconPackFile(file, resolveIconSource).packs)
+  return packs
+}
 
 describe('discoverIconPacks', () => {
   test('returns {} when no *.icons.yml exists', () => {

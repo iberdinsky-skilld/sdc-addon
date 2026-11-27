@@ -4,7 +4,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { toNamespaces } from '../generate/namespaces.ts'
 import { logger } from '../logger.ts'
-import { twigDependencyImports } from '../generate/componentImports.ts'
+import {
+  templateDependencies,
+  twigDependencyImports,
+} from '../generate/componentImports.ts'
 
 describe('twigDependencyImports', () => {
   test('returns empty string when twig file does not exist', () => {
@@ -86,6 +89,25 @@ describe('twigDependencyImports', () => {
 
       expect(result).toContain('title.component.yml')
       expect(result).toMatch(/^import '.*title\.component\.yml';$/m)
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }
+  })
+
+  test("generates import for {{ include('ns:component') }}", () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
+    try {
+      const titleDir = join(tmpRoot, 'components', 'title')
+      mkdirSync(titleDir, { recursive: true })
+      writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
+
+      const twigFile = join(tmpRoot, 'comp.twig')
+      writeFileSync(twigFile, "{{ include('umami:title', { label: 'x' }) }}")
+
+      const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+      expect(twigDependencyImports(twigFile, ns)).toMatch(
+        /^import '.*title\.component\.yml';$/m
+      )
     } finally {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
@@ -330,4 +352,22 @@ describe('twigDependencyImports', () => {
       rmSync(tmpRoot, { recursive: true, force: true })
     }
   })
+})
+
+test('templateDependencies reads Twig source, such as a library_wrapper', () => {
+  const tmpRoot = mkdtempSync(join(tmpdir(), 'sdc-twig-'))
+  try {
+    const titleDir = join(tmpRoot, 'components', 'title')
+    mkdirSync(titleDir, { recursive: true })
+    writeFileSync(join(titleDir, 'title.component.yml'), 'name: Title')
+    const ns = toNamespaces({ namespace: '', namespaces: { umami: tmpRoot } })
+    expect(
+      templateDependencies(
+        "<div>{{ include('umami:title') }}{{ _story }}</div>",
+        ns
+      )
+    ).toEqual([join(tmpRoot, 'components', 'title', 'title.component.yml')])
+  } finally {
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }
 })

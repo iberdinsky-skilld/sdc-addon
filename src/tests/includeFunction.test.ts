@@ -1,9 +1,14 @@
 import { describe, expect, test } from 'vitest'
 import Twig from 'twig'
-import { createTwigCore } from '../renderer/twig.ts'
+import { createTwigRuntime } from '../renderer/twig.ts'
 
 describe('include() on twig.js', () => {
-  createTwigCore({}).registerCore(Twig)
+  const runtime = createTwigRuntime({})
+  runtime.registerSdcRuntime(Twig)
+  runtime.registerComponent(
+    'umami:card',
+    (context) => `<article>${String(Reflect.get(context, 'label'))}</article>`
+  )
   Twig.twig({
     id: 'umami:badge',
     data: '<span{{ attributes }}>{{ label }}{{ page }}</span>',
@@ -20,6 +25,7 @@ describe('include() on twig.js', () => {
       '<span>A</span>',
     ],
     ["{{ include('missing', {}, true, true) }}", ''],
+    ["{{ include('umami:card', { label: 'C' }) }}", '<article>C</article>'],
     [
       "{{ include('umami:badge', { attributes: { class: ['x'] }, label: 'B' }, false) }}",
       '<span class="x">B</span>',

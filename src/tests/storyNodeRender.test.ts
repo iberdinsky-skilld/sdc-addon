@@ -20,7 +20,7 @@ describe('generateArgs emits plain values', () => {
   })
 })
 
-describe('html_tag node (build-time, aligned with runtime)', () => {
+describe('html_tag node', () => {
   test('renders as <tag attrs>value</tag>', () => {
     expect(
       renderStoryNode({
@@ -138,6 +138,14 @@ describe('renderStoryNode (build codegen)', () => {
     [
       { type: 'component', component: 'umami:card', story: 'preview' },
       'umamicard.default.component({...umamicard.Basic.baseArgs, ...umamicard.Preview.args, ...{ }, ...{}})',
+    ],
+    [
+      {
+        type: 'component',
+        component: 'umami:link',
+        story: 'download-foreign-file',
+      },
+      'umamilink.default.component({...umamilink.Basic.baseArgs, ...umamilink.Download_foreign_file.args, ...{ }, ...{}})',
     ],
     [
       {

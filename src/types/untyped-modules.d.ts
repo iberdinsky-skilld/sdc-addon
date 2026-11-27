@@ -14,16 +14,6 @@ declare module 'vite-plugin-twig-drupal' {
   export default function plugin(options?: VitePluginTwigDrupalOptions): Plugin
 }
 
-declare module 'vite-plugin-twing-drupal/src/loader/createSDCLoader.js' {
-  import type { createSynchronousEnvironment } from 'twing'
-  // Namespace roots as a path or a list of paths.
-  export function createSDCLoader(
-    templates: Record<string, string>,
-    namespaces: Record<string, string[] | string>,
-    name?: string
-  ): Parameters<typeof createSynchronousEnvironment>[0]
-}
-
 declare module '@christianwiedemann/drupal-twig-extensions/twing' {
   import type { TwingSynchronousEnvironment } from 'twing'
   // Drupal extension config; `null` disables an entry.

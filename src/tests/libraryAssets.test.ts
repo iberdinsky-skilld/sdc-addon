@@ -247,7 +247,7 @@ describe('libraryOverridesImports', () => {
 
 describe('libraryOverridesLocalImports', () => {
   test('returns empty when no libraryOverrides', () => {
-    expect(libraryOverridesLocalImports({ name: 'Test' })).toEqual({
+    expect(libraryOverridesLocalImports({ name: 'Test' }, 'card')).toEqual({
       css: [],
       js: [],
     })
@@ -261,36 +261,23 @@ describe('libraryOverridesLocalImports', () => {
         js: { 'js/carousel.js': {} },
       },
     }
-    expect(libraryOverridesLocalImports(content)).toEqual({
+    expect(libraryOverridesLocalImports(content, 'card')).toEqual({
       css: [{ path: './styles/alert.css', media: undefined }],
       js: ['./js/carousel.js'],
     })
   })
 
-  test('de-dupes root files already covered by the flat glob', () => {
+  test("skips the component's own <name>.css/.js and keeps other root files", () => {
     const content = {
       name: 'Test',
       libraryOverrides: {
-        css: { component: { 'card.css': {} } },
-        js: { 'card.js': {} },
+        css: { component: { 'card.css': {}, 'extra.css': { media: 'print' } } },
+        js: { 'card.js': {}, 'card.mjs': {}, 'extra.js': {} },
       },
     }
-    expect(libraryOverridesLocalImports(content)).toEqual({
-      css: [],
-      js: [],
-    })
-  })
-
-  test('keeps subfolder .mjs and drops root .mjs', () => {
-    const content = {
-      name: 'Test',
-      libraryOverrides: {
-        js: { 'behaviors/widget.mjs': {}, 'widget.mjs': {} },
-      },
-    }
-    expect(libraryOverridesLocalImports(content)).toEqual({
-      css: [],
-      js: ['./behaviors/widget.mjs'],
+    expect(libraryOverridesLocalImports(content, 'card')).toEqual({
+      css: [{ path: './extra.css', media: 'print' }],
+      js: ['./extra.js'],
     })
   })
 
@@ -302,7 +289,7 @@ describe('libraryOverridesLocalImports', () => {
         js: { 'https://cdn.example.com/x.js': {}, 'js/local.js': {} },
       },
     }
-    expect(libraryOverridesLocalImports(content)).toEqual({
+    expect(libraryOverridesLocalImports(content, 'card')).toEqual({
       css: [],
       js: ['./js/local.js'],
     })
@@ -318,7 +305,7 @@ describe('libraryOverridesLocalImports', () => {
         },
       },
     }
-    expect(libraryOverridesLocalImports(content).css).toEqual([
+    expect(libraryOverridesLocalImports(content, 'card').css).toEqual([
       { path: './styles/x.css', media: undefined },
     ])
   })
@@ -333,7 +320,7 @@ describe('libraryOverridesLocalImports', () => {
         js: { 'js/keep.js': {}, 'js/drop.js': false },
       },
     }
-    expect(libraryOverridesLocalImports(content)).toEqual({
+    expect(libraryOverridesLocalImports(content, 'card')).toEqual({
       css: [{ path: './styles/keep.css', media: undefined }],
       js: ['./js/keep.js'],
     })
@@ -346,7 +333,7 @@ describe('libraryOverridesLocalImports', () => {
         css: { theme: { 'styles/print.css': { media: 'print' } } },
       },
     }
-    expect(libraryOverridesLocalImports(content).css).toEqual([
+    expect(libraryOverridesLocalImports(content, 'card').css).toEqual([
       { path: './styles/print.css', media: 'print' },
     ])
   })

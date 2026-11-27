@@ -19,15 +19,15 @@ For every `*.component.yml`, the addon:
 - creates a story called **Basic**, filled with the values from the schema;
 - turns props and slots into **Controls**, the panel where you change them in the browser;
 - renders the Twig template the way Drupal does, with Drupal's Twig functions and filters;
-- loads the CSS and JS files from the component folder and runs its Drupal behaviors;
+- loads the component's CSS and JS and runs its Drupal behaviors;
 - adds more stories if you describe them in YAML.
 
 ## Get started
 
-Install the addon, Vite and a Twig engine:
+Install the addon and Vite:
 
 ```bash
-npm i vite twig storybook-addon-sdc --save-dev
+npm i vite storybook-addon-sdc --save-dev
 ```
 
 Point Storybook at your components:
@@ -43,7 +43,7 @@ export default {
 
 Run `npm run storybook`.
 
-There are two Twig engines. **Twig.js** (`twig`) is the default. **Twing** (`twing`) is closer to PHP Twig and is needed when a base theme lives outside the Storybook project. To use Twing, install `twing` instead of `twig` and set the engine in the addon options:
+There are two Twig engines. **Twig.js** (`twig`) is the default. **Twing** (`twing`) is closer to PHP Twig and is needed when a base theme lives outside the Storybook project. To use Twing, set the engine in the addon options:
 
 ```js
 addons: [

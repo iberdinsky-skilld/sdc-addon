@@ -8,14 +8,15 @@ import {
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
 import { buildIconContext } from './icons.ts'
-import { isMapping, isSequence } from './collections.ts'
+import { isMapping, isSequence, shuffle } from './collections.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
 import { patchDrupalAttribute, castVarsAttributes } from './attributes.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS } from './cva.ts'
+import { createWrapperRenderer, isStory } from './story.ts'
 
 export { twigArgs } from './nodes.ts'
 
-export type SdcEnv = TwingSynchronousEnvironment & {
+type SdcEnv = TwingSynchronousEnvironment & {
   __sdcMergeOverridden?: boolean
   __sdcIncludeOverridden?: boolean
   loader: TwingSynchronousEnvironment['loader'] & {
@@ -23,9 +24,25 @@ export type SdcEnv = TwingSynchronousEnvironment & {
   }
 }
 
-export function createTwingCore(iconPacks: IconPacks) {
+export function createTwingRuntime(iconPacks: IconPacks) {
   let env: SdcEnv | null = null
   patchDrupalAttribute(DrupalAttribute)
+
+  // The env renders `ns:component` itself; one template name per wrapper source.
+  const inlineNames = new Map<string, string>()
+  const { renderWrapper, mergeStory } = createWrapperRenderer({
+    renderComponent: (id, context) => env?.render(id, context),
+    renderTemplate: (template, context) => {
+      if (!env?.loader.setTemplate) return ''
+      let name = inlineNames.get(template)
+      if (!name) {
+        name = '_sdc_wrapper_' + inlineNames.size
+        inlineNames.set(template, name)
+      }
+      env.loader.setTemplate(name, template)
+      return env.render(name, context)
+    },
+  })
 
   function renderIcon(
     packId: string,
@@ -42,7 +59,7 @@ export function createTwingCore(iconPacks: IconPacks) {
     }
   }
 
-  function registerCore(e: SdcEnv): void {
+  function registerSdcRuntime(e: SdcEnv): void {
     env = e
 
     if (!e.__sdcIncludeOverridden) {
@@ -71,6 +88,25 @@ export function createTwingCore(iconPacks: IconPacks) {
               return output
             },
             [...origInclude.acceptedArguments]
+          )
+        )
+      }
+    }
+
+    if (!e.__sdcMergeOverridden) {
+      const merge = e.filters.get('merge')
+      if (merge) {
+        e.__sdcMergeOverridden = true
+        // `_story|merge(...)` in a library_wrapper gives a new render array.
+        e.addFilter(
+          createSynchronousFilter(
+            'merge',
+            (execCtx, a, b) => {
+              if (isStory(a) || isStory(b)) return mergeStory(a, b)
+              const merged: unknown = merge.callable(execCtx, a, b)
+              return merged
+            },
+            [{ name: 'source' }]
           )
         )
       }
@@ -115,6 +151,28 @@ export function createTwingCore(iconPacks: IconPacks) {
       )
     )
 
+    // Drupal joins nothing for null; the package's version throws on it.
+    const safeJoin = e.filters.get('safe_join')
+    if (safeJoin) {
+      e.addFilter(
+        createSynchronousFilter(
+          'safe_join',
+          (execCtx, value: unknown, glue: unknown) => {
+            if (value == null) return ''
+            const joined: unknown = safeJoin.callable(execCtx, value, glue)
+            return joined
+          },
+          [...safeJoin.acceptedArguments]
+        )
+      )
+    }
+    e.addFilter(
+      createSynchronousFilter(
+        'shuffle',
+        (_twingCtx, value: unknown) => shuffle(value),
+        []
+      )
+    )
     e.addTest(
       createSynchronousTest(
         'sequence',
@@ -140,10 +198,11 @@ export function createTwingCore(iconPacks: IconPacks) {
     )
   }
 
-  return { renderIcon, registerCore, getEnv: (): SdcEnv | null => env }
-}
-
-export function createTwingRuntime(iconPacks: IconPacks) {
-  const core = createTwingCore(iconPacks)
-  return { renderIcon: core.renderIcon, registerSdcRuntime: core.registerCore }
+  return {
+    renderIcon,
+    registerSdcRuntime,
+    // Twing resolves `ns:component` in include() itself.
+    registerComponent: (): void => undefined,
+    renderWrapper,
+  }
 }

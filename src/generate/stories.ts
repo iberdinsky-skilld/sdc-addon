@@ -1,13 +1,13 @@
 import type { Globals } from 'storybook/internal/types'
 import type { StoryDefinition, VariantDefinition } from '../sdc.d.ts'
-import { capitalize, jsLiteral } from '../utils.ts'
+import { capitalize, jsLiteral, storyExportName } from '../utils.ts'
 import { isRecord } from '../guards.ts'
 import { generateArgs } from './nodeCodegen.ts'
 
 export default (
   stories: Record<string, StoryDefinition>,
   componentGlobals: Globals = {},
-  wrapperHtml: Record<string, string> = {}
+  wrapperDependencies: (wrapper: string) => string[] = () => []
 ): string =>
   Object.entries(stories)
     .map(
@@ -37,29 +37,21 @@ export default (
           Object.keys(mergedGlobals).length > 0
             ? `  globals: ${jsLiteral(mergedGlobals, 2)},`
             : ''
-        const capitalizedKey = capitalize(storyKey)
-        // 'Basic' is reserved (it carries baseArgs), so prefix a clashing story.
-        const exportName =
-          capitalizedKey === 'Basic'
-            ? `Variant_${capitalizedKey}`
-            : capitalizedKey
+        const exportName = storyExportName(storyKey)
 
         return `
 export const ${exportName} = {
   parameters:  {...${jsLiteral(storyParameters, 2)}, ...{docs: {description: {story: ${jsLiteral(description, 2)}}}}},
 ${globalsBlock}
-  name: ${jsLiteral(name ?? capitalizedKey, 2)},
+  name: ${jsLiteral(name ?? capitalize(storyKey), 2)},
   args: {
     ...Basic.baseArgs,
     ${processPropsAttributes(props)}
     ${generateArgs(slots)}
     ${generateVariants(variants)}
   },
-  ${
-    library_wrapper
-      ? `render: () => ${jsLiteral(wrapperHtml[storyKey] ?? '')},`
-      : ''
-  }
+  ${library_wrapper ? `render: _sdcWrap(${jsLiteral(library_wrapper)}),` : ''}
+  ${library_wrapper ? wrapperLoaders(wrapperDependencies(library_wrapper)) : ''}
   play: async ({ canvasElement }) => {
     Drupal.attachBehaviors(canvasElement, window.drupalSettings);
   },
@@ -68,6 +60,13 @@ ${globalsBlock}
       }
     )
     .join('\n')
+
+// Components the wrapper includes load before it renders; static imports could
+// form a cycle with their stories.
+const wrapperLoaders = (paths: string[]): string =>
+  paths.length > 0
+    ? `loaders: [() => Promise.all([${paths.map((p) => `import(${jsLiteral(p)})`).join(', ')}])],`
+    : ''
 
 const generateVariants = (
   variants: Record<string, VariantDefinition>

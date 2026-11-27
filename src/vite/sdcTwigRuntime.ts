@@ -40,7 +40,7 @@ import { ${factory} } from 'storybook-addon-sdc/renderer/${lib}';
 
 export { twigArgs } from 'storybook-addon-sdc/renderer/${lib}';
 
-export const { renderIcon, registerSdcRuntime } = ${factory}(${mergeExpr});
+export const { renderIcon, registerSdcRuntime, registerComponent, renderWrapper } = ${factory}(${mergeExpr});
 `
 }
 

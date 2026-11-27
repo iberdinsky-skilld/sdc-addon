@@ -1,7 +1,7 @@
 // Storybook indexer: lists a *.component.yml's stories without building it.
 import type { Indexer, IndexInput } from 'storybook/internal/types'
 import { logger } from '../logger.ts'
-import { capitalize, deriveGroupFromPath } from '../utils.ts'
+import { capitalize, deriveGroupFromPath, storyExportName } from '../utils.ts'
 import { getProjectName } from '../generate/namespaces.ts'
 import { loadStoryFilesSync, readSDC } from '../generate/componentFiles.ts'
 import type { StoryDefinition } from '../sdc.d.ts'
@@ -29,11 +29,7 @@ const createStoryIndex = (
   if (!isAllDisabled) {
     Object.keys(stories).forEach((storyKey) => {
       if (!disabledStories.includes(storyKey)) {
-        const capitalizedKey = capitalize(storyKey)
-        const exportName =
-          capitalizedKey === 'Basic'
-            ? `Variant_${capitalizedKey}`
-            : capitalizedKey
+        const exportName = storyExportName(storyKey)
 
         storiesIndex.push({
           type: 'story',

@@ -66,20 +66,30 @@ export const storyComponentImports = (
 export const twigDependencyImports = (
   twigFilePath: string,
   namespaces: Namespaces
-): string => {
-  if (!existsSync(twigFilePath)) return ''
+): string =>
+  existsSync(twigFilePath)
+    ? templateDependencies(readFileSync(twigFilePath, 'utf8'), namespaces)
+        .map((path) => `import '${path}';`)
+        .join('\n')
+    : ''
 
-  const twigContent = readFileSync(twigFilePath, 'utf8')
-  const imports = new Set<string>()
-
-  // `ns:component` references only, not `@ns/path` assets.
-  const pattern =
-    /{%-?\s*(?:include|embed|extends)\s+['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g
-  for (const [, componentId] of twigContent.matchAll(pattern)) {
+// *.component.yml of every `ns:component` that Twig source includes, embeds
+// or extends, with the tags or include().
+export const templateDependencies = (
+  twigContent: string,
+  namespaces: Namespaces
+): string[] => {
+  const paths = new Set<string>()
+  const patterns = [
+    /{%-?\s*(?:include|embed|extends)\s+['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g,
+    /\binclude\(\s*['"]([a-zA-Z0-9_-]+:[a-zA-Z0-9_/-]+)['"]/g,
+  ]
+  for (const [, componentId] of patterns.flatMap((pattern) => [
+    ...twigContent.matchAll(pattern),
+  ])) {
     const resolvedPath =
       componentId && resolveComponentId(componentId, namespaces)
-    if (resolvedPath) imports.add(`import '${resolvedPath}';`)
+    if (resolvedPath) paths.add(resolvedPath)
   }
-
-  return Array.from(imports).join('\n')
+  return [...paths]
 }

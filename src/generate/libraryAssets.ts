@@ -61,22 +61,20 @@ export const libraryOverridesImports = (
 const normalizeLocalPath = (p: string): string =>
   p.startsWith('.') ? p : `./${p}`
 
-// The generated module globs root `*.css` / `*.{js,mjs}` like Drupal core, so
-// those overrides are skipped; subfolder paths are imported explicitly.
-const isGlobCoveredCss = (p: string): boolean => /^\.\/[^/]+\.css$/.test(p)
-const isGlobCoveredJs = (p: string): boolean => /^\.\/[^/]+\.(js|mjs)$/.test(p)
-
 export interface LocalCssImport {
   path: string
   // Media-scoped CSS is injected as `<link media>` instead of bundled.
   media?: string
 }
 
-// Local libraryOverrides assets, relative to the component, de-duped against
-// the root glob.
+// Local libraryOverrides assets, relative to the component; `<name>.css` and
+// `<name>.js` load with every component already.
 export const libraryOverridesLocalImports = (
-  content: SDCSchema
+  content: SDCSchema,
+  name: string
 ): { css: LocalCssImport[]; js: string[] } => {
+  const ownCss = `./${name}.css`
+  const ownJs = [`./${name}.js`, `./${name}.mjs`]
   const overrides = content.libraryOverrides
   if (!overrides) return { css: [], js: [] }
 
@@ -86,7 +84,7 @@ export const libraryOverridesLocalImports = (
     for (const [url, opts] of Object.entries(overrides.css?.[group] ?? {})) {
       if (isDisabled(opts) || isRemoteUrl(url)) continue
       const path = normalizeLocalPath(url)
-      if (isGlobCoveredCss(path) || seenCss.has(path)) continue
+      if (path === ownCss || seenCss.has(path)) continue
       seenCss.add(path)
       css.push({ path, ...(opts.media ? { media: opts.media } : {}) })
     }
@@ -97,7 +95,7 @@ export const libraryOverridesLocalImports = (
   for (const [url, opts] of Object.entries(overrides.js ?? {})) {
     if (isDisabled(opts) || isRemoteUrl(url)) continue
     const path = normalizeLocalPath(url)
-    if (isGlobCoveredJs(path) || seenJs.has(path)) continue
+    if (ownJs.includes(path) || seenJs.has(path)) continue
     seenJs.add(path)
     js.push(path)
   }

@@ -108,19 +108,17 @@ export async function viteFinal(
   let twigPlugin = null
 
   if (sdcStorybookOptions.twigLib === 'twing') {
-    options.vitePluginTwingDrupalOptions = {
+    const { default: twing } = await import('vite-plugin-twing-drupal')
+    twigPlugin = twing({
       ...vitePluginTwingDrupalOptions,
       namespaces: { ...namespaces.toTwingNamespaces() },
-    }
-    const { default: twing } = await import('vite-plugin-twing-drupal')
-    twigPlugin = twing(options.vitePluginTwingDrupalOptions)
+    })
   } else if (sdcStorybookOptions.twigLib === 'twig') {
-    options.vitePluginTwigDrupalOptions = {
+    const { default: twig } = await import('vite-plugin-twig-drupal')
+    twigPlugin = twig({
       ...vitePluginTwigDrupalOptions,
       namespaces: { ...namespaces.toTwigJsNamespaces() },
-    }
-    const { default: twig } = await import('vite-plugin-twig-drupal')
-    twigPlugin = twig(options.vitePluginTwigDrupalOptions)
+    })
   }
 
   const headTags = dependencyHeadTags(sdcStorybookOptions.dependencyMap)
@@ -132,7 +130,12 @@ export async function viteFinal(
       }),
       twigRawPlugin(),
       ...(twigPlugin ? [twigPlugin] : []),
-      YamlStoriesPlugin({ ...options, globalDefs, namespaces }),
+      YamlStoriesPlugin({
+        sdcStorybookOptions,
+        jsonSchemaFakerOptions: options.jsonSchemaFakerOptions ?? {},
+        globalDefs,
+        namespaces,
+      }),
       sdcTwigRuntimePlugin(namespaces, sdcStorybookOptions.resolveIconSource),
       sdcHeadPlugin(headTags, namespaces),
     ],
@@ -166,7 +169,6 @@ export const experimental_indexers: StorybookConfig['experimental_indexers'] = (
 
 type StaticDir = string | { from: string; to: string }
 
-// `undefined` when the project has no staticDirs.
 export const staticDirs = (
   existing: StaticDir[] | undefined,
   options: SDCAddonOptions

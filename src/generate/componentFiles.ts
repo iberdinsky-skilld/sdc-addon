@@ -5,7 +5,7 @@ import { parse as parseYaml } from 'yaml'
 import type { JSONSchema4 } from 'json-schema'
 import { logger } from '../logger.ts'
 import { isRecord } from '../guards.ts'
-import { listDir, posixDirname, sanitizeStoryKey } from '../utils.ts'
+import { listDir, posixDirname } from '../utils.ts'
 import { schemaUrlFor, validateJson } from './validate.ts'
 import type { SDCSchema, StoryDefinition } from '../sdc.d.ts'
 
@@ -58,7 +58,7 @@ export const loadStoryFilesSync = (
 
   const stories: Record<string, StoryDefinition> = {}
   for (const file of storyFiles) {
-    const key = sanitizeStoryKey(basename(file).split('.')[1] ?? '')
+    const key = basename(file).split('.')[1] ?? ''
     if (Object.prototype.hasOwnProperty.call(stories, key)) {
       logger.warn(
         `Duplicate story key "${key}" from ${file} overrides an earlier story while indexing ${fileName}`

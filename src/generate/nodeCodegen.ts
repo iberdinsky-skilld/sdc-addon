@@ -1,4 +1,4 @@
-import { capitalize, jsLiteral, toIdentifier } from '../utils.ts'
+import { jsLiteral, storyExportName, toIdentifier } from '../utils.ts'
 import { isRecord } from '../guards.ts'
 import { toAttribute } from '../renderer/attributes.ts'
 import { toText } from '../renderer/collections.ts'
@@ -24,7 +24,7 @@ const formatValue = (value: unknown, inHtml: boolean): string => {
   return inHtml ? `[${items}].join('')` : `[${items}]`
 }
 
-// Build-time twin of the runtime resolver: each node becomes a JS expression.
+// Each render node becomes a JS expression.
 export const renderStoryNode = (item: unknown, inHtml = true): string => {
   if (!isRecord(item)) return jsLiteral(item)
   switch (nodeKind(item)) {
@@ -59,7 +59,7 @@ const renderComponent = (item: Node): string => {
   const componentProps = `...{ ${generateArgs(props)}}, ...{${generateArgs(slots)}}`
   const storyArgs =
     typeof item.story === 'string'
-      ? `...${identifier}.${capitalize(item.story)}.args`
+      ? `...${identifier}.${storyExportName(item.story)}.args`
       : '...{}'
   return `${identifier}.default.component({...${identifier}.Basic.baseArgs, ${storyArgs}, ${componentProps}})`
 }

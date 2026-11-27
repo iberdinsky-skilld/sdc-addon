@@ -2,11 +2,18 @@
 import type Twig from 'twig'
 import DrupalAttribute from 'drupal-attribute'
 import type { IconPacks } from '../sdc.d.ts'
-import { isMapping, isSequence, toPlainObject, toText } from './collections.ts'
+import {
+  isMapping,
+  isSequence,
+  shuffle,
+  toPlainObject,
+  toText,
+} from './collections.ts'
 import { buildIconContext } from './icons.ts'
 import { htmlCva, HTML_CVA_ARGUMENTS, twigJsArguments } from './cva.ts'
 import { addClass, setAttribute } from './renderArrayFilters.ts'
 import { castVarsAttributes, patchDrupalAttribute } from './attributes.ts'
+import { createWrapperRenderer, isStory } from './story.ts'
 
 export { twigArgs } from './nodes.ts'
 
@@ -25,7 +32,6 @@ export type TwigJs = Omit<typeof Twig, 'extendFilter' | 'extendFunction'> & {
     ) => unknown
   ): void
   filters?: Record<string, (value: unknown, params: unknown) => unknown>
-  __sdcMergeOverridden?: boolean
   __sdcRegistered?: boolean
 }
 
@@ -36,7 +42,7 @@ const INCLUDE_ARGUMENTS = [
   'ignore_missing',
 ] as const
 
-export function createTwigCore(iconPacks: IconPacks) {
+export function createTwigRuntime(iconPacks: IconPacks) {
   let twig: TwigJs | null = null
   patchDrupalAttribute(DrupalAttribute)
 
@@ -59,10 +65,33 @@ export function createTwigCore(iconPacks: IconPacks) {
     }
   }
 
-  function registerCore(Twig: TwigJs): void {
+  // Component modules by SDC id, for include() calls the plugin does not see.
+  const components = new Map<string, (context: object) => unknown>()
+
+  const { renderWrapper, mergeStory } = createWrapperRenderer({
+    renderComponent: (id, context) => components.get(id)?.(context),
+    // No engine yet means the component's template did not compile; printing
+    // the story shows the plugin's error.
+    renderTemplate: (template, context) =>
+      twig
+        ? twig
+            .twig({ data: template, allowInlineIncludes: true })
+            .render(context)
+        : toText(context['_story']),
+  })
+
+  function registerSdcRuntime(Twig: TwigJs): void {
     twig = Twig
     if (Twig.__sdcRegistered) return
     Twig.__sdcRegistered = true
+    // `_story|merge(...)` in a library_wrapper gives a new render array.
+    const merge = Twig.filters?.['merge']
+    Twig.extendFilter('merge', function (this: unknown, value, params) {
+      const other = Array.isArray(params) ? params[0] : undefined
+      if (isStory(value) || isStory(other)) return mergeStory(value, other)
+      return merge ? merge.call(this, value, params) : value
+    })
+    Twig.extendFilter('shuffle', (value) => shuffle(value))
     Twig.extendTest('sequence', (value: unknown) => isSequence(value))
     Twig.extendTest('mapping', (value: unknown) => isMapping(value))
     Twig.extendFilter('add_class', (value, params) =>
@@ -84,6 +113,9 @@ export function createTwigCore(iconPacks: IconPacks) {
           ...toPlainObject(context),
           ...toPlainObject(variables),
         })
+        const component = components.get(toText(template))
+        if (component && vars !== null && typeof vars === 'object')
+          return component(vars)
         return Twig.twig({
           data: `{% include _sdc_template ${ignoreMissing === true ? 'ignore missing ' : ''}with _sdc_vars only %}`,
           allowInlineIncludes: true,
@@ -102,10 +134,12 @@ export function createTwigCore(iconPacks: IconPacks) {
     )
   }
 
-  return { renderIcon, registerCore, getTwig: (): TwigJs | null => twig }
-}
-
-export function createTwigRuntime(iconPacks: IconPacks) {
-  const core = createTwigCore(iconPacks)
-  return { renderIcon: core.renderIcon, registerSdcRuntime: core.registerCore }
+  return {
+    renderIcon,
+    registerSdcRuntime,
+    registerComponent: (id: string, render: (context: object) => unknown) => {
+      components.set(id, render)
+    },
+    renderWrapper,
+  }
 }

@@ -6,7 +6,7 @@ import {
   isRemoteUrl,
   jsLiteral,
   mergeOptions,
-  sanitizeStoryKey,
+  storyExportName,
 } from '../utils.ts'
 import { join } from 'node:path'
 
@@ -40,9 +40,14 @@ describe('utils', () => {
     expect(deriveGroupFromPath(p2)).toBe('SDC')
   })
 
-  test('sanitizeStoryKey prefixes numeric keys', () => {
-    expect(sanitizeStoryKey('1test')).toBe('_1test')
-    expect(sanitizeStoryKey('test')).toBe('test')
+  test.each([
+    ['preview', 'Preview'],
+    ['download-foreign-file', 'Download_foreign_file'],
+    ['with space', 'With_space'],
+    ['1col', '_1col'],
+    ['basic', 'Variant_Basic'],
+  ])('storyExportName(%j) is %j', (key, exportName) => {
+    expect(storyExportName(key)).toBe(exportName)
   })
 
   test('jsLiteral escapes line separators and keeps values intact', () => {

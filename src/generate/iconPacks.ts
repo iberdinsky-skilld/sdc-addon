@@ -13,8 +13,6 @@ import type {
   ResolveIconSource,
 } from '../sdc.d.ts'
 
-export type { IconPack, IconPacks, IconPackSettings, SvgIconData, PathIconData }
-
 // One pack of a *.icons.yml, with every field checked and defaulted.
 interface IconPackDef {
   enabled: boolean
@@ -305,15 +303,3 @@ export async function fetchRemoteSprite(
 export const iconPackFiles = (
   namespaces: NamespaceRoots
 ): Array<[string, string]> => namespaceFiles(namespaces, 'icons')
-
-export function discoverIconPacks(
-  namespaces: NamespaceRoots,
-  resolveIconSource?: ResolveIconSource
-): IconPacks {
-  const packs: IconPacks = {}
-  for (const [, iconsFile] of iconPackFiles(namespaces)) {
-    const { packs: filePacks } = loadIconPackFile(iconsFile, resolveIconSource)
-    Object.assign(packs, filePacks)
-  }
-  return packs
-}

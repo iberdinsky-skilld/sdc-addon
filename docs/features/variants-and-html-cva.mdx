@@ -39,8 +39,8 @@ Picking classes in Twig with `if` blocks gets long when a component has several 
 - `base`: classes every callout gets.
 - `variants`: for each option, the class for each value. `variant` is the component's variant, `size` is an ordinary prop.
 - `compound_variants`: extra classes for a combination, here a warning that is also large.
-- `default_variant`: values to use when an option is empty.
-- `apply()` returns the classes as one string, `callout callout--info callout--sm`. `split(' ')` turns it into a list, because `addClass()` expects one.
+- `default_variant`: values to use when an option is not set.
+- `apply()` returns the classes as one string, `callout callout--info callout--sm`. `split(' ')` turns it into a list.
 
 ## Examples
 

@@ -1,14 +1,7 @@
 // Twig's html_cva(), ported from Twig\Extra\Html\Cva; hashes may arrive as
 // Twing Maps or twig.js objects.
 import { isString } from '../guards.ts'
-import { entries, toText } from './collections.ts'
-
-const list = (value: unknown): unknown[] => {
-  if (value == null) return []
-  if (Array.isArray(value)) return value
-  if (value instanceof Map) return [...value.values()]
-  return [value]
-}
+import { entries, toList, toText } from './collections.ts'
 
 const map = (value: unknown): Map<string, unknown> =>
   new Map(entries(value).map(([k, v]) => [toText(k), v]))
@@ -29,7 +22,7 @@ export function htmlCva(
 ) {
   const groups = map(variants)
   const classesOf = (group: string, value: unknown): unknown[] =>
-    list(map(groups.get(group)).get(variantName(value)))
+    toList(map(groups.get(group)).get(variantName(value)))
 
   return {
     apply(recipes: unknown, ...additionalClasses: unknown[]): string {
@@ -37,16 +30,16 @@ export function htmlCva(
       const isSet = (name: string) => given.get(name) != null
       // Compounds see only the given recipes; defaults come after them.
       const classes = [
-        ...list(base),
+        ...toList(base),
         ...[...given].flatMap(([name, value]) => classesOf(name, value)),
-        ...list(compoundVariants).flatMap((compound) => {
+        ...toList(compoundVariants).flatMap((compound) => {
           const conditions = map(compound)
           const matches = [...conditions].every(
             ([name, values]) =>
               name === 'class' ||
-              (isSet(name) && list(values).includes(given.get(name)))
+              (isSet(name) && toList(values).includes(given.get(name)))
           )
-          return matches ? list(conditions.get('class')) : []
+          return matches ? toList(conditions.get('class')) : []
         }),
         ...[...map(defaultVariant)].flatMap(([name, value]) =>
           isSet(name) ? [] : classesOf(name, value)

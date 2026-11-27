@@ -40,6 +40,8 @@ export const TWIG_FILE_RE = /\.twig(\?(?!raw\b).*)?$/
 export const DEFAULT_SCHEMA_URL =
   'https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json'
 
+export const PLACEHOLDER_URL = 'https://placehold.co/600x400'
+
 export const DEFAULT_ADDON_OPTIONS: SDCAddonOptions = {
   sdcStorybookOptions: {
     useBasicArgsForStories: true,
@@ -56,5 +58,12 @@ export const DEFAULT_ADDON_OPTIONS: SDCAddonOptions = {
     failOnInvalidTypes: false,
     useExamplesValue: true,
     useDefaultValue: true,
+    // A random string as a link or image URL is a 404 in every story.
+    formats: Object.fromEntries(
+      ['uri', 'uri-reference', 'iri', 'iri-reference', 'url'].map((format) => [
+        format,
+        () => PLACEHOLDER_URL,
+      ])
+    ),
   },
 }

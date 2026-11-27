@@ -22,6 +22,11 @@ describe('storiesGenerator', () => {
     expect(out).toContain('<span>slot</span>')
   })
 
+  test('a story key with dashes becomes a valid export', () => {
+    const out = generate({ 'download-foreign-file': { name: 'Download' } })
+    expect(out).toContain('export const Download_foreign_file = {')
+  })
+
   test('adds Variant_ prefix when story key capitalizes to "Basic"', () => {
     const stories: Record<string, StoryDefinition> = {
       basic: {
@@ -53,33 +58,25 @@ describe('storiesGenerator', () => {
     expect(out).toContain('[\'id\', "x"]')
   })
 
-  test('library_wrapper stories emit a static render, no browser decorator', () => {
+  test('a library_wrapper story renders through the wrapper in the browser', () => {
     const stories: Record<string, StoryDefinition> = {
       wrapped: {
         library_wrapper: '<div class="wrap">{{ _story }}</div>',
       },
     }
-    const out = generate(stories)
-    expect(out).toContain('render: () =>')
-    expect(out).not.toContain('decorators')
-    expect(out).not.toContain('_sdcMakeStory')
+    expect(generate(stories)).toContain(
+      'render: _sdcWrap("<div class=\\"wrap\\">{{ _story }}</div>"),'
+    )
   })
 
-  test('uses the pre-rendered wrapper HTML when provided', () => {
-    const stories: Record<string, StoryDefinition> = {
-      wrapped: {
-        library_wrapper: '<div>{{ _story }}</div>',
-      },
-    }
+  test('components the wrapper includes load in the story loaders', () => {
     const out = generate(
-      stories,
+      { wrapped: { library_wrapper: "{{ include('ns:grid') }}" } },
       {},
-      {
-        wrapped: '<div class="wrap">RENDERED</div>',
-      }
+      () => ['/c/grid/grid.component.yml']
     )
     expect(out).toContain(
-      'render: () => "<div class=\\"wrap\\">RENDERED</div>"'
+      'loaders: [() => Promise.all([import("/c/grid/grid.component.yml")])],'
     )
   })
 

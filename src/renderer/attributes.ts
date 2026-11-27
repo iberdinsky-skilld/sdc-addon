@@ -1,7 +1,7 @@
 // SDC guarantees `attributes` is always an Attribute object inside a component.
 import DrupalAttribute, { type DrupalAttributeEntry } from 'drupal-attribute'
 import { isRecord } from '../guards.ts'
-import { entries, TWIG_JS_KEYS } from './collections.ts'
+import { entries, toList, TWIG_JS_KEYS } from './collections.ts'
 
 // Duck-typed: Node loads drupal-attribute twice, as ESM and as CJS.
 export const isDrupalAttribute = (value: unknown): value is DrupalAttribute =>
@@ -38,15 +38,6 @@ export function castVarsAttributes(vars: unknown): unknown {
 // Map, a scalar); cast it to an array first, like Drupal.
 const PATCHED = '__sdcClassPatched'
 
-// twig.js turns `[...]|merge(x ?: [])` into a hash; Drupal takes any list.
-const classList = (value: unknown): unknown =>
-  value == null ||
-  typeof value !== 'object' ||
-  Array.isArray(value) ||
-  value instanceof Map
-    ? value
-    : entries(value).map(([, item]) => item)
-
 export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
   const proto = AttrClass.prototype
   // On the prototype, so every instance gets the fixes.
@@ -55,13 +46,7 @@ export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
     if (typeof self.get !== 'function') return
     const existing = self.get('class')
     if (existing == null || Array.isArray(existing)) return
-    if (existing instanceof Map) {
-      self.set('class', Array.from(existing.values()))
-    } else if (typeof existing === 'string') {
-      self.set('class', existing === '' ? [] : [existing])
-    } else {
-      self.set('class', [existing])
-    }
+    self.set('class', existing === '' ? [] : toList(existing))
   }
   for (const name of ['addClass', 'removeClass', 'hasClass'] as const) {
     const original: unknown = Reflect.get(proto, name)
@@ -74,7 +59,8 @@ export function patchDrupalAttribute(AttrClass: typeof DrupalAttribute): void {
         const result: unknown = Reflect.apply(
           original,
           this,
-          name === 'hasClass' ? args : args.map(classList)
+          // twig.js turns `[...]|merge(x ?: [])` into a hash; Drupal takes any list.
+          name === 'hasClass' ? args : args.map(toList)
         )
         return result
       }

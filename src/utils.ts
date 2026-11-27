@@ -25,12 +25,12 @@ export const deriveGroupFromPath = (fileName: string) => {
   return 'SDC'
 }
 
-// Story keys starting with a digit get a `_` prefix.
-export const sanitizeStoryKey = (key: string): string => {
-  if (/^\d/.test(key)) {
-    return `_${key}`
-  }
-  return key
+// A story key as its module export: a valid identifier; Basic is reserved for
+// the generated Basic story.
+export const storyExportName = (key: string): string => {
+  const name = capitalize(key.replace(/[^\w$]/g, '_'))
+  const identifier = /^\d/.test(name) ? `_${name}` : name
+  return identifier === 'Basic' ? `Variant_${identifier}` : identifier
 }
 
 // A value as a JS literal for generated code. U+2028/U+2029 are escaped (they

@@ -21,6 +21,15 @@ const toFakerSchemaMap = (
 export const toFakerSchema = (schema: JSONSchema4): FakerSchema => {
   const out: Record<string, unknown> = { ...schema }
 
+  // The faker picks one of several types at random; templates loop over and
+  // merge lists, so a list is the safe pick, else the author's first type.
+  if (Array.isArray(schema.type)) {
+    const types = schema.type
+    out.type = types.includes('array')
+      ? 'array'
+      : (types.find((type) => type !== 'null') ?? 'null')
+  }
+
   if (typeof schema.exclusiveMinimum === 'boolean') {
     delete out.exclusiveMinimum
     if (schema.exclusiveMinimum && schema.minimum !== undefined) {

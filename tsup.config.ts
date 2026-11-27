@@ -10,7 +10,7 @@ export default defineConfig([
     outDir: 'dist',
     clean: false,
     shims: true,
-    external: ['vite', 'fs', 'vite-plugin-node-polyfills'],
+    external: ['vite'],
   },
   // Browser runtime, bundled into the consumer's preview; twing and
   // drupal-attribute stay external to share the consumer's singletons.

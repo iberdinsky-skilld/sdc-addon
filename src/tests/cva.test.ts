@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest'
 import Twig from 'twig'
 import twing from 'twing'
 import { htmlCva } from '../renderer/cva.ts'
-import { createTwigCore } from '../renderer/twig.ts'
-import { createTwingCore } from '../renderer/twing.ts'
+import { createTwigRuntime } from '../renderer/twig.ts'
+import { createTwingRuntime } from '../renderer/twing.ts'
 // Data providers of twig/html-extra's CvaTest.php, converted to JSON.
 import cases from './fixtures/twig-cva-cases.json' with { type: 'json' }
 
@@ -132,7 +132,7 @@ const CASES: Array<[Record<string, unknown>, string]> = [
 
 describe('html_cva() in templates', () => {
   test.each(CASES)('twig.js %o', (context, expected) => {
-    createTwigCore({}).registerCore(Twig)
+    createTwigRuntime({}).registerSdcRuntime(Twig)
     expect(Twig.twig({ data: TEMPLATE }).render(context)).toBe(
       `<div class="${expected}"></div>`
     )
@@ -142,7 +142,7 @@ describe('html_cva() in templates', () => {
     const env = twing.createSynchronousEnvironment(
       twing.createSynchronousArrayLoader({ cva: TEMPLATE })
     )
-    createTwingCore({}).registerCore(env)
+    createTwingRuntime({}).registerSdcRuntime(env)
     expect(env.render('cva', context)).toBe(`<div class="${expected}"></div>`)
   })
 })
